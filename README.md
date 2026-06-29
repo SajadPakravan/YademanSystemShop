@@ -1,17 +1,5 @@
-# yadsys_shop
-
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Yademan System | یادمان سیستم
+<div align="center">
+    <img src="assets/images/logos/application_logo.png" width="300" height="300" alt="Yademan System shop Logo">
+    <h3>فروشگاه تجهیزات دیجیتال | یادمان سیستم</h3>
+</div>
