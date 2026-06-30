@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/product_model.dart';
+import 'package:yad_sys/models/product_variable_model.dart';
 import 'package:yad_sys/widgets/cards/product_card_grid.dart';
 import 'package:yad_sys/widgets/loading.dart';
 
@@ -14,17 +15,28 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   HttpRequest httpRequest = HttpRequest();
   List<ProductModel> productsLst = [];
+  List<ProductVariableModel> productVariableLst = [];
   bool loading = false;
 
-  getProducts({required String search}) async {
+  Future<void> getProducts({required String search}) async {
     setState(() => loading = true);
     dynamic jsonProducts = await httpRequest.getProducts(search: search);
     List<ProductModel> products = [];
-    jsonProducts.forEach((p) => products.add(ProductModel.fromJson(p)));
+    jsonProducts.forEach((p) {
+      products.add(ProductModel.fromJson(p));
+      if (p['on_sale'] == 'true' && p['type'] == 'variable') {
+        getProductVariable(id: p['id'], list: productVariableLst);
+      }
+    });
     setState(() {
       productsLst = products;
       loading = false;
     });
+  }
+
+  Future<void> getProductVariable({required int id, required List<ProductVariableModel> list}) async {
+    dynamic jsonProductVariable = await httpRequest.getProductVariable(id: id);
+    jsonProductVariable.forEach((p) => list.add(ProductVariableModel.fromJson(p)));
   }
 
   @override
@@ -35,12 +47,12 @@ class _SearchScreenState extends State<SearchScreen> {
           ? const Loading()
           : Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
-              child: ProductCardGrid(list: productsLst),
+              child: ProductCardGrid(productsLst: productsLst, productVariableLst: productVariableLst),
             ),
     );
   }
 
-  appBar() {
+  AppBar appBar() {
     return AppBar(
       backgroundColor: Colors.white,
       iconTheme: const IconThemeData(color: Colors.black54),

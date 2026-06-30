@@ -2,10 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/category_model.dart';
 import 'package:yad_sys/models/product_model.dart';
+import 'package:yad_sys/models/product_variable_model.dart';
 
 class ShopViewModel with ChangeNotifier {
   HttpRequest httpRequest = HttpRequest();
   List<ProductModel> productsLst = [];
+  List<ProductVariableModel> productVariableLst = [];
   List<CategoryModel> categoriesLst = [];
   List<int> categoriesId = [];
   List<Map<String, dynamic>> filtersLst = [];
@@ -15,7 +17,7 @@ class ShopViewModel with ChangeNotifier {
   bool moreProduct = false;
   int productCount = 0;
 
-  setFilters() async {
+  Future<void> setFilters() async {
     filtersLst.add({'index': 0, 'name': 'جدیدترین', 'order': 'desc', 'orderby': 'date', 'onSale': 'false', 'select': true});
     filtersLst.add({'index': 1, 'name': 'قدیمی‌ترین', 'order': 'asc', 'orderby': 'date', 'onSale': 'false', 'select': false});
     filtersLst.add({'index': 2, 'name': 'تخفیف خورده', 'order': 'desc', 'orderby': 'date', 'onSale': 'true', 'select': false});
@@ -31,7 +33,7 @@ class ShopViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  getProducts() async {
+  Future<void> getProducts() async {
     if (!moreProduct) {
       productsLst.clear();
       page = 1;
@@ -50,15 +52,25 @@ class ShopViewModel with ChangeNotifier {
       onSale: filtersLst[filterSelected]['onSale'],
     );
     productCount = 0;
+    List<Future> futures = [];
     jsonProducts.forEach((p) {
       productsLst.add(ProductModel.fromJson(p));
+      if (p['on_sale'] && p['type'] == 'variable') {
+        futures.add(getProductVariable(id: p['id'], list: productVariableLst));
+      }
       productCount++;
     });
     moreProduct = false;
+    await Future.wait(futures);
     notifyListeners();
   }
 
-  onMoreBtn() async {
+  Future<void> getProductVariable({required int id, required List<ProductVariableModel> list}) async {
+    dynamic jsonProductVariable = await httpRequest.getProductVariable(id: id);
+    jsonProductVariable.forEach((p) => list.add(ProductVariableModel.fromJson(p)));
+  }
+
+  Future<void> onMoreBtn() async {
     if (!moreProduct) {
       moreProduct = true;
       page++;

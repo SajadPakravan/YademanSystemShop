@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:yad_sys/models/category_model.dart';
 import 'package:yad_sys/models/product_model.dart';
+import 'package:yad_sys/models/product_variable_model.dart';
 import 'package:yad_sys/widgets/bottom_sheet/bottom_sheet_select_categories.dart';
 import 'package:yad_sys/widgets/bottom_sheet/bottom_sheet_select_filter.dart';
 import 'package:yad_sys/widgets/cards/product_card_grid.dart';
@@ -15,6 +16,7 @@ class ShopView extends StatelessWidget {
     required this.context,
     required this.visibleReloadCover,
     required this.productsLst,
+    required this.productVariableLst,
     required this.productCount,
     required this.moreProduct,
     required this.categoriesLst,
@@ -28,6 +30,7 @@ class ShopView extends StatelessWidget {
   final BuildContext context;
   final bool visibleReloadCover;
   final List<ProductModel> productsLst;
+  final List<ProductVariableModel> productVariableLst;
   final int productCount;
   final bool moreProduct;
   final List<CategoryModel> categoriesLst;
@@ -55,11 +58,7 @@ class ShopView extends StatelessWidget {
               title: Column(
                 children: [
                   const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Search()),
-                  AnimatedOpacity(
-                    opacity: categoriesLst.isEmpty ? 0 : 1,
-                    duration: const Duration(milliseconds: 500),
-                    child: filterBtn(),
-                  ),
+                  AnimatedOpacity(opacity: categoriesLst.isEmpty ? 0 : 1, duration: const Duration(milliseconds: 500), child: filterBtn()),
                 ],
               ),
             ),
@@ -72,7 +71,7 @@ class ShopView extends StatelessWidget {
                     child: Column(
                       children: [
                         const SizedBox(height: 10),
-                        ProductCardGrid(physics: const NeverScrollableScrollPhysics(), list: productsLst),
+                        ProductCardGrid(physics: const NeverScrollableScrollPhysics(), productsLst: productsLst, productVariableLst: productVariableLst),
                         Visibility(
                           visible: !(productCount < 10),
                           child: EasyButton(
@@ -92,7 +91,7 @@ class ShopView extends StatelessWidget {
     );
   }
 
-  filterBtn() {
+  Container filterBtn() {
     return Container(
       decoration: const BoxDecoration(border: Border(bottom: BorderSide())),
       child: Row(
@@ -101,13 +100,19 @@ class ShopView extends StatelessWidget {
           TextButton(
             onPressed: () => selectCategories(context: context, categoriesLst: categoriesLst, id: categoriesId, onPressed: getProducts),
             child: const Row(
-              children: [TextBodyMediumView('دسته‌بندی‌ها'), Icon(Icons.arrow_drop_down, color: Colors.black54)],
+              children: [
+                TextBodyMediumView('دسته‌بندی‌ها'),
+                Icon(Icons.arrow_drop_down, color: Colors.black54),
+              ],
             ),
           ),
           TextButton(
             onPressed: () => selectFilter(context: context, filtersLst: filtersLst, selected: filterSelected, onPressed: getProducts),
             child: Row(
-              children: [TextBodyMediumView(filtersLst[filterSelected]['name']), const Icon(Icons.arrow_drop_down, color: Colors.black54)],
+              children: [
+                TextBodyMediumView(filtersLst[filterSelected]['name']),
+                const Icon(Icons.arrow_drop_down, color: Colors.black54),
+              ],
             ),
           ),
         ],

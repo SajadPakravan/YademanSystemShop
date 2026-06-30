@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/product_model.dart';
+import 'package:yad_sys/models/product_variable_model.dart';
 import 'package:yad_sys/views/categories/show_all_view.dart';
 
 class ShowAllScreen extends StatefulWidget {
@@ -14,6 +15,7 @@ class ShowAllScreen extends StatefulWidget {
 class _ShowAllScreenState extends State<ShowAllScreen> {
   HttpRequest httpRequest = HttpRequest();
   List<ProductModel> productsLst = [];
+  List<ProductVariableModel> productVariableLst = [];
   String category = Get.arguments['category'];
   String onSale = Get.arguments['onSale'];
   int page = 1;
@@ -65,6 +67,7 @@ class _ShowAllScreenState extends State<ShowAllScreen> {
       context: context,
       onRefresh: onRefresh,
       productsLst: productsLst,
+      productVariableLst: productVariableLst,
       productCount: productCount,
       onMoreBtn: onMoreBtn,
     );

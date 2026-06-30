@@ -2,6 +2,7 @@ import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yad_sys/models/product_model.dart';
+import 'package:yad_sys/models/product_variable_model.dart';
 import 'package:yad_sys/widgets/cards/product_card_grid.dart';
 import 'package:yad_sys/widgets/loading.dart';
 import 'package:yad_sys/widgets/text_views/text_title_medium_view.dart';
@@ -13,12 +14,14 @@ class ShowAllView extends StatelessWidget {
     required this.onRefresh,
     required this.productCount,
     required this.productsLst,
+    required this.productVariableLst,
     required this.onMoreBtn,
   });
 
   final BuildContext context;
   final dynamic onRefresh;
   final List<ProductModel> productsLst;
+  final List<ProductVariableModel> productVariableLst;
   final int productCount;
   final Function onMoreBtn;
 
@@ -38,7 +41,7 @@ class ShowAllView extends StatelessWidget {
                     physics: const BouncingScrollPhysics(),
                     child: Column(
                       children: [
-                        ProductCardGrid(list: productsLst, physics: const NeverScrollableScrollPhysics()),
+                        ProductCardGrid(productsLst: productsLst, productVariableLst: productVariableLst),
                         Visibility(
                           visible: !(productCount < 10),
                           child: EasyButton(

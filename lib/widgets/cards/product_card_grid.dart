@@ -2,16 +2,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/product_model.dart';
+import 'package:yad_sys/models/product_variable_model.dart';
 import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/widgets/text_views/text_body_medium_view.dart';
 
 class ProductCardGrid extends StatelessWidget {
-  ProductCardGrid({super.key, this.physics = const AlwaysScrollableScrollPhysics(), required this.list});
+  ProductCardGrid({super.key, this.physics = const AlwaysScrollableScrollPhysics(), required this.productsLst,required this.productVariableLst});
 
   final AppFunction appFun = AppFunction();
   final ScrollPhysics physics;
-  final List<ProductModel> list;
+  final List<ProductModel> productsLst;
+  final List<ProductVariableModel> productVariableLst;
 
   @override
   Widget build(BuildContext context) {
@@ -22,21 +24,34 @@ class ProductCardGrid extends StatelessWidget {
       child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(mainAxisSpacing: 10, crossAxisCount: 2, mainAxisExtent: 280),
         padding: EdgeInsets.zero,
-        itemCount: list.length,
+        itemCount: productsLst.length,
         scrollDirection: Axis.vertical,
         physics: physics,
         shrinkWrap: true,
         primary: false,
         itemBuilder: (BuildContext context, int index) {
-          ProductModel product = list[index];
+          ProductModel product = productsLst[index];
           ProductImage img = product.images![0];
 
+          String variableName = '';
           int price = int.parse(product.price!);
-          int regularPrice = int.parse(product.regularPrice!);
+          int regularPrice = int.tryParse(product.regularPrice ?? '') ?? 0;
           int percent = 0;
           String toman = ' تومان';
           Color textColor = Colors.black87;
           double fontSize = 14;
+
+          if (product.type! == 'variable') {
+            for (int i = 0; i < productVariableLst.length; i++) {
+              ProductVariableModel productVariable = productVariableLst[i];
+
+              if(productVariable.parentId == product.id && productVariable.onSale!){
+                price = int.parse(productVariable.price!);
+                regularPrice = int.parse(productVariable.regularPrice!);
+                variableName = ' | ${productVariable.name!}';
+              }
+            }
+          }
 
           if (product.onSale!) {
             textColor = Colors.black45;
@@ -72,7 +87,7 @@ class ProductCardGrid extends StatelessWidget {
                   Container(
                     alignment: Alignment.centerRight,
                     margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: TextBodyMediumView(product.name!, maxLines: 2),
+                    child: TextBodyMediumView('${product.name!}$variableName', maxLines: 2),
                   ),
                   price == 0
                       ? const TextBodyMediumView('تماس بگیرید', textAlign: TextAlign.center, maxLines: 2)
@@ -119,7 +134,7 @@ class ProductCardGrid extends StatelessWidget {
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         TextBodyMediumView(
-                                          regularPrice.toString().toPersianDigit().seRagham(),
+                                          price.toString().toPersianDigit().seRagham(),
                                           textAlign: TextAlign.left,
                                           fontWeight: FontWeight.bold,
                                           fontSize: fontSize,

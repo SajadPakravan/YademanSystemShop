@@ -30,6 +30,7 @@ class ShopScreenState extends State<ShopScreen> {
           visibleReloadCover: shopModel.visibleReloadCover,
           productsLst: shopModel.productsLst,
           productCount: shopModel.productCount,
+          productVariableLst: shopModel.productVariableLst,
           moreProduct: shopModel.moreProduct,
           categoriesLst: shopModel.categoriesLst,
           categoriesId: shopModel.categoriesId,
