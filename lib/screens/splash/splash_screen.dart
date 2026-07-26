@@ -96,7 +96,7 @@ class _SplashScreenState extends State<SplashScreen> {
           child: SimpleShadow(
             color: Colors.black,
             offset: const Offset(-25, 15),
-            child: Image.asset("assets/images/logos/application_logo.png", fit: BoxFit.contain, scale: width * 0.009),
+            child: Image.asset("assets/images/logos/application_logo.webp", fit: BoxFit.contain, scale: width * 0.009),
           ),
         ),
       ),

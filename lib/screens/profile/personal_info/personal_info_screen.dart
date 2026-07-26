@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/customer_model.dart';
 import 'package:yad_sys/themes/color_style.dart';
@@ -37,7 +37,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   TextEditingController lastnameField = TextEditingController();
   TextEditingController emailField = TextEditingController();
   File? avatarFile;
-  // ImagePicker imagePicker = ImagePicker();
+  ImagePicker imagePicker = ImagePicker();
 
   profileChanged(bool value) async => await cache.setBool('profileChanged', value);
 
@@ -158,7 +158,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 
-  info({
+  Card info({
     required String title,
     required String subtitle,
     required IconData icon,
@@ -214,11 +214,11 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   }
 
   Future<void> pickImage({required BuildContext context, required bool gallery}) async {
-    // XFile? image = await imagePicker.pickImage(source: gallery ? ImageSource.gallery : ImageSource.camera);
-    // if (context.mounted) {
-    //   Navigator.pop(context);
-    //   cropImageView(context: context, imageFile: image!.path).then((value) => setState(() => avatarFile = File(value.path)));
-    // }
+    XFile? image = await imagePicker.pickImage(source: gallery ? ImageSource.gallery : ImageSource.camera);
+    if (context.mounted) {
+      Navigator.pop(context);
+      cropImageView(context: context, imageFile: image!.path).then((value) => setState(() => avatarFile = File(value.path)));
+    }
   }
 
   bool formValidation() {

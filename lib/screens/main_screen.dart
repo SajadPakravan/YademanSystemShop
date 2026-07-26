@@ -59,7 +59,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
-  bottomNavigationBar() {
+  Container bottomNavigationBar() {
     return Container(
       decoration: const BoxDecoration(border: Border(top: BorderSide(color: Colors.black12, width: 3))),
       child: BottomNavigationBar(
@@ -78,7 +78,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
-  onTapMenu({required int index}) {
+  void onTapMenu({required int index}) {
     switch (index) {
       case 0:
         {
@@ -119,7 +119,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
-  menuUnSelected() {
+  void menuUnSelected() {
     setState(() {
       icnHome = Icons.home_outlined;
       icnShop = Icons.store_outlined;

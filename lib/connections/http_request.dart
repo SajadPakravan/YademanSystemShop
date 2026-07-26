@@ -18,29 +18,31 @@ class HttpRequest {
 
   String get _urlProducts => 'https://$_urlMain/wp-json/wc/v3/products/';
 
-  get _urlCategories => 'https://$_urlMain/wp-json/wc/v3/products/categories/';
+  String get _urlCategories => 'https://$_urlMain/wp-json/wc/v3/products/categories/';
 
-  get _urlProductReviews => 'https://$_urlMain/wp-json/wc/v3/products/reviews/';
+  String get _urlProductReviews => 'https://$_urlMain/wp-json/wc/v3/products/reviews/';
 
-  get _urlSignIn => 'https://$_urlMain/wp-json/jwt-auth/v1/token/';
+  String get _urlSignIn => 'https://$_urlMain/wp-json/jwt-auth/v1/token/';
 
-  get _urlSignUp => 'https://yademansystem.ir/wp-json/wp/v2/users/register/';
+  String get _urlSignUp => 'https://yademansystem.ir/wp-json/wp/v2/users/register/';
 
-  get _urlPasswordRecovery => 'https://yademansystem.ir/wp-json/user/v1/password-recovery/';
+  String get _urlPasswordRecovery => 'https://yademansystem.ir/wp-json/user/v1/password-recovery/';
 
-  get _urlUsers => 'https://$_urlMain/wp-json/wp/v2/users/';
+  String get _urlUsers => 'https://$_urlMain/wp-json/wp/v2/users/';
 
-  get _urlCustomers => 'https://$_urlMain/wp-json/wc/v3/customers/';
+  String get _urlCustomers => 'https://$_urlMain/wp-json/wc/v3/customers/';
 
-  get _urlUpdateAvatar => 'https://$_urlMain/wp-json/avatar/v1/update-avatar/';
+  String get _urlUpdateAvatar => 'https://$_urlMain/wp-json/avatar/v1/update-avatar/';
 
-  get _urlUpdatePassword => 'https://$_urlMain/wp-json/user/v1/update-password/';
+  String get _urlUpdatePassword => 'https://$_urlMain/wp-json/user/v1/update-password/';
 
-  get _urlUpload => 'https://$_urlMain/wp-content/app-uploads/';
+  String get _urlUpload => 'https://$_urlMain/wp-content/app-uploads/';
 
-  get _urlOrders => 'https://$_urlMain/wp-json/wc/v3/orders/';
+  String get _urlOrders => 'https://$_urlMain/wp-json/wc/v3/orders/';
 
-  _getRequest({required String url, String id = '', String details = ''}) async {
+  String get _urlHome => 'https://$_urlMain/wp-json/app-api/v1/home';
+
+  Future<dynamic> _getRequest({required String url, String id = '', String details = ''}) async {
     Map<String, String> headers = {'accept': 'application/json', 'Content-Type': 'application/json'};
 
     try {
@@ -65,7 +67,31 @@ class HttpRequest {
     }
   }
 
-  _postRequest({
+  Future<dynamic> _getPublicRequest({required String url}) async {
+    const headers = <String, String>{'accept': 'application/json', 'Content-Type': 'application/json; charset=UTF-8'};
+
+    try {
+      final response = await http.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 25));
+
+      if (kDebugMode) print('Public GET >>>> ${response.request}');
+
+      final dynamic decoded = jsonDecode(utf8.decode(response.bodyBytes));
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return decoded;
+      }
+
+      if (kDebugMode) {
+        print('Status Code >>>> ${response.statusCode}');
+        print('JSON ERROR >>>> $decoded');
+      }
+      return false;
+    } catch (e) {
+      if (kDebugMode) print('PUBLIC GET ERROR >>>> $e');
+      return false;
+    }
+  }
+
+  Future<dynamic> _postRequest({
     required BuildContext context,
     required String url,
     String id = '',
@@ -102,7 +128,7 @@ class HttpRequest {
     }
   }
 
-  _putRequest({required String url, String id = '', String details = '', required Map<String, dynamic> body}) async {
+  Future<dynamic> _putRequest({required String url, String id = '', String details = '', required Map<String, dynamic> body}) async {
     Map<String, String> headers = {'accept': 'application/json', 'Content-Type': 'application/json'};
 
     try {
@@ -125,6 +151,10 @@ class HttpRequest {
       if (kDebugMode) print("ERROR >>>> $e");
       return false;
     }
+  }
+
+  Future<dynamic> getHome() async {
+    return _getPublicRequest(url: _urlHome);
   }
 
   Future<dynamic> getProducts({
@@ -166,12 +196,12 @@ class HttpRequest {
     return _getRequest(url: _urlCategories, details: details);
   }
 
-  getProductReviews({required int id, String status = 'approved', int perPage = 10}) async {
+  Future<Future<dynamic>> getProductReviews({required int id, String status = 'approved', int perPage = 10}) async {
     String details = '&product=$id&status=$status&per_page=$perPage';
     return _getRequest(url: _urlProductReviews, details: details);
   }
 
-  createProductReview({
+  Future<dynamic> createProductReview({
     required BuildContext context,
     required int id,
     required String review,
@@ -183,43 +213,43 @@ class HttpRequest {
     return _postRequest(context: context, url: _urlProductReviews, body: body, statusCode: 201);
   }
 
-  signUp({required BuildContext context, required String email, required String password}) async {
+  Future<Future<dynamic>> signUp({required BuildContext context, required String email, required String password}) async {
     Map<String, String> body = {'username': email, 'email': email, 'password': password};
     return _postRequest(context: context, url: _urlSignUp, body: body, error: 'ایمیل وارد شده قبلا ثبت شده است');
   }
 
-  signIn({required BuildContext context, required String email, required String password}) async {
+  Future<Future<dynamic>> signIn({required BuildContext context, required String email, required String password}) async {
     Map<String, String> body = {'username': email, 'password': password};
     return _postRequest(context: context, url: _urlSignIn, body: body, error: 'اطلاعات ورود صحیح نمی‌باشد');
   }
 
-  sendVerifyCode({required BuildContext context, required String email}) {
+  Future<dynamic> sendVerifyCode({required BuildContext context, required String email}) {
     Map<String, dynamic> body = {'email': email};
     return _postRequest(context: context, url: _urlPasswordRecovery, body: body);
   }
 
-  passwordRecovery({required BuildContext context, required String email, required String code, required int password}) {
+  Future<dynamic> passwordRecovery({required BuildContext context, required String email, required String code, required int password}) {
     Map<String, dynamic> body = {'email': email, 'code': code, 'password': password};
     return _postRequest(context: context, url: _urlPasswordRecovery, body: body);
   }
 
-  getCustomer({required String email}) async {
+  Future<Future<dynamic>> getCustomer({required String email}) async {
     return _getRequest(url: _urlCustomers, details: '&email=$email');
   }
 
-  updateUser({required BuildContext context, required String firstname, required String lastname}) async {
+  Future<Future<dynamic>> updateUser({required BuildContext context, required String firstname, required String lastname}) async {
     AppCache cache = AppCache();
     Map<String, String> headers = {'Authorization': 'Bearer ${await cache.getString('token')}'};
     Map<String, String> body = {'first_name': firstname, 'last_name': lastname, 'name': '$firstname $lastname'};
     return _postRequest(context: context.mounted ? context : context, url: _urlUsers, id: (await cache.getInt('id')).toString(), body: body, headers: headers);
   }
 
-  updateCustomer({required String id, required String firstname, required String lastname, required String email}) async {
+  Future<Future<dynamic>> updateCustomer({required String id, required String firstname, required String lastname, required String email}) async {
     Map<String, String> body = {'first_name': firstname, 'last_name': lastname, 'email': email};
     return _putRequest(url: _urlCustomers, id: id, body: body);
   }
 
-  updateBillingAddress({
+  Future<Future<dynamic>> updateBillingAddress({
     required String id,
     required String firstname,
     required String lastname,
@@ -247,7 +277,7 @@ class HttpRequest {
     return _putRequest(url: _urlCustomers, id: id, body: {'billing': billing.toJson()});
   }
 
-  updateShippingAddress({
+  Future<Future<dynamic>> updateShippingAddress({
     required String id,
     required String firstname,
     required String lastname,
@@ -273,7 +303,7 @@ class HttpRequest {
     return _putRequest(url: _urlCustomers, id: id, body: {'shipping': shipping.toJson()});
   }
 
-  uploadAvatar({required BuildContext context, required String userId, required File avatar}) async {
+  Future<dynamic> uploadAvatar({required BuildContext context, required String userId, required File avatar}) async {
     final request = http.MultipartRequest('POST', Uri.parse(_urlUpload));
     request.fields['user_id'] = userId;
     request.files.add(http.MultipartFile('file', http.ByteStream(avatar.openRead()), await avatar.length(), filename: basename(avatar.path)));
@@ -292,21 +322,21 @@ class HttpRequest {
     }
   }
 
-  updateAvatar({required BuildContext context, required int userId, required String avatarUrl}) async {
+  Future<Future<dynamic>> updateAvatar({required BuildContext context, required int userId, required String avatarUrl}) async {
     AppCache cache = AppCache();
     Map<String, String> headers = {'Authorization': 'Bearer ${await cache.getString('token')}'};
     Map<String, dynamic> body = {'user_id': userId, 'avatar_url': avatarUrl};
     return _postRequest(context: context.mounted ? context : context, url: _urlUpdateAvatar, headers: headers, body: body);
   }
 
-  updatePassword({required BuildContext context, required int userId, required String currentPassword, required String newPassword}) async {
+  Future<Future<dynamic>> updatePassword({required BuildContext context, required int userId, required String currentPassword, required String newPassword}) async {
     AppCache cache = AppCache();
     Map<String, String> headers = {'Authorization': 'Bearer ${await cache.getString('token')}'};
     Map<String, dynamic> body = {'user_id': userId, 'current_password': currentPassword, 'new_password': newPassword};
     return _postRequest(context: context.mounted ? context : context, url: _urlUpdatePassword, headers: headers, body: body);
   }
 
-  createOrder({
+  Future<dynamic> createOrder({
     required BuildContext context,
     required int customerId,
     required String firstname,
@@ -356,7 +386,7 @@ class HttpRequest {
     return _postRequest(context: context, url: _urlOrders, body: body, statusCode: 201);
   }
 
-  getOrders() async {
+  Future<Future<dynamic>> getOrders() async {
     AppCache cache = AppCache();
     return _getRequest(url: _urlOrders, details: '&customer=${await cache.getInt('id')}');
   }

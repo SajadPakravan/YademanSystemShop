@@ -53,9 +53,7 @@ class ProductModel {
     ratingCount = json['rating_count'];
     if (json['categories'] != null) {
       categories = <ProductCategory>[];
-      json['categories'].forEach((v) {
-        categories!.add(ProductCategory.fromJson(v));
-      });
+      List.castFrom(json['categories']).forEach((v) => categories!.add(ProductCategory.fromJson(v)));
     }
     if (json['brands'] != null) {
       brands = <ProductBrand>[];
