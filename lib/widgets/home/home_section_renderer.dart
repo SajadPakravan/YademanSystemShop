@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/widgets/home/image_section.dart';
 import 'package:yad_sys/widgets/home/home_brand_section.dart';
-import 'package:yad_sys/widgets/home/home_category_section.dart';
+import 'package:yad_sys/widgets/home/category_section.dart';
 import 'package:yad_sys/widgets/home/products_section.dart';
 
 class HomeSectionRenderer extends StatelessWidget {
@@ -18,7 +18,7 @@ class HomeSectionRenderer extends StatelessWidget {
       case 'products':
         return ProductsSection(section: section);
       case 'category':
-        return HomeCategorySection(section: section);
+        return CategorySection(section: section);
       case 'brand':
         return HomeBrandSection(section: section);
       default:

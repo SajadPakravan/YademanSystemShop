@@ -14,35 +14,32 @@ class SectionHeader extends StatelessWidget {
     final hasViewAll = section.viewAll != null;
     if (!hasTitle && !hasViewAll) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (section.title.isNotEmpty)
-                  Text(
-                    section.title,
-                    style: TextStyle(color: textColor, fontSize: 17, fontWeight: FontWeight.bold),
-                  ),
-                if (section.subtitle.isNotEmpty) ...[
-                  const SizedBox(height: 3),
-                  Text(section.subtitle, style: TextStyle(color: textColor.withValues(alpha: 0.75), fontSize: 12)),
-                ],
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (section.title.isNotEmpty)
+                Text(
+                  section.title,
+                  style: TextStyle(color: textColor, fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+              if (section.subtitle.isNotEmpty) ...[
+                const SizedBox(height: 3),
+                Text(section.subtitle, style: TextStyle(color: textColor.withValues(alpha: 0.75), fontSize: 12)),
               ],
-            ),
+            ],
           ),
-          if (hasViewAll)
-            TextButton(
-              onPressed: () => SectionActionHandler.handle(context: context, action: section.viewAll!.action),
-              style: TextButton.styleFrom(foregroundColor: textColor),
-              child: Text(section.viewAll!.title),
-            ),
-        ],
-      ),
+        ),
+        if (hasViewAll)
+          TextButton(
+            onPressed: () => SectionActionHandler.handle(context: context, action: section.viewAll!.action),
+            style: TextButton.styleFrom(foregroundColor: textColor),
+            child: Text(section.viewAll!.title),
+          ),
+      ],
     );
   }
 }

@@ -15,28 +15,25 @@ class MenuSection extends StatelessWidget {
     final items = section.images;
     if (items.isEmpty) return const SizedBox.shrink();
 
-    final rows = section.layout.rows.clamp(1, 3).toInt();
-    final columns = section.layout.columns == 1 ? 4 : section.layout.columns.clamp(2, 6).toInt();
+    final rows = section.layout.rows;
+    final columns = section.layout.columns == 1 ? 5 : section.layout.columns;
     final width = MediaQuery.sizeOf(context).width;
-    final itemWidth = ((width - 20 - ((columns - 1) * 8)) / columns).clamp(76.0, 120.0).toDouble();
+    final itemWidth = ((width - 40 - ((columns - 1) * 8)) / columns).clamp(76.0, 120.0).toDouble();
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        children: [
-          SectionHeader(section: section),
-          SizedBox(
-            height: (rows * 118) + ((rows - 1) * 8),
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              scrollDirection: Axis.horizontal,
-              itemCount: items.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: rows, mainAxisSpacing: 8, crossAxisSpacing: 8, mainAxisExtent: itemWidth),
-              itemBuilder: (context, index) => _MenuCard(item: items[index]),
-            ),
+    return Column(
+      children: [
+        SectionHeader(section: section),
+        SizedBox(
+          height: (rows * 118) + ((rows - 1) * 8),
+          child: GridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            scrollDirection: Axis.horizontal,
+            itemCount: items.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: rows, mainAxisSpacing: 8, crossAxisSpacing: 8, mainAxisExtent: itemWidth),
+            itemBuilder: (context, index) => _MenuCard(item: items[index]),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -54,21 +51,17 @@ class _MenuCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         onTap: () => SectionActionHandler.handle(context: context, action: item.action),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 3),
           child: Column(
             children: [
-              Container(
-                width: 66,
-                height: 66,
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(color: const Color(0xfff1f6fc), borderRadius: BorderRadius.circular(16)),
-                child: item.image.isEmpty
-                    ? const Icon(Icons.apps_rounded, color: Color(0xff0353a4), size: 34)
-                    : CachedNetworkImage(
-                        imageUrl: item.image,
-                        fit: BoxFit.contain,
-                        errorWidget: (context, url, error) => const Icon(Icons.apps_rounded, color: Color(0xff0353a4), size: 34),
-                      ),
+              SizedBox(
+                width: 50,
+                height: 50,
+                child: CachedNetworkImage(
+                  imageUrl: item.image,
+                  fit: BoxFit.contain,
+                  errorWidget: (context, url, error) => const Icon(Icons.apps_rounded, color: Color(0xff0353a4), size: 34),
+                ),
               ),
               const SizedBox(height: 7),
               Expanded(

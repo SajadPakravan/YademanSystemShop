@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/product_card_model.dart';
+import 'package:yad_sys/themes/color_style.dart';
 import 'package:yad_sys/tools/go_page.dart';
 
 class ProductCardWidget extends StatelessWidget {
