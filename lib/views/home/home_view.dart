@@ -82,8 +82,8 @@ class HomeView extends StatelessWidget {
         RefreshIndicator(
           onRefresh: onRefresh,
           child: ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-            padding: const EdgeInsets.only(top: 4, bottom: 24),
+            padding: const EdgeInsets.only(top: 0, bottom: 24),
+            physics: AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
             itemCount: sections.length,
             itemBuilder: (context, index) => HomeSectionRenderer(
               key: ValueKey(sections[index].id),
