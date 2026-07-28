@@ -14,26 +14,23 @@ class MenuSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = section.images;
     if (items.isEmpty) return const SizedBox.shrink();
-
     final rows = section.layout.rows;
     final columns = section.layout.columns == 1 ? 5 : section.layout.columns;
     final width = MediaQuery.sizeOf(context).width;
     final itemWidth = ((width - 40 - ((columns - 1) * 8)) / columns).clamp(76.0, 120.0).toDouble();
+    final Color backgroundColor =Colors.grey.shade100;
 
-    return Column(
-      children: [
-        SectionHeader(section: section),
-        SizedBox(
-          height: (rows * 118) + ((rows - 1) * 8),
-          child: GridView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            scrollDirection: Axis.horizontal,
-            itemCount: items.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: rows, mainAxisSpacing: 8, crossAxisSpacing: 8, mainAxisExtent: itemWidth),
-            itemBuilder: (context, index) => _MenuCard(item: items[index]),
-          ),
-        ),
-      ],
+    return Container(
+      height: (rows * 107) + ((rows - 1) * 8),
+      margin: EdgeInsets.symmetric(horizontal: 10),
+      padding: EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(color: backgroundColor,border: BoxBorder.all(color: Colors.grey.shade400),borderRadius: BorderRadius.circular(10)),
+      child: GridView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: items.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: rows, mainAxisSpacing: 8, crossAxisSpacing: 8, mainAxisExtent: itemWidth),
+        itemBuilder: (context, index) => _MenuCard(item: items[index]),
+      ),
     );
   }
 }
@@ -53,6 +50,7 @@ class _MenuCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 3),
           child: Column(
+            spacing: 5,
             children: [
               SizedBox(
                 width: 50,
@@ -63,7 +61,6 @@ class _MenuCard extends StatelessWidget {
                   errorWidget: (context, url, error) => const Icon(Icons.apps_rounded, color: Color(0xff0353a4), size: 34),
                 ),
               ),
-              const SizedBox(height: 7),
               Expanded(
                 child: Text(
                   item.title,

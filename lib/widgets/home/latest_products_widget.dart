@@ -21,7 +21,7 @@ class LatestProductsWidget extends StatelessWidget {
     final verticalPadding = (screenWidth * 0.025).clamp(8.0, 12.0).toDouble();
     final spacing = (screenWidth * 0.02).clamp(8.0, 12.0).toDouble();
     final cardWidth = (screenWidth * 0.72).clamp(250.0, 420.0).toDouble();
-    final cardHeight = (cardWidth * 0.3).clamp(148.0, 225.0).toDouble();
+    final cardHeight = (cardWidth * 0.3).clamp(125.0, 225.0).toDouble();
     final sectionHeight = (cardHeight * rows) + (spacing * (rows - 1)) + (verticalPadding * 2);
 
     return SizedBox(

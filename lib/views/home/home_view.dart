@@ -31,14 +31,7 @@ class HomeView extends StatelessWidget {
         body: NestedScrollView(
           floatHeaderSlivers: true,
           headerSliverBuilder: (context, innerBoxIsScrolled) => const [
-            SliverAppBar(
-              floating: true,
-              snap: true,
-              backgroundColor: Colors.white,
-              surfaceTintColor: Colors.white,
-              titleSpacing: 10,
-              title: Search(),
-            ),
+            SliverAppBar(floating: true, snap: true, backgroundColor: Colors.white, surfaceTintColor: Colors.white, titleSpacing: 10, title: Search()),
           ],
           body: _body(context),
         ),
@@ -59,18 +52,10 @@ class HomeView extends StatelessWidget {
             SizedBox(height: MediaQuery.sizeOf(context).height * 0.16),
             const Icon(Icons.cloud_off_outlined, color: Colors.black38, size: 72),
             const SizedBox(height: 18),
-            Text(
-              errorMessage,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, height: 1.8),
-            ),
+            Text(errorMessage, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, height: 1.8)),
             const SizedBox(height: 18),
             Center(
-              child: FilledButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: const Text('تلاش دوباره'),
-              ),
+              child: FilledButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: const Text('تلاش دوباره')),
             ),
           ],
         ),
@@ -82,22 +67,13 @@ class HomeView extends StatelessWidget {
         RefreshIndicator(
           onRefresh: onRefresh,
           child: ListView.builder(
-            padding: const EdgeInsets.only(top: 0, bottom: 24),
+            padding: const EdgeInsets.only(bottom: 20),
             physics: AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
             itemCount: sections.length,
-            itemBuilder: (context, index) => HomeSectionRenderer(
-              key: ValueKey(sections[index].id),
-              section: sections[index],
-            ),
+            itemBuilder: (context, index) => HomeSectionRenderer(section: sections[index]),
           ),
         ),
-        if (isRefreshing)
-          const Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: LinearProgressIndicator(minHeight: 2),
-          ),
+        if (isRefreshing) const Positioned(top: 0, left: 0, right: 0, child: LinearProgressIndicator(minHeight: 2)),
       ],
     );
   }

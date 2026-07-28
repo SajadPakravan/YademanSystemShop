@@ -25,7 +25,7 @@ class ProductsSection extends StatelessWidget {
     } else {
       return Column(
         children: [
-          SectionHeader(section: section, textColor: Colors.black87),
+          SectionHeader(section: section),
           if (isLatest) LatestProductsWidget(section: section, products: products) else _ProductCarousel(section: section, products: products),
         ],
       );

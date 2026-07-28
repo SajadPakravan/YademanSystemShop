@@ -3,11 +3,9 @@ import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
 
 class SectionHeader extends StatelessWidget {
-  const SectionHeader({super.key, required this.section, this.textColor = Colors.black87, this.backgroundColor = Colors.grey});
+  const SectionHeader({super.key, required this.section});
 
   final SectionModel section;
-  final Color textColor;
-  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -16,21 +14,21 @@ class SectionHeader extends StatelessWidget {
     final hasTitle = title.isNotEmpty;
     final hasSubtitle = subtitle.isNotEmpty;
     final hasViewAll = section.viewAll != null;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final horizontalPadding = (screenWidth * 0.03).clamp(12.0, 20.0).toDouble();
+    final titleFontSize = (screenWidth * 0.035).clamp(16.0, 19.0).toDouble();
+    final subtitleFontSize = (screenWidth * 0.03).clamp(11.5, 13.0).toDouble();
+    final Color textColor = Colors.black87;
+    final Color backgroundColor =Colors.grey.shade100;
 
     if (!hasTitle && !hasViewAll) {
       return const SizedBox.shrink();
     }
 
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final horizontalPadding = (screenWidth * 0.035).clamp(12.0, 20.0).toDouble();
-    final titleFontSize = (screenWidth * 0.043).clamp(16.0, 19.0).toDouble();
-    final subtitleFontSize = (screenWidth * 0.031).clamp(11.5, 13.0).toDouble();
-
     return Container(
       width: double.infinity,
-      constraints: BoxConstraints(minHeight: hasSubtitle ? 68 : 54),
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: hasSubtitle ? 9 : 5),
-      color: backgroundColor,
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
+      decoration: BoxDecoration(color: backgroundColor,border: BoxBorder.fromLTRB(top:BorderSide(color: Colors.grey.shade400))),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -94,22 +92,19 @@ class _ViewAllButton extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(10),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 44),
-          child: Padding(
-            padding: const EdgeInsetsDirectional.only(start: 10, end: 2),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  title.trim().isEmpty ? 'مشاهده همه' : title.trim(),
-                  style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(width: 7),
-                Icon(Icons.arrow_forward_ios_rounded, color: textColor, size: 22),
-              ],
-            ),
+        child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                title.trim().isEmpty ? 'مشاهده همه' : title.trim(),
+                style: TextStyle(color: textColor, fontSize: 12, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(width: 7),
+              Icon(Icons.arrow_forward_ios_rounded, color: textColor, size: 22),
+            ],
           ),
         ),
       ),

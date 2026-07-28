@@ -18,8 +18,9 @@ class _ImageSliderState extends State<ImageSlider> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Stack(
+        alignment: AlignmentGeometry.bottomCenter,
         children: [
           CarouselSlider.builder(
             itemCount: widget.items.length,
@@ -38,19 +39,21 @@ class _ImageSliderState extends State<ImageSlider> {
               onPageChanged: (index, reason) => setState(() => widget.currentIndex = index),
             ),
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              widget.items.length,
-                  (index) => AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: index == widget.currentIndex ? 18 : 7,
-                height: 7,
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                decoration: BoxDecoration(
-                  color: index == widget.currentIndex ? const Color(0xff0353a4) : Colors.black26,
-                  borderRadius: BorderRadius.circular(20),
+          Positioned(
+            bottom: 10,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.items.length,
+                    (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: index == widget.currentIndex ? 18 : 7,
+                  height: 7,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    color: index == widget.currentIndex ? const Color(0xff0353a4) : Colors.black26,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
               ),
             ),
