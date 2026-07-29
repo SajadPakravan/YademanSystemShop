@@ -12,6 +12,21 @@ class HomeSectionRenderer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsetsGeometry.only(bottom: 15),
+      child: section.type != 'image'
+          ? Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                border: BoxBorder.symmetric(horizontal: BorderSide(color: Colors.grey.shade400)),
+              ),
+              child: content(),
+            )
+          : content(),
+    );
+  }
+
+  Widget content() {
     switch (section.type) {
       case 'image':
         return ImageSection(section: section);

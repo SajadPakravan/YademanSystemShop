@@ -19,7 +19,6 @@ class SectionHeader extends StatelessWidget {
     final titleFontSize = (screenWidth * 0.035).clamp(16.0, 19.0).toDouble();
     final subtitleFontSize = (screenWidth * 0.03).clamp(11.5, 13.0).toDouble();
     final Color textColor = Colors.black87;
-    final Color backgroundColor =Colors.grey.shade100;
 
     if (!hasTitle && !hasViewAll) {
       return const SizedBox.shrink();
@@ -28,7 +27,6 @@ class SectionHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
-      decoration: BoxDecoration(color: backgroundColor,border: BoxBorder.fromLTRB(top:BorderSide(color: Colors.grey.shade400))),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

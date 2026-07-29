@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:yad_sys/models/image_item_model.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
-import 'package:yad_sys/widgets/home/section_header.dart';
 
 class MenuSection extends StatelessWidget {
   const MenuSection({super.key, required this.section});
@@ -22,9 +21,9 @@ class MenuSection extends StatelessWidget {
 
     return Container(
       height: (rows * 107) + ((rows - 1) * 8),
-      margin: EdgeInsets.symmetric(horizontal: 10),
+      margin: EdgeInsets.symmetric(horizontal: 12),
       padding: EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(color: backgroundColor,border: BoxBorder.all(color: Colors.grey.shade400),borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(color: backgroundColor,border: BoxBorder.all(color: Colors.grey.shade400),borderRadius: BorderRadius.circular(width * 0.08)),
       child: GridView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: items.length,

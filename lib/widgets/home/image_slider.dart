@@ -17,49 +17,46 @@ class ImageSlider extends StatefulWidget {
 class _ImageSliderState extends State<ImageSlider> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Stack(
-        alignment: AlignmentGeometry.bottomCenter,
-        children: [
-          CarouselSlider.builder(
-            itemCount: widget.items.length,
-            itemBuilder: (context, index, realIndex) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: _BannerCard(imageItem: widget.items[index]),
-              );
-            },
-            options: CarouselOptions(
-              aspectRatio: 16 / 9,
-              viewportFraction: 1,
-              autoPlay: true,
-              autoPlayInterval: const Duration(seconds: 5),
-              autoPlayAnimationDuration: const Duration(milliseconds: 450),
-              onPageChanged: (index, reason) => setState(() => widget.currentIndex = index),
-            ),
+    return Stack(
+      alignment: AlignmentGeometry.bottomCenter,
+      children: [
+        CarouselSlider.builder(
+          itemCount: widget.items.length,
+          itemBuilder: (context, index, realIndex) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: _BannerCard(imageItem: widget.items[index]),
+            );
+          },
+          options: CarouselOptions(
+            aspectRatio: 16 / 9,
+            viewportFraction: 1,
+            autoPlay: true,
+            autoPlayInterval: const Duration(seconds: 3),
+            autoPlayAnimationDuration: const Duration(milliseconds: 450),
+            onPageChanged: (index, reason) => setState(() => widget.currentIndex = index),
           ),
-          Positioned(
-            bottom: 10,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                widget.items.length,
-                    (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: index == widget.currentIndex ? 18 : 7,
-                  height: 7,
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  decoration: BoxDecoration(
-                    color: index == widget.currentIndex ? const Color(0xff0353a4) : Colors.black26,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+        ),
+        Positioned(
+          bottom: 10,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              widget.items.length,
+                  (index) => AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: index == widget.currentIndex ? 18 : 7,
+                height: 7,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                decoration: BoxDecoration(
+                  color: index == widget.currentIndex ? const Color(0xff0353a4) : Colors.black26,
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/product_card_model.dart';
 import 'package:yad_sys/models/section_model.dart';
+import 'package:yad_sys/tools/section_action_handler.dart';
 import 'package:yad_sys/widgets/cards/product_horizontal_card_widget.dart';
+import 'package:yad_sys/widgets/cards/view_all_widget.dart';
 
 class LatestProductsWidget extends StatelessWidget {
   const LatestProductsWidget({super.key, required this.section, required this.products});
@@ -23,27 +25,33 @@ class LatestProductsWidget extends StatelessWidget {
     final cardWidth = (screenWidth * 0.72).clamp(250.0, 420.0).toDouble();
     final cardHeight = (cardWidth * 0.3).clamp(125.0, 225.0).toDouble();
     final sectionHeight = (cardHeight * rows) + (spacing * (rows - 1)) + (verticalPadding * 2);
+    final viewAll = section.viewAll!;
 
     return SizedBox(
       width: double.infinity,
       height: sectionHeight,
-      child: ColoredBox(
-        color: Colors.grey.shade100,
-        child: GridView.builder(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalPadding),
-          primary: false,
-          itemCount: products.length,
-          scrollDirection: Axis.horizontal,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: rows,
-            mainAxisSpacing: spacing,
-            crossAxisSpacing: spacing,
-            mainAxisExtent: cardWidth,
+      child: Row(
+        children: [
+          ViewAllWidget(
+            title: viewAll.title,
+            onTap: () => SectionActionHandler.handle(context: context, action: viewAll.action),
           ),
-          itemBuilder: (context, index) {
-            return ProductHorizontalCardWidget(product: products[index]);
-          },
-        ),
+          GridView.builder(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalPadding),
+            primary: false,
+            itemCount: products.length,
+            scrollDirection: Axis.horizontal,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: rows,
+              mainAxisSpacing: spacing,
+              crossAxisSpacing: spacing,
+              mainAxisExtent: cardWidth,
+            ),
+            itemBuilder: (context, index) {
+              return ProductHorizontalCardWidget(product: products[index]);
+            },
+          ),
+        ],
       ),
     );
   }

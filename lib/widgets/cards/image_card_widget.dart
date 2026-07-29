@@ -12,7 +12,6 @@ class ImageCardWidget extends StatelessWidget {
   final SectionModel section;
 
   static const double _horizontalPadding = 10;
-  static const double _verticalPadding = 8;
   static const double _spacing = 8;
   static const double _borderRadius = 14;
 
@@ -34,7 +33,7 @@ class ImageCardWidget extends StatelessWidget {
         final itemHeight = (itemWidth / aspectRatio).clamp(90.0, 420.0).toDouble();
 
         return GridView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding, vertical: _verticalPadding),
+          padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
           shrinkWrap: true,
           primary: false,
           physics: const NeverScrollableScrollPhysics(),
