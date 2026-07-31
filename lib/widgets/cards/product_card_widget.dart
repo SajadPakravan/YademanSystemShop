@@ -65,6 +65,10 @@ class ProductCardWidget extends StatelessWidget {
       return const BorderRadius.only(topRight: Radius.circular(12), bottomRight: Radius.circular(12));
     }
 
+    if(index == length - 1) {
+      return const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12));
+    }
+
     return BorderRadius.zero;
   }
 

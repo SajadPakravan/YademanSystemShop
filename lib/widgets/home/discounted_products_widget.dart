@@ -98,6 +98,7 @@ class _DiscountedProductsWidgetState extends State<DiscountedProductsWidget> {
               return ViewAllWidget(
                 title: viewAll.title,
                 onTap: () => SectionActionHandler.handle(context: context, action: viewAll.action),
+                foregroundColor: Colors.white,
               );
             },
           ),

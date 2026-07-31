@@ -17,24 +17,15 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
-  static const Duration _minimumSplashDuration =
-      Duration(milliseconds: 3200);
-
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+  static const Duration _minimumSplashDuration = Duration(milliseconds: 3200);
   final HttpRequest _httpRequest = HttpRequest();
-
   late final AnimationController _logoController;
   late final AnimationController _backgroundController;
   late final MemoryImage _logoImage;
   late final DateTime _startedAt;
-
-  StreamSubscription<InternetConnectionStatus>?
-      _connectionSubscription;
-
-  _SplashConnectionState _connectionState =
-      _SplashConnectionState.checking;
-
+  StreamSubscription<InternetConnectionStatus>? _connectionSubscription;
+  _SplashConnectionState _connectionState = _SplashConnectionState.checking;
   bool _checkingConnection = false;
   bool _navigated = false;
 
@@ -43,42 +34,19 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
 
     _startedAt = DateTime.now();
-    _logoImage = MemoryImage(
-      base64Decode(kYademanSplashLogoBase64),
-    );
-
-    _logoController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2850),
-    )..forward();
-
-    _backgroundController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 18),
-    )..repeat();
-
-    SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.manual,
-      overlays: const [],
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startConnectionMonitoring();
-    });
+    _logoImage = MemoryImage(base64Decode(kYademanSplashLogoBase64));
+    _logoController = AnimationController(vsync: this, duration: const Duration(milliseconds: 2850))..forward();
+    _backgroundController = AnimationController(vsync: this, duration: const Duration(seconds: 18))..repeat();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: const []);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startConnectionMonitoring());
   }
 
   Future<void> _startConnectionMonitoring() async {
-    _connectionSubscription =
-        InternetConnectionChecker.instance.onStatusChange.listen(
-      _handleConnectionStatus,
-    );
-
+    _connectionSubscription = InternetConnectionChecker.instance.onStatusChange.listen(_handleConnectionStatus);
     await _checkConnection();
   }
 
-  void _handleConnectionStatus(
-    InternetConnectionStatus status,
-  ) {
+  void _handleConnectionStatus(InternetConnectionStatus status) {
     if (!mounted || _navigated) {
       return;
     }
@@ -102,8 +70,7 @@ class _SplashScreenState extends State<SplashScreen>
     _setConnectionState(_SplashConnectionState.checking);
 
     try {
-      final hasInternet =
-          await InternetConnectionChecker.instance.hasConnection;
+      final hasInternet = await InternetConnectionChecker.instance.hasConnection;
 
       if (!mounted || _navigated) {
         return;
@@ -114,29 +81,23 @@ class _SplashScreenState extends State<SplashScreen>
         return;
       }
 
-      // endpoint عمومی صفحه خانه برای بررسی واقعی دسترسی به سرور.
       final dynamic result = await _httpRequest.getHome();
 
       if (!mounted || _navigated) {
         return;
       }
 
-      final bool serverIsAvailable =
-          result is Map && result['success'] != false;
+      final bool serverIsAvailable = result is Map && result['success'] != false;
 
       if (!serverIsAvailable) {
-        _setConnectionState(
-          _SplashConnectionState.serverUnavailable,
-        );
+        _setConnectionState(_SplashConnectionState.serverUnavailable);
         return;
       }
 
       await _completeSplashAndNavigate();
     } catch (_) {
       if (mounted && !_navigated) {
-        _setConnectionState(
-          _SplashConnectionState.serverUnavailable,
-        );
+        _setConnectionState(_SplashConnectionState.serverUnavailable);
       }
     } finally {
       _checkingConnection = false;
@@ -156,20 +117,14 @@ class _SplashScreenState extends State<SplashScreen>
     }
 
     _setConnectionState(_SplashConnectionState.connected);
-    await Future<void>.delayed(
-      const Duration(milliseconds: 520),
-    );
+    await Future<void>.delayed(const Duration(milliseconds: 520));
 
     if (!mounted || _navigated) {
       return;
     }
 
     _navigated = true;
-    Get.offAll(
-      const MainScreen(),
-      transition: Transition.fade,
-      duration: const Duration(milliseconds: 650),
-    );
+    Get.offAll(const MainScreen(), transition: Transition.fade, duration: const Duration(milliseconds: 650));
   }
 
   void _setConnectionState(_SplashConnectionState value) {
@@ -196,11 +151,7 @@ class _SplashScreenState extends State<SplashScreen>
     final size = mediaQuery.size;
     final compact = size.height < 680;
     final reduceMotion = mediaQuery.disableAnimations;
-
-    final logoSize = math.min(
-      size.width * (compact ? 0.62 : 0.70),
-      size.height * (compact ? 0.40 : 0.43),
-    ).clamp(205.0, 390.0).toDouble();
+    final logoSize = math.min(size.width * (compact ? 0.62 : 0.70), size.height * (compact ? 0.40 : 0.43)).clamp(205.0, 390.0).toDouble();
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -214,42 +165,22 @@ class _SplashScreenState extends State<SplashScreen>
               child: AnimatedBuilder(
                 animation: _backgroundController,
                 builder: (context, child) {
-                  return CustomPaint(
-                    painter: _TechBackgroundPainter(
-                      progress: reduceMotion
-                          ? 0.16
-                          : _backgroundController.value,
-                    ),
-                  );
+                  return CustomPaint(painter: _TechBackgroundPainter(progress: reduceMotion ? 0.16 : _backgroundController.value));
                 },
               ),
             ),
             const _BackgroundVignette(),
             SafeArea(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  18,
-                  compact ? 10 : 18,
-                  18,
-                  compact ? 12 : 20,
-                ),
+                padding: EdgeInsets.fromLTRB(18, compact ? 10 : 18, 18, compact ? 12 : 20),
                 child: Column(
                   children: [
                     const Spacer(),
-                    _AnimatedBrandLogo(
-                      size: logoSize,
-                      imageProvider: _logoImage,
-                      controller: _logoController,
-                      reduceMotion: reduceMotion,
-                    ),
+                    _AnimatedBrandLogo(size: logoSize, imageProvider: _logoImage, controller: _logoController, reduceMotion: reduceMotion),
                     SizedBox(height: compact ? 10 : 16),
                     _BrandCaption(compact: compact),
                     const Spacer(),
-                    _ConnectionPanel(
-                      state: _connectionState,
-                      compact: compact,
-                      onRetry: _checkConnection,
-                    ),
+                    _ConnectionPanel(state: _connectionState, compact: compact, onRetry: _checkConnection),
                   ],
                 ),
               ),
@@ -261,12 +192,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-enum _SplashConnectionState {
-  checking,
-  connected,
-  offline,
-  serverUnavailable,
-}
+enum _SplashConnectionState { checking, connected, offline, serverUnavailable }
 
 class _SplashGradientBackground extends StatelessWidget {
   const _SplashGradientBackground();
@@ -278,12 +204,7 @@ class _SplashGradientBackground extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
-          colors: [
-            Color(0xff0874d8),
-            Color(0xff0457a8),
-            Color(0xff033b78),
-            Color(0xff021c3c),
-          ],
+          colors: [Color(0xff0874d8), Color(0xff0457a8), Color(0xff033b78), Color(0xff021c3c)],
           stops: [0, 0.34, 0.68, 1],
         ),
       ),
@@ -301,11 +222,7 @@ class _BackgroundVignette extends StatelessWidget {
         gradient: RadialGradient(
           center: Alignment(0, -0.08),
           radius: 1.05,
-          colors: [
-            Color(0x0019baff),
-            Color(0x18000f25),
-            Color(0x76000b1d),
-          ],
+          colors: [Color(0x0019baff), Color(0x18000f25), Color(0x76000b1d)],
           stops: [0, 0.64, 1],
         ),
       ),
@@ -325,22 +242,13 @@ class _BrandCaption extends StatelessWidget {
         Text(
           'فروشگاه تخصصی محصولات دیجیتال',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: compact ? 14 : 16,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.2,
-          ),
+          style: TextStyle(color: Colors.white, fontSize: compact ? 14 : 16, fontWeight: FontWeight.w800, letterSpacing: -0.2),
         ),
         const SizedBox(height: 5),
         Text(
           'انتخاب هوشمند، خرید مطمئن',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.72),
-            fontSize: compact ? 11 : 12.5,
-            fontWeight: FontWeight.w500,
-          ),
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: compact ? 11 : 12.5, fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -348,12 +256,7 @@ class _BrandCaption extends StatelessWidget {
 }
 
 class _AnimatedBrandLogo extends StatelessWidget {
-  const _AnimatedBrandLogo({
-    required this.size,
-    required this.imageProvider,
-    required this.controller,
-    required this.reduceMotion,
-  });
+  const _AnimatedBrandLogo({required this.size, required this.imageProvider, required this.controller, required this.reduceMotion});
 
   final double size;
   final ImageProvider imageProvider;
@@ -368,36 +271,11 @@ class _AnimatedBrandLogo extends StatelessWidget {
         builder: (context, child) {
           final value = reduceMotion ? 1.0 : controller.value;
 
-          final laptop = _interval(
-            value,
-            0.02,
-            0.30,
-            Curves.easeOutBack,
-          );
-          final yademan = _interval(
-            value,
-            0.24,
-            0.56,
-            Curves.easeOutCubic,
-          );
-          final system = _interval(
-            value,
-            0.44,
-            0.70,
-            Curves.easeOutCubic,
-          );
-          final frame = _interval(
-            value,
-            0.58,
-            0.92,
-            Curves.easeInOutCubic,
-          );
-          final finalLogo = _interval(
-            value,
-            0.88,
-            1.0,
-            Curves.easeOut,
-          );
+          final laptop = _interval(value, 0.02, 0.30, Curves.easeOutBack);
+          final yademan = _interval(value, 0.24, 0.56, Curves.easeOutCubic);
+          final system = _interval(value, 0.44, 0.70, Curves.easeOutCubic);
+          final frame = _interval(value, 0.58, 0.92, Curves.easeInOutCubic);
+          final finalLogo = _interval(value, 0.88, 1.0, Curves.easeOut);
 
           return Container(
             width: size,
@@ -406,18 +284,12 @@ class _AnimatedBrandLogo extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xff001127)
-                      .withValues(alpha: 0.38),
+                  color: const Color(0xff001127).withValues(alpha: 0.38),
                   blurRadius: size * 0.10,
                   spreadRadius: size * 0.012,
                   offset: Offset(0, size * 0.045),
                 ),
-                BoxShadow(
-                  color: const Color(0xff49ddff)
-                      .withValues(alpha: 0.16),
-                  blurRadius: size * 0.11,
-                  spreadRadius: size * 0.006,
-                ),
+                BoxShadow(color: const Color(0xff49ddff).withValues(alpha: 0.16), blurRadius: size * 0.11, spreadRadius: size * 0.006),
               ],
             ),
             child: Stack(
@@ -428,72 +300,29 @@ class _AnimatedBrandLogo extends StatelessWidget {
                   child: Opacity(
                     opacity: laptop.clamp(0.0, 1.0),
                     child: ClipRect(
-                      clipper: const _LogoRegionClipper(
-                        region: Rect.fromLTWH(
-                          0.13,
-                          0.07,
-                          0.74,
-                          0.57,
-                        ),
-                      ),
-                      child: Image(
-                        image: imageProvider,
-                        fit: BoxFit.contain,
-                        filterQuality: FilterQuality.high,
-                      ),
+                      clipper: const _LogoRegionClipper(region: Rect.fromLTWH(0.13, 0.07, 0.74, 0.57)),
+                      child: Image(image: imageProvider, fit: BoxFit.contain, filterQuality: FilterQuality.high),
                     ),
                   ),
                 ),
                 Transform.translate(
                   offset: Offset(0, 10 * (1 - yademan)),
                   child: ClipRect(
-                    clipper: _LogoWritingClipper(
-                      region: const Rect.fromLTWH(
-                        0.08,
-                        0.63,
-                        0.84,
-                        0.17,
-                      ),
-                      progress: yademan,
-                    ),
-                    child: Image(
-                      image: imageProvider,
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.high,
-                    ),
+                    clipper: _LogoWritingClipper(region: const Rect.fromLTWH(0.08, 0.63, 0.84, 0.17), progress: yademan),
+                    child: Image(image: imageProvider, fit: BoxFit.contain, filterQuality: FilterQuality.high),
                   ),
                 ),
                 Transform.translate(
                   offset: Offset(0, 8 * (1 - system)),
                   child: ClipRect(
-                    clipper: _LogoWritingClipper(
-                      region: const Rect.fromLTWH(
-                        0.25,
-                        0.79,
-                        0.50,
-                        0.12,
-                      ),
-                      progress: system,
-                    ),
-                    child: Image(
-                      image: imageProvider,
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.high,
-                    ),
+                    clipper: _LogoWritingClipper(region: const Rect.fromLTWH(0.25, 0.79, 0.50, 0.12), progress: system),
+                    child: Image(image: imageProvider, fit: BoxFit.contain, filterQuality: FilterQuality.high),
                   ),
                 ),
-                CustomPaint(
-                  painter: _LogoFramePainter(
-                    progress: frame,
-                  ),
-                ),
+                CustomPaint(painter: _LogoFramePainter(progress: frame)),
                 Opacity(
                   opacity: finalLogo,
-                  child: Image(
-                    image: imageProvider,
-                    fit: BoxFit.contain,
-                    filterQuality: FilterQuality.high,
-                  ),
+                  child: Image(image: imageProvider, fit: BoxFit.contain, filterQuality: FilterQuality.high),
                 ),
               ],
             ),
@@ -503,14 +332,8 @@ class _AnimatedBrandLogo extends StatelessWidget {
     );
   }
 
-  static double _interval(
-    double value,
-    double begin,
-    double end,
-    Curve curve,
-  ) {
-    final normalized =
-        ((value - begin) / (end - begin)).clamp(0.0, 1.0);
+  static double _interval(double value, double begin, double end, Curve curve) {
+    final normalized = ((value - begin) / (end - begin)).clamp(0.0, 1.0);
     return curve.transform(normalized.toDouble());
   }
 }
@@ -522,12 +345,7 @@ class _LogoRegionClipper extends CustomClipper<Rect> {
 
   @override
   Rect getClip(Size size) {
-    return Rect.fromLTRB(
-      region.left * size.width,
-      region.top * size.height,
-      region.right * size.width,
-      region.bottom * size.height,
-    );
+    return Rect.fromLTRB(region.left * size.width, region.top * size.height, region.right * size.width, region.bottom * size.height);
   }
 
   @override
@@ -537,39 +355,21 @@ class _LogoRegionClipper extends CustomClipper<Rect> {
 }
 
 class _LogoWritingClipper extends CustomClipper<Rect> {
-  const _LogoWritingClipper({
-    required this.region,
-    required this.progress,
-  });
+  const _LogoWritingClipper({required this.region, required this.progress});
 
   final Rect region;
   final double progress;
 
   @override
   Rect getClip(Size size) {
-    final target = Rect.fromLTRB(
-      region.left * size.width,
-      region.top * size.height,
-      region.right * size.width,
-      region.bottom * size.height,
-    );
-
-    final visibleWidth = target.width *
-        progress.clamp(0.0, 1.0).toDouble();
-
-    // متن انگلیسی لوگو از چپ به راست کشف می‌شود.
-    return Rect.fromLTWH(
-      target.left,
-      target.top,
-      visibleWidth,
-      target.height,
-    );
+    final target = Rect.fromLTRB(region.left * size.width, region.top * size.height, region.right * size.width, region.bottom * size.height);
+    final visibleWidth = target.width * progress.clamp(0.0, 1.0).toDouble();
+    return Rect.fromLTWH(target.left, target.top, visibleWidth, target.height);
   }
 
   @override
   bool shouldReclip(covariant _LogoWritingClipper oldClipper) {
-    return oldClipper.progress != progress ||
-        oldClipper.region != region;
+    return oldClipper.progress != progress || oldClipper.region != region;
   }
 }
 
@@ -590,15 +390,7 @@ class _LogoFramePainter extends CustomPainter {
     final radius = size.shortestSide * 0.444;
     final rect = Rect.fromCircle(center: center, radius: radius);
 
-    final gradient = const SweepGradient(
-      colors: [
-        Color(0xff223442),
-        Color(0xff45bdd7),
-        Color(0xffd7d94d),
-        Color(0xff6f914f),
-        Color(0xff223442),
-      ],
-    );
+    final gradient = const SweepGradient(colors: [Color(0xff223442), Color(0xff45bdd7), Color(0xffd7d94d), Color(0xff6f914f), Color(0xff223442)]);
 
     final outerPaint = Paint()
       ..style = PaintingStyle.stroke
@@ -606,44 +398,20 @@ class _LogoFramePainter extends CustomPainter {
       ..strokeWidth = size.shortestSide * 0.022
       ..shader = gradient.createShader(rect);
 
-    canvas.drawArc(
-      rect,
-      -math.pi / 2,
-      math.pi * 2 * p,
-      false,
-      outerPaint,
-    );
+    canvas.drawArc(rect, -math.pi / 2, math.pi * 2 * p, false, outerPaint);
 
     final innerPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = size.shortestSide * 0.012
-      ..color = const Color(0xff1f303d)
-          .withValues(alpha: 0.92 * p);
+      ..color = const Color(0xff1f303d).withValues(alpha: 0.92 * p);
 
-    canvas.drawArc(
-      Rect.fromCircle(
-        center: center,
-        radius: radius * 0.93,
-      ),
-      math.pi / 2,
-      -math.pi * 2 * p,
-      false,
-      innerPaint,
-    );
+    canvas.drawArc(Rect.fromCircle(center: center, radius: radius * 0.93), math.pi / 2, -math.pi * 2 * p, false, innerPaint);
 
     final headAngle = -math.pi / 2 + (math.pi * 2 * p);
-    final head = Offset(
-      center.dx + math.cos(headAngle) * radius,
-      center.dy + math.sin(headAngle) * radius,
-    );
+    final head = Offset(center.dx + math.cos(headAngle) * radius, center.dy + math.sin(headAngle) * radius);
 
-    canvas.drawCircle(
-      head,
-      size.shortestSide * 0.014,
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.92 * p),
-    );
+    canvas.drawCircle(head, size.shortestSide * 0.014, Paint()..color = Colors.white.withValues(alpha: 0.92 * p));
   }
 
   @override
@@ -653,11 +421,7 @@ class _LogoFramePainter extends CustomPainter {
 }
 
 class _ConnectionPanel extends StatelessWidget {
-  const _ConnectionPanel({
-    required this.state,
-    required this.compact,
-    required this.onRetry,
-  });
+  const _ConnectionPanel({required this.state, required this.compact, required this.onRetry});
 
   final _SplashConnectionState state;
   final bool compact;
@@ -675,37 +439,28 @@ class _ConnectionPanel extends StatelessWidget {
         transitionBuilder: (child, animation) {
           return FadeTransition(
             opacity: animation,
-            child: ScaleTransition(
-              scale: Tween<double>(begin: 0.96, end: 1)
-                  .animate(animation),
-              child: child,
-            ),
+            child: ScaleTransition(scale: Tween<double>(begin: 0.96, end: 1).animate(animation), child: child),
           );
         },
         child: switch (state) {
-          _SplashConnectionState.checking =>
-            _CheckingConnectionCard(compact: compact),
-          _SplashConnectionState.connected =>
-            _ConnectedCard(compact: compact),
+          _SplashConnectionState.checking => _CheckingConnectionCard(compact: compact),
+          _SplashConnectionState.connected => _ConnectedCard(compact: compact),
           _SplashConnectionState.offline => _ConnectionErrorCard(
-              key: const ValueKey('offline'),
-              compact: compact,
-              icon: Icons.wifi_off_rounded,
-              title: 'اینترنت در دسترس نیست',
-              message:
-                  'اتصال اینترنت را بررسی کنید و سپس دوباره تلاش کنید.',
-              onRetry: onRetry,
-            ),
-          _SplashConnectionState.serverUnavailable =>
-            _ConnectionErrorCard(
-              key: const ValueKey('server'),
-              compact: compact,
-              icon: Icons.cloud_off_rounded,
-              title: 'ارتباط با فروشگاه برقرار نشد',
-              message:
-                  'اگر VPN یا فیلترشکن روشن است آن را خاموش کنید؛ سپس وضعیت اینترنت و دسترسی به سرور را دوباره بررسی کنید.',
-              onRetry: onRetry,
-            ),
+            key: const ValueKey('offline'),
+            compact: compact,
+            icon: Icons.wifi_off_rounded,
+            title: 'اینترنت در دسترس نیست',
+            message: 'اتصال اینترنت را بررسی کنید و سپس دوباره تلاش کنید.',
+            onRetry: onRetry,
+          ),
+          _SplashConnectionState.serverUnavailable => _ConnectionErrorCard(
+            key: const ValueKey('server'),
+            compact: compact,
+            icon: Icons.cloud_off_rounded,
+            title: 'ارتباط با فروشگاه برقرار نشد',
+            message: 'اگر VPN یا فیلترشکن روشن است آن را خاموش کنید؛ سپس وضعیت اینترنت و دسترسی به سرور را دوباره بررسی کنید.',
+            onRetry: onRetry,
+          ),
         },
       ),
     );
@@ -725,22 +480,11 @@ class _CheckingConnectionCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(
-            width: 22,
-            height: 22,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.4,
-              color: Colors.white,
-            ),
-          ),
+          const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white)),
           const SizedBox(width: 12),
           Text(
-            'در حال اتصال امن به فروشگاه…',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: compact ? 12 : 13.5,
-              fontWeight: FontWeight.w700,
-            ),
+            'در حال اتصال به فروشگاه…',
+            style: TextStyle(color: Colors.white, fontSize: compact ? 12 : 13.5, fontWeight: FontWeight.w700),
           ),
         ],
       ),
@@ -761,19 +505,11 @@ class _ConnectedCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.check_circle_rounded,
-            color: Color(0xff75f5ad),
-            size: 26,
-          ),
+          const Icon(Icons.check_circle_rounded, color: Color(0xff75f5ad), size: 26),
           const SizedBox(width: 10),
           Text(
             'اتصال برقرار شد',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: compact ? 12.5 : 14,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(color: Colors.white, fontSize: compact ? 12.5 : 14, fontWeight: FontWeight.w800),
           ),
         ],
       ),
@@ -782,14 +518,7 @@ class _ConnectedCard extends StatelessWidget {
 }
 
 class _ConnectionErrorCard extends StatelessWidget {
-  const _ConnectionErrorCard({
-    super.key,
-    required this.compact,
-    required this.icon,
-    required this.title,
-    required this.message,
-    required this.onRetry,
-  });
+  const _ConnectionErrorCard({super.key, required this.compact, required this.icon, required this.title, required this.message, required this.onRetry});
 
   final bool compact;
   final IconData icon;
@@ -811,25 +540,15 @@ class _ConnectionErrorCard extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: 0.12),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.22),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: compact ? 23 : 27,
-            ),
+            child: Icon(icon, color: Colors.white, size: compact ? 23 : 27),
           ),
           SizedBox(height: compact ? 8 : 11),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: compact ? 13 : 15,
-              fontWeight: FontWeight.w900,
-            ),
+            style: TextStyle(color: Colors.white, fontSize: compact ? 13 : 15, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 5),
           Text(
@@ -837,36 +556,21 @@ class _ConnectionErrorCard extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: compact ? 2 : 3,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.78),
-              fontSize: compact ? 10.5 : 11.8,
-              height: 1.6,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.78), fontSize: compact ? 10.5 : 11.8, height: 1.6, fontWeight: FontWeight.w500),
           ),
           SizedBox(height: compact ? 9 : 13),
           SizedBox(
             height: compact ? 38 : 42,
             child: ElevatedButton.icon(
               onPressed: onRetry,
-              icon: const Icon(
-                Icons.refresh_rounded,
-                size: 20,
-              ),
-              label: const Text(
-                'تلاش مجدد',
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
+              icon: const Icon(Icons.refresh_rounded, size: 20),
+              label: const Text('تلاش مجدد', style: TextStyle(fontWeight: FontWeight.w800)),
               style: ElevatedButton.styleFrom(
                 foregroundColor: const Color(0xff0759a8),
                 backgroundColor: Colors.white,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 22,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
             ),
           ),
@@ -877,12 +581,7 @@ class _ConnectionErrorCard extends StatelessWidget {
 }
 
 class _GlassPanel extends StatelessWidget {
-  const _GlassPanel({
-    super.key,
-    required this.compact,
-    required this.child,
-    this.maxWidth = 420,
-  });
+  const _GlassPanel({super.key, required this.compact, required this.child, this.maxWidth = 420});
 
   final bool compact;
   final Widget child;
@@ -893,24 +592,12 @@ class _GlassPanel extends StatelessWidget {
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: maxWidth),
       child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: compact ? 16 : 20,
-          vertical: compact ? 11 : 14,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: compact ? 16 : 20, vertical: compact ? 11 : 14),
         decoration: BoxDecoration(
-          color: const Color(0xff061a35)
-              .withValues(alpha: 0.56),
+          color: const Color(0xff061a35).withValues(alpha: 0.56),
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.18),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
-          ],
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.18), blurRadius: 24, offset: const Offset(0, 10))],
         ),
         child: child,
       ),
@@ -944,36 +631,18 @@ class _TechBackgroundPainter extends CustomPainter {
     _paintCircuits(canvas, size, t);
 
     for (final glyph in _glyphs) {
-      final bob = math.sin(t * glyph.speed + glyph.phase) *
-          size.shortestSide * 0.018;
-      final drift = math.cos(t * glyph.speed * 0.66 + glyph.phase) *
-          size.shortestSide * 0.012;
+      final bob = math.sin(t * glyph.speed + glyph.phase) * size.shortestSide * 0.018;
+      final drift = math.cos(t * glyph.speed * 0.66 + glyph.phase) * size.shortestSide * 0.012;
 
-      final position = Offset(
-        (glyph.x * size.width) + drift,
-        (glyph.y * size.height) + bob,
-      );
+      final position = Offset((glyph.x * size.width) + drift, (glyph.y * size.height) + bob);
 
-      final rotation = math.sin(
-            t * glyph.speed * 0.42 + glyph.phase,
-          ) *
-          0.10;
+      final rotation = math.sin(t * glyph.speed * 0.42 + glyph.phase) * 0.10;
 
-      _paintGlyph(
-        canvas,
-        glyph.icon,
-        position,
-        glyph.size * (size.width / 430).clamp(0.82, 1.28),
-        rotation,
-      );
+      _paintGlyph(canvas, glyph.icon, position, glyph.size * (size.width / 430).clamp(0.82, 1.28), rotation);
     }
   }
 
-  void _paintGrid(
-    Canvas canvas,
-    Size size,
-    double progress,
-  ) {
+  void _paintGrid(Canvas canvas, Size size, double progress) {
     final paint = Paint()
       ..color = Colors.white.withValues(alpha: 0.035)
       ..strokeWidth = 1;
@@ -982,24 +651,12 @@ class _TechBackgroundPainter extends CustomPainter {
     final horizontalOffset = (progress * gap) % gap;
     final verticalOffset = (progress * gap * 0.7) % gap;
 
-    for (double x = -gap + horizontalOffset;
-        x <= size.width + gap;
-        x += gap) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        paint,
-      );
+    for (double x = -gap + horizontalOffset; x <= size.width + gap; x += gap) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
 
-    for (double y = -gap + verticalOffset;
-        y <= size.height + gap;
-        y += gap) {
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        paint,
-      );
+    for (double y = -gap + verticalOffset; y <= size.height + gap; y += gap) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
 
@@ -1009,8 +666,7 @@ class _TechBackgroundPainter extends CustomPainter {
       ..strokeWidth = 1.4
       ..style = PaintingStyle.stroke;
 
-    final nodePaint = Paint()
-      ..color = const Color(0xffb9f3ff).withValues(alpha: 0.13);
+    final nodePaint = Paint()..color = const Color(0xffb9f3ff).withValues(alpha: 0.13);
 
     final shift = math.sin(t * 0.35) * size.width * 0.018;
 
@@ -1044,22 +700,11 @@ class _TechBackgroundPainter extends CustomPainter {
     }
   }
 
-  void _paintGlyph(
-    Canvas canvas,
-    IconData icon,
-    Offset position,
-    double fontSize,
-    double rotation,
-  ) {
+  void _paintGlyph(Canvas canvas, IconData icon, Offset position, double fontSize, double rotation) {
     final painter = TextPainter(
       text: TextSpan(
         text: String.fromCharCode(icon.codePoint),
-        style: TextStyle(
-          fontSize: fontSize,
-          fontFamily: icon.fontFamily,
-          package: icon.fontPackage,
-          color: Colors.white.withValues(alpha: 0.075),
-        ),
+        style: TextStyle(fontSize: fontSize, fontFamily: icon.fontFamily, package: icon.fontPackage, color: Colors.white.withValues(alpha: 0.075)),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -1067,10 +712,7 @@ class _TechBackgroundPainter extends CustomPainter {
     canvas.save();
     canvas.translate(position.dx, position.dy);
     canvas.rotate(rotation);
-    painter.paint(
-      canvas,
-      Offset(-painter.width / 2, -painter.height / 2),
-    );
+    painter.paint(canvas, Offset(-painter.width / 2, -painter.height / 2));
     canvas.restore();
   }
 
@@ -1081,14 +723,7 @@ class _TechBackgroundPainter extends CustomPainter {
 }
 
 class _TechGlyph {
-  const _TechGlyph(
-    this.icon,
-    this.x,
-    this.y,
-    this.size,
-    this.speed,
-    this.phase,
-  );
+  const _TechGlyph(this.icon, this.x, this.y, this.size, this.speed, this.phase);
 
   final IconData icon;
   final double x;
