@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:yad_sys/models/product_card_model.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
-import 'package:yad_sys/widgets/cards/product_card_widget.dart';
+import 'package:yad_sys/widgets/product/product_vertical_card_widget.dart';
 import 'package:yad_sys/widgets/cards/view_all_widget.dart';
 
 class DiscountedProductsWidget extends StatefulWidget {
@@ -90,7 +90,7 @@ class _DiscountedProductsWidgetState extends State<DiscountedProductsWidget> {
               final contentIndex = index - logoSpacerCount;
 
               if (contentIndex < widget.products.length) {
-                return ProductCardWidget(product: widget.products[contentIndex], length: widget.products.length, index: contentIndex);
+                return ProductVerticalCardWidget(product: widget.products[contentIndex], rows: rows, length: widget.products.length, index: contentIndex);
               }
 
               final viewAll = widget.section.viewAll!;
