@@ -24,6 +24,7 @@ class MenuSection extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 12),
       padding: EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(color: backgroundColor,border: BoxBorder.all(color: Colors.grey.shade400),borderRadius: BorderRadius.circular(width * 0.08)),
+      clipBehavior: Clip.antiAlias,
       child: GridView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: items.length,

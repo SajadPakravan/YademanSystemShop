@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
 
@@ -35,7 +36,7 @@ class SectionHeader extends StatelessWidget {
               child: hasSubtitle
                   ? Column(
                       mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: hasViewAll ? CrossAxisAlignment.start : CrossAxisAlignment.center,
                       children: [
                         Text(
                           title,
@@ -53,7 +54,7 @@ class SectionHeader extends StatelessWidget {
                       ],
                     )
                   : Align(
-                      alignment: AlignmentDirectional.centerStart,
+                      alignment: hasViewAll ? AlignmentDirectional.centerStart : AlignmentGeometry.center,
                       child: Text(
                         title,
                         maxLines: 1,
@@ -97,7 +98,7 @@ class _ViewAllButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                title.trim().isEmpty ? 'مشاهده همه' : title.trim(),
+                title.trim(),
                 style: TextStyle(color: textColor, fontSize: 12, fontWeight: FontWeight.w500),
               ),
               const SizedBox(width: 7),

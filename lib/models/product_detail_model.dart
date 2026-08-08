@@ -1,0 +1,3 @@
+class ProductDetailModel {
+  const ProductDetailModel();
+}

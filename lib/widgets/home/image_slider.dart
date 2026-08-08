@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:yad_sys/models/image_item_model.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
 
@@ -38,19 +39,20 @@ class _ImageSliderState extends State<ImageSlider> {
           ),
         ),
         Positioned(
-          bottom: 10,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              widget.items.length,
-                  (index) => AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: index == widget.currentIndex ? 18 : 7,
-                height: 7,
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                decoration: BoxDecoration(
-                  color: index == widget.currentIndex ? const Color(0xff0353a4) : Colors.black26,
-                  borderRadius: BorderRadius.circular(20),
+          bottom: 5,
+          child: Container(
+            decoration: BoxDecoration(color: Color.fromRGBO(0, 0, 0, 0.5), borderRadius: BorderRadius.circular(100)),
+            padding: EdgeInsets.all(5),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.items.length,
+                (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: index == widget.currentIndex ? 18 : 7,
+                  height: 7,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(color: index == widget.currentIndex ? Colors.white : Colors.grey.shade500, borderRadius: BorderRadius.circular(20)),
                 ),
               ),
             ),

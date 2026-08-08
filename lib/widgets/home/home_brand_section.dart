@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:yad_sys/models/category_brand_item_model.dart';
+import 'package:yad_sys/models/brand_model.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/section_item_action_handler.dart';
 import 'package:yad_sys/widgets/home/section_header.dart';
@@ -50,7 +50,7 @@ class HomeBrandSection extends StatelessWidget {
 class _BrandCard extends StatelessWidget {
   const _BrandCard({required this.item});
 
-  final CategoryBrandItemModel item;
+  final BrandModel item;
 
   @override
   Widget build(BuildContext context) {

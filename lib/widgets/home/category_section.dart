@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:yad_sys/models/category_brand_item_model.dart';
+import 'package:yad_sys/models/category_item_model.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/section_item_action_handler.dart';
 import 'package:yad_sys/widgets/home/section_header.dart';
@@ -79,7 +79,7 @@ class CategorySection extends StatelessWidget {
 class _CategoryCard extends StatelessWidget {
   const _CategoryCard({required this.item, required this.imageSize, required this.titleHeight, required this.verticalPadding, required this.compact});
 
-  final CategoryBrandItemModel item;
+  final CategoryItemModel item;
   final double imageSize;
   final double titleHeight;
   final double verticalPadding;
