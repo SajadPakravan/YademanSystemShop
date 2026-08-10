@@ -30,7 +30,7 @@ class _ShowAllScreenState extends State<ShowAllScreen> {
       });
     }
 
-    dynamic jsonProducts = await httpRequest.getProducts(page: page, category: category, onSale: onSale);
+    dynamic jsonProducts = await httpRequest.getProducts2(page: page, category: category, onSale: onSale);
     setState(() => productCount = 0);
     jsonProducts.forEach((p) {
       setState(() {

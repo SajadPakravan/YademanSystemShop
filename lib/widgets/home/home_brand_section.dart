@@ -14,7 +14,6 @@ class HomeBrandSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = section.brands;
     if (items.isEmpty) return const SizedBox.shrink();
-
     final rows = section.layout.rows.clamp(1, 3).toInt();
     final columns = section.layout.columns.clamp(2, 6).toInt();
     final width = MediaQuery.sizeOf(context).width;

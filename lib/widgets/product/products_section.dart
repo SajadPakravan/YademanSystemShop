@@ -35,24 +35,3 @@ class ProductsSection extends StatelessWidget {
     }
   }
 }
-
-// class _ProductGrid extends StatelessWidget {
-//   const _ProductGrid({required this.section, required this.products});
-//
-//   final SectionModel section;
-//   final List<ProductCardModel> products;
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final columns = section.layout.columns;
-//
-//     return GridView.builder(
-//       padding: const EdgeInsets.symmetric(horizontal: 10),
-//       shrinkWrap: true,
-//       physics: const NeverScrollableScrollPhysics(),
-//       itemCount: products.length,
-//       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: columns, mainAxisSpacing: 10, crossAxisSpacing: 10, mainAxisExtent: 304),
-//       itemBuilder: (context, index) => ProductVerticalCardWidget(product: products[index], length: products.length, index: index),
-//     );
-//   }
-// }

@@ -89,7 +89,7 @@ class _ProductScreenState extends State<ProductScreen> {
   Future<void> getRelatedProducts() async {
     setState(() => relatedProductsLst.clear());
     ProductCategory category = product.categories![0];
-    dynamic jsonRelatedProducts = await httpRequest.getProducts(perPage: 11, category: category.id.toString());
+    dynamic jsonRelatedProducts = await httpRequest.getProducts2(perPage: 11, category: category.id.toString());
     jsonRelatedProducts.forEach((p) => setState(() => relatedProductsLst.add(ProductModel.fromJson(p))));
     setState(() => relatedProductsLst.removeWhere((element) => element.id == product.id));
     dataNumber++;

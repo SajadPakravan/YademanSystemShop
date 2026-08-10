@@ -1,4 +1,5 @@
 import 'package:yad_sys/models/brand_model.dart';
+import 'package:yad_sys/models/post_model.dart';
 import 'package:yad_sys/models/section_item_action_model.dart';
 import 'package:yad_sys/models/category_item_model.dart';
 import 'package:yad_sys/models/image_item_model.dart';
@@ -44,6 +45,9 @@ class SectionModel {
         case 'brand':
           data.add(BrandModel.fromJson(map));
           break;
+        case 'posts':
+          data.add(PostModel.fromJson(map));
+          break;
         default:
           data.add(map);
       }
@@ -68,6 +72,8 @@ class SectionModel {
   List<CategoryItemModel> get categories => data.whereType<CategoryItemModel>().toList();
 
   List<BrandModel> get brands => data.whereType<BrandModel>().toList();
+
+  List<PostModel> get posts => data.whereType<PostModel>().toList();
 }
 
 class SectionLayout {

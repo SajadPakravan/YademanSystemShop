@@ -16,7 +16,7 @@ class HttpRequest {
   final String _key = '?consumer_key=ck_d27778072e30065155639f3712fa349749d68f69';
   final String _secret = '&consumer_secret=cs_338b38793c800a59f4683f91024dd62cc66423c8';
 
-  String get _urlProducts => 'https://$_urlMain/wp-json/wc/v3/products/';
+  String get _urlProducts2 => 'https://$_urlMain/wp-json/wc/v3/products/';
 
   String get _urlCategories => 'https://$_urlMain/wp-json/wc/v3/products/categories/';
 
@@ -41,6 +41,8 @@ class HttpRequest {
   String get _urlOrders => 'https://$_urlMain/wp-json/wc/v3/orders/';
 
   String get _urlHome => 'https://$_urlMain/wp-json/app-api/v1/home';
+
+  String get _urlProducts => 'https://$_urlMain/wp-json/app-api/v1/products';
 
   Future<dynamic> _getRequest({required String url, String id = '', String details = ''}) async {
     Map<String, String> headers = {'accept': 'application/json', 'Content-Type': 'application/json'};
@@ -157,7 +159,11 @@ class HttpRequest {
     return _getPublicRequest(url: _urlHome);
   }
 
-  Future<dynamic> getProducts({
+  Future<dynamic> getProducts() async {
+    return _getPublicRequest(url: _urlProducts);
+  }
+
+  Future<dynamic> getProducts2({
     int perPage = 10,
     int page = 1,
     String order = 'desc',
@@ -173,7 +179,7 @@ class HttpRequest {
     if (onSale.isNotEmpty) addOnSale = '&on_sale=$onSale';
     if (search.isNotEmpty) addSearch = '&search=$search';
     String details = "&per_page=$perPage&page=$page&order=$order&orderby=$orderBy$addCategory$addOnSale$addSearch";
-    return _getRequest(url: _urlProducts, details: details);
+    return _getRequest(url: _urlProducts2, details: details);
   }
 
   Future<dynamic> getProductVariable({required int id, String onSale = '', String search = ''}) async {
@@ -182,10 +188,10 @@ class HttpRequest {
     if (onSale.isNotEmpty) addOnSale = '&on_sale=$onSale';
     if (search.isNotEmpty) addSearch = '&search=$search';
     String details = "$addOnSale$addSearch";
-    return _getRequest(url: '$_urlProducts$id/variations', details: details);
+    return _getRequest(url: '$_urlProducts2$id/variations', details: details);
   }
 
-  Future<dynamic> getProduct({required int id}) async => _getRequest(url: _urlProducts, id: id.toString());
+  Future<dynamic> getProduct({required int id}) async => _getRequest(url: _urlProducts2, id: id.toString());
 
   Future<dynamic> getCategories({int parent = 0, int perPage = 10, String include = ''}) async {
     String addInclude = "";
@@ -329,7 +335,12 @@ class HttpRequest {
     return _postRequest(context: context.mounted ? context : context, url: _urlUpdateAvatar, headers: headers, body: body);
   }
 
-  Future<Future<dynamic>> updatePassword({required BuildContext context, required int userId, required String currentPassword, required String newPassword}) async {
+  Future<Future<dynamic>> updatePassword({
+    required BuildContext context,
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
     AppCache cache = AppCache();
     Map<String, String> headers = {'Authorization': 'Bearer ${await cache.getString('token')}'};
     Map<String, dynamic> body = {'user_id': userId, 'current_password': currentPassword, 'new_password': newPassword};

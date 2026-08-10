@@ -20,7 +20,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> getProducts({required String search}) async {
     setState(() => loading = true);
-    dynamic jsonProducts = await httpRequest.getProducts(search: search);
+    dynamic jsonProducts = await httpRequest.getProducts2(search: search);
     List<ProductModel> products = [];
     jsonProducts.forEach((p) {
       products.add(ProductModel.fromJson(p));

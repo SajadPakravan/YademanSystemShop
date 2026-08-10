@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/section_model.dart';
+import 'package:yad_sys/widgets/home/home_posts_section.dart';
 import 'package:yad_sys/widgets/home/image_section.dart';
 import 'package:yad_sys/widgets/home/home_brand_section.dart';
 import 'package:yad_sys/widgets/home/category_section.dart';
@@ -37,7 +38,7 @@ class HomeSectionRenderer extends StatelessWidget {
       case 'brand':
         return HomeBrandSection(section: section);
       default:
-        return const SizedBox.shrink();
+        return HomePostsSection(section:section);
     }
   }
 }
