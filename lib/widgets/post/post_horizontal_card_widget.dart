@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/post_model.dart';
 
 class PostHorizontalCardWidget extends StatelessWidget {
@@ -79,7 +80,7 @@ class PostHorizontalCardWidget extends StatelessWidget {
                 ),
                 SizedBox(height: (cardHeight * 1).clamp(6.0, 20.0).toDouble()),
                 Text(
-                  post.date,
+                  post.date.toPersianDigit(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.start,

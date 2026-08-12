@@ -14,10 +14,9 @@ class _ShopScreenState extends State<ShopScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      context.read<ShopViewModel>().loadInitial();
-    });
+    // read() در initState به Provider گوش نمی‌دهد. اگر Splash کاتالوگ را
+    // آماده کرده باشد، loadInitial قبل از اولین build فیلترها را از کش پر می‌کند.
+    context.read<ShopViewModel>().loadInitial();
   }
 
   @override

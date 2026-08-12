@@ -1,77 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:yad_sys/connections/http_request.dart';
-import 'package:yad_sys/models/product_model.dart';
-import 'package:yad_sys/models/product_variable_model.dart';
-import 'package:yad_sys/widgets/cards/product_card_grid.dart';
-import 'package:yad_sys/widgets/loading.dart';
+import 'package:provider/provider.dart';
+import 'package:yad_sys/view_models/search/search_view_model.dart';
+import 'package:yad_sys/views/search/search_view.dart';
 
-class SearchScreen extends StatefulWidget {
+class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
-}
-
-class _SearchScreenState extends State<SearchScreen> {
-  HttpRequest httpRequest = HttpRequest();
-  List<ProductModel> productsLst = [];
-  List<ProductVariableModel> productVariableLst = [];
-  bool loading = false;
-
-  Future<void> getProducts({required String search}) async {
-    setState(() => loading = true);
-    dynamic jsonProducts = await httpRequest.getProducts2(search: search);
-    List<ProductModel> products = [];
-    jsonProducts.forEach((p) {
-      products.add(ProductModel.fromJson(p));
-      if (p['on_sale'] == 'true' && p['type'] == 'variable') {
-        getProductVariable(id: p['id'], list: productVariableLst);
-      }
-    });
-    setState(() {
-      productsLst = products;
-      loading = false;
-    });
-  }
-
-  Future<void> getProductVariable({required int id, required List<ProductVariableModel> list}) async {
-    dynamic jsonProductVariable = await httpRequest.getProductVariable(id: id);
-    jsonProductVariable.forEach((p) => list.add(ProductVariableModel.fromJson(p)));
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: appBar(),
-      body: loading
-          ? const Loading()
-          : Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: ProductCardGrid(productsLst: productsLst, productVariableLst: productVariableLst),
-            ),
-    );
-  }
-
-  AppBar appBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      iconTheme: const IconThemeData(color: Colors.black54),
-      centerTitle: true,
-      title: Directionality(
-        textDirection: TextDirection.rtl,
-        child: SearchBar(
-          leading: const Icon(Icons.search),
-          hintStyle: WidgetStateProperty.all(Theme.of(context).textTheme.bodyMedium!.copyWith(color: Colors.black54)),
-          hintText: 'محصول مورد نظر خود را جستجو کنید...',
-          elevation: WidgetStateProperty.all(0),
-          textStyle: WidgetStateProperty.all(Theme.of(context).textTheme.bodyMedium),
-          autoFocus: true,
-          onChanged: (value) {
-            if (value.isEmpty) setState(() => productsLst.clear());
-            if (value.length > 3) getProducts(search: value);
-          },
-        ),
-      ),
+    return ChangeNotifierProvider<SearchViewModel>(
+      create: (_) => SearchViewModel(),
+      child: const SearchView(),
     );
   }
 }

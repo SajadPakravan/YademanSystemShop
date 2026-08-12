@@ -8,6 +8,7 @@ import 'package:yad_sys/models/products_list_model.dart';
 import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
 import 'package:yad_sys/widgets/price_view_widget.dart';
+import 'package:yad_sys/widgets/search.dart';
 
 class ShopView extends StatefulWidget {
   const ShopView({super.key, required this.viewModel});
@@ -20,8 +21,6 @@ class ShopView extends StatefulWidget {
 
 class _ShopViewState extends State<ShopView> {
   final ScrollController _scrollController = ScrollController();
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
 
   ShopViewModel get vm => widget.viewModel;
 
@@ -35,8 +34,6 @@ class _ShopViewState extends State<ShopView> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
-    _searchController.dispose();
-    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -49,8 +46,6 @@ class _ShopViewState extends State<ShopView> {
 
   @override
   Widget build(BuildContext context) {
-    _syncSearchText();
-
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -109,16 +104,6 @@ class _ShopViewState extends State<ShopView> {
     );
   }
 
-  void _syncSearchText() {
-    if (_searchFocusNode.hasFocus) return;
-    final value = vm.appliedFilters.search;
-    if (_searchController.text == value) return;
-    _searchController.value = TextEditingValue(
-      text: value,
-      selection: TextSelection.collapsed(offset: value.length),
-    );
-  }
-
   Widget _buildTopArea(BuildContext context) {
     return Material(
       color: Colors.white,
@@ -127,7 +112,7 @@ class _ShopViewState extends State<ShopView> {
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
         child: Column(
           children: <Widget>[
-            _buildSearchBox(),
+            const Search(),
             const SizedBox(height: 12),
             _buildPrimaryFilters(context),
             if (vm.filters.attributes.isNotEmpty) ...<Widget>[
@@ -140,86 +125,54 @@ class _ShopViewState extends State<ShopView> {
     );
   }
 
-  Widget _buildSearchBox() {
-    return TextField(
-      controller: _searchController,
-      focusNode: _searchFocusNode,
-      textInputAction: TextInputAction.search,
-      onChanged: (value) {
-        setState(() {});
-        vm.onSearchChanged(value);
-      },
-      onSubmitted: (value) {
-        FocusScope.of(context).unfocus();
-        vm.onSearchChanged(value);
-      },
-      decoration: InputDecoration(
-        hintText: 'جستجو در محصولات یادمان سیستم',
-        hintStyle: const TextStyle(color: Colors.black45, fontSize: 13),
-        prefixIcon: const Icon(Icons.search_rounded, color: Colors.black54),
-        suffixIcon: _searchController.text.isEmpty
-            ? null
-            : IconButton(
-                tooltip: 'پاک کردن جستجو',
-                onPressed: () {
-                  _searchController.clear();
-                  vm.clearSearch();
-                  setState(() {});
-                },
-                icon: const Icon(Icons.close_rounded, color: Colors.black45),
-              ),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xffe5e5e5)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: _accent, width: 1.4),
-        ),
-      ),
-    );
-  }
-
   Widget _buildPrimaryFilters(BuildContext context) {
     final state = vm.appliedFilters;
+
+    // دکمه «فیلتر» ثابت در سمت راست می‌ماند و بقیه فیلترهای اصلی
+    // در فضای سمت چپ آن به صورت افقی اسکرول می‌شوند.
     return SizedBox(
       height: 45,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
+      child: Row(
         children: <Widget>[
-          _FilterChipButton(
-            title: vm.sortChipTitle(state),
-            active: state.hasNonDefaultSort,
-            icon: Icons.sort_rounded,
-            onTap: () => _openSortSheet(context),
-          ),
-          _FilterChipButton(
-            title: vm.categoryChipTitle(state),
-            active: state.categoryIds.isNotEmpty,
-            badgeCount: state.categoryIds.length > 1 ? state.categoryIds.length : 0,
-            onTap: () => _openCategorySheet(context),
-          ),
-          _FilterChipButton(
-            title: vm.brandChipTitle(state),
-            active: state.brandIds.isNotEmpty,
-            badgeCount: state.brandIds.length > 1 ? state.brandIds.length : 0,
-            onTap: () => _openBrandSheet(context),
-          ),
-          _FilterChipButton(
-            title: 'محدوده قیمت',
-            active: state.hasPriceFilter,
-            onTap: () => _openPriceSheet(context),
-          ),
           _FilterChipButton(
             title: 'فیلتر',
             active: state.activeFilterGroupsCount > 0,
             badgeCount: state.activeFilterGroupsCount,
             icon: Icons.tune_rounded,
+            compactMargin: true,
             onTap: () => _openFullFilter(context),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              children: <Widget>[
+                _FilterChipButton(
+                  title: vm.sortChipTitle(state),
+                  active: state.hasNonDefaultSort,
+                  icon: Icons.sort_rounded,
+                  onTap: () => _openSortSheet(context),
+                ),
+                _FilterChipButton(
+                  title: vm.categoryChipTitle(state),
+                  active: state.categoryIds.isNotEmpty,
+                  badgeCount: state.categoryIds.length > 1 ? state.categoryIds.length : 0,
+                  onTap: () => _openCategorySheet(context),
+                ),
+                _FilterChipButton(
+                  title: vm.brandChipTitle(state),
+                  active: state.brandIds.isNotEmpty,
+                  badgeCount: state.brandIds.length > 1 ? state.brandIds.length : 0,
+                  onTap: () => _openBrandSheet(context),
+                ),
+                _FilterChipButton(
+                  title: 'محدوده قیمت',
+                  active: state.hasPriceFilter,
+                  onTap: () => _openPriceSheet(context),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -1001,21 +954,24 @@ class _ColorOptionsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      shrinkWrap: true,
-      physics: const BouncingScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        mainAxisExtent: 96,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-      ),
-      itemCount: options.length,
-      itemBuilder: (context, index) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth < 360 ? 3 : 4;
+        return GridView.builder(
+          padding: const EdgeInsets.all(12),
+          shrinkWrap: true,
+          physics: const BouncingScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            mainAxisExtent: 96,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: options.length,
+          itemBuilder: (context, index) {
         final option = options[index];
         final selected = selectedIds.contains(option.id);
-        final color = _colorForName(option.name);
+        final color = _colorForOption(option);
         return InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: () => onToggle(option),
@@ -1046,7 +1002,9 @@ class _ColorOptionsGrid extends StatelessWidget {
               ],
             ),
           ),
-        );
+          );
+        },
+      );
       },
     );
   }
@@ -1426,6 +1384,22 @@ void _toggleId(Set<int> set, int id) {
 bool _isColorAttribute(ProductAttributeFilterModel attribute) {
   final value = attribute.name.replaceAll('\u200c', '').replaceAll(' ', '').toLowerCase();
   return value.contains('رنگ') || value == 'color';
+}
+
+Color _colorForOption(ProductAttributeOptionModel option) {
+  final raw = option.color.trim();
+  if (raw.isNotEmpty) {
+    final hex = raw.replaceFirst('#', '');
+    if (hex.length == 6) {
+      final value = int.tryParse('FF$hex', radix: 16);
+      if (value != null) return Color(value);
+    }
+    if (hex.length == 8) {
+      final value = int.tryParse(hex, radix: 16);
+      if (value != null) return Color(value);
+    }
+  }
+  return _colorForName(option.name);
 }
 
 Color _colorForName(String rawName) {

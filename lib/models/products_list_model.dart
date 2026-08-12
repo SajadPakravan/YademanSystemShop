@@ -1,5 +1,3 @@
-import 'package:yad_sys/models/product_card_model.dart';
-
 class ProductsListModel {
   const ProductsListModel({required this.success, required this.pagination, required this.filters, required this.filterBy, required this.data});
 
@@ -11,11 +9,11 @@ class ProductsListModel {
 
   factory ProductsListModel.fromJson(Map<String, dynamic> json) {
     return ProductsListModel(
-      success: _asBool(json['success']),
-      pagination: ProductsPaginationModel.fromJson(_asMap(json['pagination'])),
-      filters: ProductsFiltersModel.fromJson(_asMap(json['filters'])),
-      filterBy: ProductsFilterByModel.fromJson(_asMap(json['filter_by'])),
-      data: _asList(json['data']).whereType<Map>().map((item) => ProductsListItemModel.fromJson(Map<String, dynamic>.from(item))).toList(growable: false),
+      success: json['success'],
+      pagination: ProductsPaginationModel.fromJson(json['pagination']),
+      filters: ProductsFiltersModel.fromJson(json['filters']),
+      filterBy: ProductsFilterByModel.fromJson(json['filter_by']),
+      data: List.castFrom(json['data']).map((item) => ProductsListItemModel.fromJson(item)).toList(growable: false),
     );
   }
 }
@@ -45,13 +43,13 @@ class ProductsPaginationModel {
 
   factory ProductsPaginationModel.fromJson(Map<String, dynamic> json) {
     return ProductsPaginationModel(
-      currentPage: _asInt(json['current_page'], fallback: 1),
-      perPage: _asInt(json['per_page'], fallback: 20),
-      totalItems: _asInt(json['total_items']),
-      totalPages: _asInt(json['total_pages'], fallback: 1),
-      totalSiteProducts: _asInt(json['total_site_products']),
-      hasNext: _asBool(json['has_next']),
-      hasPrevious: _asBool(json['has_previous']),
+      currentPage: json['current_page'],
+      perPage: json['per_page'],
+      totalItems: json['total_items'],
+      totalPages: json['total_pages'],
+      totalSiteProducts: json['total_site_products'],
+      hasNext: json['has_next'],
+      hasPrevious: json['has_previous'],
     );
   }
 }
@@ -69,13 +67,9 @@ class ProductsFiltersModel {
 
   factory ProductsFiltersModel.fromJson(Map<String, dynamic> json) {
     return ProductsFiltersModel(
-      categories: _asList(
-        json['category'],
-      ).whereType<Map>().map((item) => ProductCategoryFilterModel.fromJson(Map<String, dynamic>.from(item))).toList(growable: false),
-      brands: _asList(json['brand']).whereType<Map>().map((item) => ProductBrandFilterModel.fromJson(Map<String, dynamic>.from(item))).toList(growable: false),
-      attributes: _asList(
-        json['attribute'],
-      ).whereType<Map>().map((item) => ProductAttributeFilterModel.fromJson(Map<String, dynamic>.from(item))).toList(growable: false),
+      categories: List.castFrom(json['categories']).map((item) => ProductCategoryFilterModel.fromJson(item)).toList(growable: false),
+      brands: List.castFrom(json['brands']).map((item) => ProductBrandFilterModel.fromJson(item)).toList(growable: false),
+      attributes: List.castFrom(json['attributes']).map((item) => ProductAttributeFilterModel.fromJson(item)).toList(growable: false),
     );
   }
 
@@ -118,21 +112,21 @@ class ProductsFiltersModel {
 }
 
 class ProductCategoryFilterModel {
-  const ProductCategoryFilterModel({required this.id, required this.name, required this.image, required this.children});
+  const ProductCategoryFilterModel({required this.id, required this.name, required this.count, required this.image, required this.children});
 
   final int id;
   final String name;
+  final int count;
   final String image;
   final List<ProductCategoryFilterModel> children;
 
   factory ProductCategoryFilterModel.fromJson(Map<String, dynamic> json) {
     return ProductCategoryFilterModel(
-      id: _asInt(json['id']),
-      name: _asString(json['name']),
-      image: _asString(json['image']),
-      children: _asList(
-        json['children'],
-      ).whereType<Map>().map((item) => ProductCategoryFilterModel.fromJson(Map<String, dynamic>.from(item))).toList(growable: false),
+      id: json['id'],
+      name: json['name'],
+      count: json['count'],
+      image: json['image'],
+      children: List.castFrom(json['children']).map((item) => ProductCategoryFilterModel.fromJson(item)).toList(growable: false),
     );
   }
 }
@@ -146,7 +140,7 @@ class ProductBrandFilterModel {
   final String image;
 
   factory ProductBrandFilterModel.fromJson(Map<String, dynamic> json) {
-    return ProductBrandFilterModel(id: _asInt(json['id']), name: _asString(json['name']), count: _asInt(json['count']), image: _asString(json['image']));
+    return ProductBrandFilterModel(id: json['id'], name: json['name'], count: json['count'], image: json['image']);
   }
 }
 
@@ -159,31 +153,32 @@ class ProductAttributeFilterModel {
 
   factory ProductAttributeFilterModel.fromJson(Map<String, dynamic> json) {
     return ProductAttributeFilterModel(
-      id: _asInt(json['id']),
-      name: _asString(json['name']),
-      options: _asList(
-        json['options'],
-      ).whereType<Map>().map((item) => ProductAttributeOptionModel.fromJson(Map<String, dynamic>.from(item))).toList(growable: false),
+      id: json['id'],
+      name: json['name'],
+      options: List.castFrom(json['options']).map((item) => ProductAttributeOptionModel.fromJson(item)).toList(growable: false),
     );
   }
 }
 
 class ProductAttributeOptionModel {
-  const ProductAttributeOptionModel({required this.id, required this.name});
+  const ProductAttributeOptionModel({required this.id, required this.name, required this.color, required this.image});
 
   final int id;
   final String name;
+  final String color;
+  final String image;
 
   factory ProductAttributeOptionModel.fromJson(Map<String, dynamic> json) {
-    return ProductAttributeOptionModel(id: _asInt(json['id']), name: _asString(json['name']));
+    return ProductAttributeOptionModel(id: json['id'], name: json['name'], color: json['color'], image: json['image']);
   }
 }
 
 class ProductsFilterByModel {
   const ProductsFilterByModel({
     required this.search,
-    required this.category,
-    required this.brand,
+    required this.categories,
+    required this.brands,
+    required this.attributes,
     required this.minPrice,
     required this.maxPrice,
     required this.onSale,
@@ -192,8 +187,9 @@ class ProductsFilterByModel {
   });
 
   final String? search;
-  final List<int> category;
-  final List<int> brand;
+  final List<int> categories;
+  final List<int> brands;
+  final List<ProductAttributeFilterByModel> attributes;
   final int? minPrice;
   final int? maxPrice;
   final bool? onSale;
@@ -201,20 +197,42 @@ class ProductsFilterByModel {
   final String order;
 
   factory ProductsFilterByModel.empty() {
-    return const ProductsFilterByModel(search: null, category: [], brand: [], minPrice: null, maxPrice: null, onSale: null, orderby: 'date', order: 'desc');
+    return const ProductsFilterByModel(
+      search: null,
+      categories: [],
+      brands: [],
+      attributes: [],
+      minPrice: null,
+      maxPrice: null,
+      onSale: null,
+      orderby: 'date',
+      order: 'desc',
+    );
   }
 
   factory ProductsFilterByModel.fromJson(Map<String, dynamic> json) {
     return ProductsFilterByModel(
-      search: _nullableString(json['search']),
-      category: _asIntList(json['category']),
-      brand: _asIntList(json['brand']),
-      minPrice: _nullableInt(json['min_price']),
-      maxPrice: _nullableInt(json['max_price']),
-      onSale: _nullableBool(json['on_sale']),
-      orderby: _asString(json['orderby'], fallback: 'date'),
-      order: _asString(json['order'], fallback: 'desc'),
+      search: json['search'],
+      categories: List<int>.from(json['categories']),
+      brands: List<int>.from(json['brands']),
+      attributes: List.castFrom(json['attributes']).map((item) => ProductAttributeFilterByModel.fromJson(item)).toList(),
+      minPrice: json['min_price'],
+      maxPrice: json['max_price'],
+      onSale: json['on_sale'],
+      orderby: json['orderby'],
+      order: json['order'],
     );
+  }
+}
+
+class ProductAttributeFilterByModel {
+  const ProductAttributeFilterByModel({required this.id, required this.options});
+
+  final int id;
+  final List<int> options;
+
+  factory ProductAttributeFilterByModel.fromJson(Map<String, dynamic> json) {
+    return ProductAttributeFilterByModel(id: json['id'], options: List<int>.from(json['options']));
   }
 }
 
@@ -228,6 +246,11 @@ class ProductsListItemModel {
     required this.stockQuantity,
     required this.image,
     required this.variationName,
+    required this.totalSales,
+    required this.averageRating,
+    required this.categories,
+    required this.brand,
+    required this.attributes,
   });
 
   final int id;
@@ -238,99 +261,76 @@ class ProductsListItemModel {
   final int stockQuantity;
   final String image;
   final String variationName;
+  final int totalSales;
+  final int averageRating;
+  final List<ProductsListItemCategories> categories;
+  final List<ProductsListItemBrand> brand;
+  final List<ProductsListItemAttributes> attributes;
 
   factory ProductsListItemModel.fromJson(Map<String, dynamic> json) {
     return ProductsListItemModel(
-      id: _asInt(json['id']),
-      name: _asString(json['name']),
-      price: _asInt(json['price']),
-      regularPrice: _asInt(json['regular_price']),
-      discountPercent: _asInt(json['discount_percent']),
-      stockQuantity: _asInt(json['stock_quantity']),
-      image: _asString(json['image']),
-      variationName: _asString(json['variation_name']),
-    );
-  }
-
-  ProductCardModel toProductCardModel() {
-    return ProductCardModel(
-      id: id,
-      name: name,
-      price: price,
-      regularPrice: regularPrice,
-      discountPercent: discountPercent,
-      stockQuantity: stockQuantity,
-      image: image,
-      variationName: variationName,
+      id: json['id'],
+      name: json['name'],
+      price: json['price'],
+      regularPrice: json['regular_price'],
+      discountPercent: json['discount_percent'],
+      stockQuantity: json['stock_quantity'],
+      image: json['image'],
+      variationName: json['variation_name'],
+      totalSales: json['total_sales'],
+      averageRating: json['average_rating'],
+      categories: List.castFrom(json['categories']).map((item) => ProductsListItemCategories.fromJson(item)).toList(growable: false),
+      brand: List.castFrom(json['brand']).map((item) => ProductsListItemBrand.fromJson(item)).toList(growable: false),
+      attributes: List.castFrom(json['attributes']).map((item) => ProductsListItemAttributes.fromJson(item)).toList(growable: false),
     );
   }
 }
 
-Map<String, dynamic> _asMap(dynamic value) {
-  if (value is Map<String, dynamic>) return value;
-  if (value is Map) return Map<String, dynamic>.from(value);
-  return const <String, dynamic>{};
-}
+class ProductsListItemCategories {
+  const ProductsListItemCategories({required this.id, required this.name});
 
-List<dynamic> _asList(dynamic value) {
-  if (value is List) return value;
-  return const <dynamic>[];
-}
+  final int id;
+  final String name;
 
-String _asString(dynamic value, {String fallback = ''}) {
-  if (value == null) return fallback;
-  final result = value.toString();
-  return result.isEmpty ? fallback : result;
-}
-
-String? _nullableString(dynamic value) {
-  if (value == null) return null;
-  final result = value.toString().trim();
-  return result.isEmpty || result.toLowerCase() == 'null' ? null : result;
-}
-
-int _asInt(dynamic value, {int fallback = 0}) {
-  if (value is int) return value;
-  if (value is num) return value.round();
-  return int.tryParse(value?.toString() ?? '') ?? fallback;
-}
-
-int? _nullableInt(dynamic value) {
-  if (value == null || value == '') return null;
-  if (value is int) return value;
-  if (value is num) return value.round();
-  return int.tryParse(value.toString());
-}
-
-bool _asBool(dynamic value, {bool fallback = false}) {
-  if (value is bool) return value;
-  if (value is num) return value != 0;
-  if (value is String) {
-    if (value.toLowerCase() == 'true' || value == '1') return true;
-    if (value.toLowerCase() == 'false' || value == '0') return false;
+  factory ProductsListItemCategories.fromJson(Map<String, dynamic> json) {
+    return ProductsListItemCategories(id: json['id'], name: json['name']);
   }
-  return fallback;
 }
 
-bool? _nullableBool(dynamic value) {
-  if (value == null || value == '') return null;
-  if (value is bool) return value;
-  if (value is num) return value != 0;
-  if (value is String) {
-    if (value.toLowerCase() == 'true' || value == '1') return true;
-    if (value.toLowerCase() == 'false' || value == '0') return false;
+class ProductsListItemBrand {
+  const ProductsListItemBrand({required this.id, required this.name});
+
+  final int id;
+  final String name;
+
+  factory ProductsListItemBrand.fromJson(Map<String, dynamic> json) {
+    return ProductsListItemBrand(id: json['id'], name: json['name']);
   }
-  return null;
 }
 
-List<int> _asIntList(dynamic value) {
-  if (value == null) return const <int>[];
+class ProductsListItemAttributes {
+  const ProductsListItemAttributes({required this.id, required this.name, required this.options});
 
-  final raw = value is List ? value : value.toString().split(',');
-  final result = <int>[];
-  for (final item in raw) {
-    final parsed = _nullableInt(item);
-    if (parsed != null && !result.contains(parsed)) result.add(parsed);
+  final int id;
+  final String name;
+  final List<ProductsListItemAttributesOptions> options;
+
+  factory ProductsListItemAttributes.fromJson(Map<String, dynamic> json) {
+    return ProductsListItemAttributes(
+      id: json['id'],
+      name: json['name'],
+      options: List.castFrom(json['options']).map((item) => ProductsListItemAttributesOptions.fromJson(item)).toList(),
+    );
   }
-  return result;
+}
+
+class ProductsListItemAttributesOptions {
+  const ProductsListItemAttributesOptions({required this.id, required this.name});
+
+  final int id;
+  final String name;
+
+  factory ProductsListItemAttributesOptions.fromJson(Map<String, dynamic> json) {
+    return ProductsListItemAttributesOptions(id: json['id'], name: json['name']);
+  }
 }

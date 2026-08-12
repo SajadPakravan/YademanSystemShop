@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/screens/main_screen.dart';
+import 'package:yad_sys/tools/products_local_store.dart';
 import 'package:yad_sys/widgets/splash/splash_logo_data.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -81,16 +82,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         return;
       }
 
-      final dynamic result = await _httpRequest.getHome();
+      // به جای یک درخواست بلااستفاده به API خانه، تمام کاتالوگ بدون
+      // فیلتر را یک‌بار می‌گیریم. ProductsLocalStore فقط وقتی تمام
+      // صفحات با موفقیت دریافت شوند، کش قبلی را به‌صورت اتمیک جایگزین می‌کند.
+      await ProductsLocalStore.instance.refreshFullCatalog(_httpRequest);
 
       if (!mounted || _navigated) {
-        return;
-      }
-
-      final bool serverIsAvailable = result is Map && result['success'] != false;
-
-      if (!serverIsAvailable) {
-        _setConnectionState(_SplashConnectionState.serverUnavailable);
         return;
       }
 

@@ -159,8 +159,40 @@ class HttpRequest {
     return _getPublicRequest(url: _urlHome);
   }
 
-  Future<dynamic> getProducts() async {
-    return _getPublicRequest(url: _urlProducts);
+  Future<dynamic> getProducts({
+    int page = 1,
+    int perPage = 20,
+    String search = '',
+    List<int> categories = const <int>[],
+    List<int> brands = const <int>[],
+    Map<int, List<int>> attributes = const <int, List<int>>{},
+    int? minPrice,
+    int? maxPrice,
+    bool? onSale,
+    String orderby = 'date',
+    String order = 'desc',
+  }) async {
+    final query = <String, String>{
+      'page': '$page',
+      'per_page': '$perPage',
+      'orderby': orderby,
+      'order': order,
+    };
+
+    if (search.trim().isNotEmpty) query['search'] = search.trim();
+    if (categories.isNotEmpty) query['category'] = categories.join(',');
+    if (brands.isNotEmpty) query['brand'] = brands.join(',');
+    if (minPrice != null) query['min_price'] = '$minPrice';
+    if (maxPrice != null) query['max_price'] = '$maxPrice';
+    if (onSale != null) query['on_sale'] = onSale ? 'true' : 'false';
+
+    for (final entry in attributes.entries) {
+      if (entry.value.isEmpty) continue;
+      query['attributes[${entry.key}]'] = entry.value.join(',');
+    }
+
+    final uri = Uri.parse(_urlProducts).replace(queryParameters: query);
+    return _getPublicRequest(url: uri.toString());
   }
 
   Future<dynamic> getProducts2({
