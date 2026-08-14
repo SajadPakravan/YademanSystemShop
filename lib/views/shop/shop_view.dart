@@ -226,7 +226,7 @@ class _ShopViewState extends State<ShopView> {
 
   Future<void> _openSortSheet(BuildContext context) async {
     final draft = vm.appliedFilters.copy();
-    vm.previewFilters(draft);
+    vm.beginPreview();
 
     await showModalBottomSheet<void>(
       context: context,
@@ -242,18 +242,21 @@ class _ShopViewState extends State<ShopView> {
               footer: _SheetFooter(
                 viewModel: vm,
                 deleteEnabled: draft.hasNonDefaultSort,
-                onDelete: () {
+                onDelete: () async {
                   setSheetState(() {
                     draft.orderby = 'date';
                     draft.order = 'desc';
                     draft.onSale = null;
                   });
-                  vm.previewFilters(draft);
+                  final ready = await vm.previewFiltersNow(draft);
+                  if (!ready || !sheetContext.mounted) return;
+                  vm.applyPreview(draft);
+                  Navigator.pop(sheetContext);
                 },
                 onApply: () {
                   final result = draft.copy();
+                  if (!vm.applyPreview(result)) return;
                   Navigator.pop(sheetContext);
-                  vm.applyFilters(result);
                 },
               ),
               child: ListView.separated(
@@ -290,7 +293,7 @@ class _ShopViewState extends State<ShopView> {
   Future<void> _openCategorySheet(BuildContext context) async {
     final draft = vm.appliedFilters.copy();
     final rows = _flattenCategories(vm.filters.categories);
-    vm.previewFilters(draft);
+    vm.beginPreview();
 
     await showModalBottomSheet<void>(
       context: context,
@@ -305,14 +308,17 @@ class _ShopViewState extends State<ShopView> {
               footer: _SheetFooter(
                 viewModel: vm,
                 deleteEnabled: draft.categoryIds.isNotEmpty,
-                onDelete: () {
+                onDelete: () async {
                   setSheetState(draft.categoryIds.clear);
-                  vm.previewFilters(draft);
+                  final ready = await vm.previewFiltersNow(draft);
+                  if (!ready || !sheetContext.mounted) return;
+                  vm.applyPreview(draft);
+                  Navigator.pop(sheetContext);
                 },
                 onApply: () {
                   final result = draft.copy();
+                  if (!vm.applyPreview(result)) return;
                   Navigator.pop(sheetContext);
-                  vm.applyFilters(result);
                 },
               ),
               child: ListView.separated(
@@ -352,7 +358,7 @@ class _ShopViewState extends State<ShopView> {
   Future<void> _openBrandSheet(BuildContext context) async {
     final draft = vm.appliedFilters.copy();
     final brands = vm.filters.brands;
-    vm.previewFilters(draft);
+    vm.beginPreview();
 
     await showModalBottomSheet<void>(
       context: context,
@@ -367,14 +373,17 @@ class _ShopViewState extends State<ShopView> {
               footer: _SheetFooter(
                 viewModel: vm,
                 deleteEnabled: draft.brandIds.isNotEmpty,
-                onDelete: () {
+                onDelete: () async {
                   setSheetState(draft.brandIds.clear);
-                  vm.previewFilters(draft);
+                  final ready = await vm.previewFiltersNow(draft);
+                  if (!ready || !sheetContext.mounted) return;
+                  vm.applyPreview(draft);
+                  Navigator.pop(sheetContext);
                 },
                 onApply: () {
                   final result = draft.copy();
+                  if (!vm.applyPreview(result)) return;
                   Navigator.pop(sheetContext);
-                  vm.applyFilters(result);
                 },
               ),
               child: _BrandList(
@@ -401,7 +410,7 @@ class _ShopViewState extends State<ShopView> {
 
   Future<void> _openPriceSheet(BuildContext context) async {
     final draft = vm.appliedFilters.copy();
-    vm.previewFilters(draft);
+    vm.beginPreview();
 
     await showModalBottomSheet<void>(
       context: context,
@@ -420,17 +429,20 @@ class _ShopViewState extends State<ShopView> {
               footer: _SheetFooter(
                 viewModel: vm,
                 deleteEnabled: draft.hasPriceFilter,
-                onDelete: () {
+                onDelete: () async {
                   setSheetState(() {
                     draft.minPrice = null;
                     draft.maxPrice = null;
                   });
-                  vm.previewFilters(draft);
+                  final ready = await vm.previewFiltersNow(draft);
+                  if (!ready || !sheetContext.mounted) return;
+                  vm.applyPreview(draft);
+                  Navigator.pop(sheetContext);
                 },
                 onApply: () {
                   final result = draft.copy();
+                  if (!vm.applyPreview(result)) return;
                   Navigator.pop(sheetContext);
-                  vm.applyFilters(result);
                 },
               ),
               child: Padding(
@@ -474,7 +486,7 @@ class _ShopViewState extends State<ShopView> {
   Future<void> _openAttributeSheet(BuildContext context, ProductAttributeFilterModel attribute) async {
     final draft = vm.appliedFilters.copy();
     draft.attributeOptionIds.putIfAbsent(attribute.id, () => <int>{});
-    vm.previewFilters(draft);
+    vm.beginPreview();
 
     await showModalBottomSheet<void>(
       context: context,
@@ -496,15 +508,19 @@ class _ShopViewState extends State<ShopView> {
               footer: _SheetFooter(
                 viewModel: vm,
                 deleteEnabled: selected.isNotEmpty,
-                onDelete: () {
+                onDelete: () async {
                   setSheetState(selected.clear);
-                  vm.previewFilters(draft);
+                  draft.attributeOptionIds.remove(attribute.id);
+                  final ready = await vm.previewFiltersNow(draft);
+                  if (!ready || !sheetContext.mounted) return;
+                  vm.applyPreview(draft);
+                  Navigator.pop(sheetContext);
                 },
                 onApply: () {
                   if (selected.isEmpty) draft.attributeOptionIds.remove(attribute.id);
                   final result = draft.copy();
+                  if (!vm.applyPreview(result)) return;
                   Navigator.pop(sheetContext);
-                  vm.applyFilters(result);
                 },
               ),
               child: isColor
@@ -543,7 +559,7 @@ class _ShopViewState extends State<ShopView> {
   }
 
   Future<void> _openFullFilter(BuildContext context) async {
-    vm.previewFilters(vm.appliedFilters.copy());
+    vm.beginPreview();
     await showGeneralDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -624,15 +640,7 @@ class _FullFilterDialogState extends State<_FullFilterDialog> {
                     const Spacer(),
                     const Text('فیلترها', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                     const Spacer(),
-                    TextButton(
-                      onPressed: draft.activeFilterGroupsCount == 0
-                          ? null
-                          : () {
-                              draft.clearAll(keepSearch: true);
-                              _changed();
-                            },
-                      child: const Text('پاک کردن'),
-                    ),
+                    const SizedBox(width: 48),
                   ],
                 ),
               ),
@@ -760,14 +768,18 @@ class _FullFilterDialogState extends State<_FullFilterDialog> {
                 viewModel: vm,
                 deleteEnabled: draft.activeFilterGroupsCount > 0,
                 deleteLabel: 'حذف فیلترها',
-                onDelete: () {
+                onDelete: () async {
                   draft.clearAll(keepSearch: true);
-                  _changed();
+                  setState(() {});
+                  final ready = await vm.previewFiltersNow(draft);
+                  if (!ready || !context.mounted) return;
+                  vm.applyPreview(draft);
+                  Navigator.pop(context);
                 },
                 onApply: () {
                   final result = draft.copy();
+                  if (!vm.applyPreview(result)) return;
                   Navigator.pop(context);
-                  vm.applyFilters(result);
                 },
               ),
             ],
@@ -1105,16 +1117,21 @@ class _SheetFooter extends StatelessWidget {
             child: AnimatedBuilder(
               animation: viewModel,
               builder: (context, child) {
-                return FilledButton(
-                  onPressed: onApply,
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                    backgroundColor: _accent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                return IgnorePointer(
+                  ignoring: !viewModel.canApplyPreview,
+                  child: FilledButton(
+                    onPressed: onApply,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(52),
+                      backgroundColor: _accent,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: viewModel.isPreviewLoading
+                        ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : viewModel.previewErrorMessage != null
+                            ? const Text('خطا در محاسبه محصولات')
+                            : Text('مشاهده ${_fa(viewModel.previewCount)} محصول'),
                   ),
-                  child: viewModel.isPreviewLoading
-                      ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : Text('مشاهده ${_fa(viewModel.previewCount)} محصول'),
                 );
               },
             ),

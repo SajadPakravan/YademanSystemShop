@@ -1,18 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/products_list_model.dart';
-import 'package:yad_sys/tools/products_local_store.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
 
 class SearchViewModel with ChangeNotifier {
-  SearchViewModel({ProductsLocalStore? localStore}) : _localStore = localStore ?? ProductsLocalStore.instance;
-
-  final ProductsLocalStore _localStore;
+  final HttpRequest _httpRequest = HttpRequest();
   static final List<String> _sessionRecentSearches = <String>[];
 
   Timer? _debounce;
+  int _requestSerial = 0;
   String query = '';
+  bool isSearching = false;
   bool isApplying = false;
   List<ProductCategoryFilterModel> categories = const <ProductCategoryFilterModel>[];
   List<ProductBrandFilterModel> brands = const <ProductBrandFilterModel>[];
@@ -20,13 +20,15 @@ class SearchViewModel with ChangeNotifier {
 
   List<String> get recentSearches => List<String>.unmodifiable(_sessionRecentSearches);
   bool get canSearch => query.trim().length >= 3;
-  bool get hasLocalResults => categories.isNotEmpty || brands.isNotEmpty || products.isNotEmpty;
+  bool get hasResults => categories.isNotEmpty || brands.isNotEmpty || products.isNotEmpty;
 
   void onQueryChanged(String value) {
     query = value;
     _debounce?.cancel();
 
-    if (value.trim().length < 3) {
+    if (!canSearch) {
+      _requestSerial++;
+      isSearching = false;
       categories = const <ProductCategoryFilterModel>[];
       brands = const <ProductBrandFilterModel>[];
       products = const <ProductsListItemModel>[];
@@ -34,21 +36,49 @@ class SearchViewModel with ChangeNotifier {
       return;
     }
 
-    _debounce = Timer(const Duration(milliseconds: 120), () {
-      final normalized = query.trim();
-      categories = _localStore.searchCategories(normalized, limit: 6);
-      brands = _localStore.searchBrands(normalized, limit: 6);
-      products = _localStore.searchProducts(normalized, limit: 12);
-      notifyListeners();
+    final serial = ++_requestSerial;
+    isSearching = true;
+    notifyListeners();
+
+    _debounce = Timer(const Duration(milliseconds: 350), () {
+      _loadSuggestions(query.trim(), serial);
     });
+  }
+
+  Future<void> _loadSuggestions(String value, int serial) async {
+    try {
+      final json = await _httpRequest.getProducts(search: value, perPage: 12);
+      if (serial != _requestSerial || json is! Map) return;
+
+      final response = ProductsListModel.fromJson(Map<String, dynamic>.from(json));
+      if (!response.success) return;
+
+      final categoryIds = response.data.expand((item) => item.categories.map((category) => category.id)).toSet();
+      final brandIds = response.data.expand((item) => item.brand.map((brand) => brand.id)).toSet();
+      final normalized = value.toLowerCase();
+
+      categories = response.filters.flatCategories
+          .where((item) => categoryIds.contains(item.id) || item.name.toLowerCase().contains(normalized))
+          .take(6)
+          .toList(growable: false);
+      brands = response.filters.brands
+          .where((item) => brandIds.contains(item.id) || item.name.toLowerCase().contains(normalized))
+          .take(6)
+          .toList(growable: false);
+      products = response.data.take(12).toList(growable: false);
+    } catch (e) {
+      if (kDebugMode) debugPrint('SEARCH SUGGESTION ERROR >>>> $e');
+    } finally {
+      if (serial == _requestSerial) {
+        isSearching = false;
+        notifyListeners();
+      }
+    }
   }
 
   void useRecent(String value) {
     query = value;
-    categories = _localStore.searchCategories(value, limit: 6);
-    brands = _localStore.searchBrands(value, limit: 6);
-    products = _localStore.searchProducts(value, limit: 12);
-    notifyListeners();
+    onQueryChanged(value);
   }
 
   void clearRecentSearches() {
@@ -59,6 +89,7 @@ class SearchViewModel with ChangeNotifier {
   Future<bool> submitSearch(ShopViewModel shopViewModel) async {
     final value = query.trim();
     if (value.length < 3 || isApplying) return false;
+
     isApplying = true;
     notifyListeners();
     try {

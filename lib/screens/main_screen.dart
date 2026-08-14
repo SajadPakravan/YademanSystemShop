@@ -14,29 +14,48 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
-  PageController pageCtrl = PageController();
-  int pageIndex = 0;
-  IconData icnHome = Icons.home;
-  IconData icnShop = Icons.store_outlined;
-  IconData icnCategory = Icons.category_outlined;
-  IconData icnAccount = Icons.person_outlined;
+class _MainScreenState extends State<MainScreen> {
+  late int pageIndex;
+  late final List<Widget?> _pages;
 
   @override
   void initState() {
     super.initState();
+
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      systemStatusBarContrastEnforced: false,
-      systemNavigationBarColor: Colors.white,
-      systemNavigationBarIconBrightness: Brightness.dark,
-      systemNavigationBarContrastEnforced: false,
-      systemNavigationBarDividerColor: Colors.black,
-    ));
-    pageCtrl = PageController(initialPage: widget.pageIndex);
-    pageIndex = widget.pageIndex;
-    WidgetsBinding.instance.addPostFrameCallback((_) => setState(() => onTapMenu(index: widget.pageIndex)));
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        systemStatusBarContrastEnforced: false,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+        systemNavigationBarContrastEnforced: false,
+        systemNavigationBarDividerColor: Colors.black,
+      ),
+    );
+
+    pageIndex = widget.pageIndex.clamp(0, 3);
+    _pages = List<Widget?>.filled(4, null);
+    _pages[pageIndex] = _createPage(pageIndex);
+  }
+
+  Widget _createPage(int index) {
+    return switch (index) {
+      0 => const HomeScreen(),
+      1 => const ShopScreen(),
+      2 => const CategoriesScreen(),
+      3 => const ProfileScreen(),
+      _ => const HomeScreen(),
+    };
+  }
+
+  void _openPage(int index) {
+    if (index == pageIndex) return;
+
+    setState(() {
+      _pages[index] ??= _createPage(index);
+      pageIndex = index;
+    });
   }
 
   @override
@@ -44,87 +63,34 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        body: PageView(
-          controller: pageCtrl,
-          physics: const NeverScrollableScrollPhysics(),
-          children: const [
-            HomeScreen(),
-            ShopScreen(),
-            CategoriesScreen(),
-            ProfileScreen(),
+        body: Stack(
+          children: <Widget>[
+            for (var index = 0; index < _pages.length; index++)
+              if (_pages[index] != null)
+                Positioned.fill(
+                  child: Offstage(
+                    offstage: pageIndex != index,
+                    child: TickerMode(enabled: pageIndex == index, child: _pages[index]!),
+                  ),
+                ),
           ],
         ),
-        bottomNavigationBar: bottomNavigationBar(),
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(
+            border: Border(top: BorderSide(color: Colors.black12, width: 3)),
+          ),
+          child: BottomNavigationBar(
+            currentIndex: pageIndex,
+            onTap: _openPage,
+            items: <BottomNavigationBarItem>[
+              BottomNavigationBarItem(icon: Icon(pageIndex == 0 ? Icons.home : Icons.home_outlined), label: 'خانه'),
+              BottomNavigationBarItem(icon: Icon(pageIndex == 1 ? Icons.store : Icons.store_outlined), label: 'فروشگاه'),
+              BottomNavigationBarItem(icon: Icon(pageIndex == 2 ? Icons.category : Icons.category_outlined), label: 'دسته‌بندی‌ها'),
+              BottomNavigationBarItem(icon: Icon(pageIndex == 3 ? Icons.person : Icons.person_outlined), label: 'حساب من'),
+            ],
+          ),
+        ),
       ),
     );
-  }
-
-  Container bottomNavigationBar() {
-    return Container(
-      decoration: const BoxDecoration(border: Border(top: BorderSide(color: Colors.black12, width: 3))),
-      child: BottomNavigationBar(
-        currentIndex: pageIndex,
-        onTap: (index) {
-          onTapMenu(index: index);
-          setState(() => pageCtrl.jumpToPage(index));
-        },
-        items: [
-          BottomNavigationBarItem(icon: Icon(icnHome), label: "خانه"),
-          BottomNavigationBarItem(icon: Icon(icnShop), label: "فروشگاه"),
-          BottomNavigationBarItem(icon: Icon(icnCategory), label: "دسته‌بندی‌ها"),
-          BottomNavigationBarItem(icon: Icon(icnAccount), label: "حساب من"),
-        ],
-      ),
-    );
-  }
-
-  void onTapMenu({required int index}) {
-    switch (index) {
-      case 0:
-        {
-          menuUnSelected();
-          setState(() {
-            pageIndex = index;
-            icnHome = Icons.home;
-          });
-          break;
-        }
-      case 1:
-        {
-          menuUnSelected();
-          setState(() {
-            pageIndex = index;
-            icnShop = Icons.store;
-          });
-          break;
-        }
-      case 2:
-        {
-          menuUnSelected();
-          setState(() {
-            pageIndex = index;
-            icnCategory = Icons.category;
-          });
-          break;
-        }
-      case 3:
-        {
-          menuUnSelected();
-          setState(() {
-            pageIndex = index;
-            icnAccount = Icons.person;
-          });
-          break;
-        }
-    }
-  }
-
-  void menuUnSelected() {
-    setState(() {
-      icnHome = Icons.home_outlined;
-      icnShop = Icons.store_outlined;
-      icnCategory = Icons.category_outlined;
-      icnAccount = Icons.person_outlined;
-    });
   }
 }

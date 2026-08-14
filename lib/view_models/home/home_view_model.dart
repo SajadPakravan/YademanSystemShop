@@ -13,25 +13,34 @@ class HomeViewModel with ChangeNotifier {
   bool _hasLoadedOnce = false;
 
   List<SectionModel> get sections => _sections;
-
   bool get isLoading => _isLoading;
-
   bool get isRefreshing => _isRefreshing;
-
   String get errorMessage => _errorMessage;
-
   bool get hasError => _errorMessage.isNotEmpty;
-
   bool get hasLoadedOnce => _hasLoadedOnce;
+
+  void useSplashResponse(Map<String, dynamic> json) {
+    final response = HomeModel.fromJson(json);
+    if (!response.success) {
+      throw const FormatException('API خانه پاسخ ناموفق برگرداند');
+    }
+
+    _sections = List<SectionModel>.unmodifiable(response.sections);
+    _hasLoadedOnce = true;
+    _errorMessage = '';
+    notifyListeners();
+  }
 
   Future<void> loadHome({bool refresh = false}) async {
     if (_isLoading || _isRefreshing) return;
+    if (!refresh && _hasLoadedOnce) return;
 
     if (refresh) {
       _isRefreshing = true;
-    } else if (!_hasLoadedOnce) {
+    } else {
       _isLoading = true;
     }
+
     _errorMessage = '';
     notifyListeners();
 
@@ -50,8 +59,8 @@ class HomeViewModel with ChangeNotifier {
       _hasLoadedOnce = true;
     } catch (e, stackTrace) {
       if (kDebugMode) {
-        print('HOME API ERROR >>>> $e');
-        print(stackTrace);
+        debugPrint('HOME API ERROR >>>> $e');
+        debugPrint('$stackTrace');
       }
       _errorMessage = 'دریافت اطلاعات صفحه خانه انجام نشد. اتصال اینترنت یا API را بررسی کنید.';
     } finally {

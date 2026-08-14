@@ -219,7 +219,7 @@ class _SearchIdle extends StatelessWidget {
           ),
           const SizedBox(height: 26),
         ],
-        const Text('برای جستجوی آفلاین حداقل ۳ کاراکتر وارد کنید.', style: TextStyle(color: Colors.black45, fontSize: 13)),
+        const Text('برای شروع جستجو حداقل ۳ کاراکتر وارد کنید.', style: TextStyle(color: Colors.black45, fontSize: 13)),
       ],
     );
   }
@@ -234,9 +234,9 @@ class _SearchResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!viewModel.hasLocalResults) {
-      return const Center(child: Text('نتیجه‌ای در فهرست ذخیره‌شده پیدا نشد.', style: TextStyle(color: Colors.black54)));
-    }
+    // if (!viewModel.hasLocalResults) {
+    //   return const Center(child: Text('نتیجه‌ای پیدا نشد.', style: TextStyle(color: Colors.black54)));
+    // }
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 28),
