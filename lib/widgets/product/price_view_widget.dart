@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/product_card_model.dart';
+import 'package:yad_sys/tools/app_function.dart';
 
 class PriceViewWidget extends StatelessWidget {
   const PriceViewWidget({super.key, required this.product});
@@ -23,7 +23,7 @@ class PriceViewWidget extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: Colors.red.shade600, borderRadius: BorderRadius.circular(50)),
                 child: Text(
-                  '٪ ${product.discountPercent.toString().toPersianDigit()}',
+                  '٪ ${AppFunction.faDigit(product.discountPercent)}',
                   style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -57,6 +57,6 @@ class PriceViewWidget extends StatelessWidget {
 
   String _formatPrice(int? value) {
     final safeValue = value ?? 0;
-    return safeValue.toString().toPersianDigit().seRagham();
+    return AppFunction.faDigit(safeValue);
   }
 }

@@ -1,14 +1,18 @@
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:persian_number_utility/persian_number_utility.dart';
-import 'package:yad_sys/models/product_card_model.dart';
 import 'package:yad_sys/models/products_list_model.dart';
-import 'package:yad_sys/tools/go_page.dart';
+import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
-import 'package:yad_sys/widgets/price_view_widget.dart';
+import 'package:yad_sys/widgets/product/product_horizontal_card_widget2.dart';
 import 'package:yad_sys/widgets/search.dart';
+
+const Color _accent = Color(0xffe6123f);
+const Color _activeChipBackground = Color(0xfffff0f3);
+
+Color _bestForeground(Color color) {
+  return ThemeData.estimateBrightnessForColor(color) == Brightness.dark ? Colors.white : Colors.black87;
+}
 
 class ShopView extends StatefulWidget {
   const ShopView({super.key, required this.viewModel});
@@ -49,40 +53,43 @@ class _ShopViewState extends State<ShopView> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xfffafafa),
-        body: SafeArea(
-          child: RefreshIndicator(
+        backgroundColor: Colors.white,
+        body: NestedScrollView(
+          floatHeaderSlivers: true,
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverAppBar(
+              floating: true,
+              snap: true,
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+              titleSpacing: 10,
+              collapsedHeight: 80,
+              title: const Search(),
+              bottom: PreferredSize(preferredSize: const Size.fromHeight(80), child: _buildFiltersArea(context)),
+            ),
+          ],
+          body: RefreshIndicator(
             onRefresh: vm.refresh,
             child: CustomScrollView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-              slivers: <Widget>[
-                SliverToBoxAdapter(child: _buildTopArea(context)),
+              slivers: [
                 if (vm.isInitialLoading && vm.productsLst.isEmpty)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(child: CircularProgressIndicator()),
-                  )
+                  const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
                 else if (vm.errorMessage != null && vm.productsLst.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,
                     child: _ErrorState(message: vm.errorMessage!, onRetry: vm.retry),
                   )
                 else if (vm.productsLst.isEmpty)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: _EmptyState(),
-                  )
-                else ...<Widget>[
+                  const SliverFillRemaining(hasScrollBody: false, child: _EmptyState())
+                else ...[
                   SliverToBoxAdapter(child: _buildResultHeader()),
                   SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final product = vm.productsLst[index];
-                        return _ShopProductCard(product: product);
-                      },
-                      childCount: vm.productsLst.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final product = vm.productsLst[index];
+                      return ShopProductCard(product: product);
+                    }, childCount: vm.productsLst.length),
                   ),
                   SliverToBoxAdapter(
                     child: AnimatedSize(
@@ -104,21 +111,26 @@ class _ShopViewState extends State<ShopView> {
     );
   }
 
-  Widget _buildTopArea(BuildContext context) {
+  Widget _buildFiltersArea(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final state = vm.appliedFilters;
     return Material(
       color: Colors.white,
       elevation: 0.5,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
-        child: Column(
-          children: <Widget>[
-            const Search(),
-            const SizedBox(height: 12),
-            _buildPrimaryFilters(context),
-            if (vm.filters.attributes.isNotEmpty) ...<Widget>[
-              const SizedBox(height: 8),
-              _buildAttributeFilters(context),
-            ],
+        padding: const EdgeInsets.only(bottom: 5),
+        child: Row(
+          children: [
+            _AllFiltersChipBtn(title: 'فیلتر', badgeCount: state.activeFilterGroupsCount, icon: Icons.tune_rounded, onTap: () => _openFullFilter(context)),
+            Expanded(
+              child: Column(
+                spacing: 8,
+                children: [
+                  _buildPrimaryFilters(context),
+                  if (vm.filters.attributes.isNotEmpty) ...[_buildAttributeFilters(context)],
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -127,27 +139,15 @@ class _ShopViewState extends State<ShopView> {
 
   Widget _buildPrimaryFilters(BuildContext context) {
     final state = vm.appliedFilters;
-
-    // دکمه «فیلتر» ثابت در سمت راست می‌ماند و بقیه فیلترهای اصلی
-    // در فضای سمت چپ آن به صورت افقی اسکرول می‌شوند.
     return SizedBox(
-      height: 45,
+      height: 40,
       child: Row(
-        children: <Widget>[
-          _FilterChipButton(
-            title: 'فیلتر',
-            active: state.activeFilterGroupsCount > 0,
-            badgeCount: state.activeFilterGroupsCount,
-            icon: Icons.tune_rounded,
-            compactMargin: true,
-            onTap: () => _openFullFilter(context),
-          ),
-          const SizedBox(width: 8),
+        children: [
           Expanded(
             child: ListView(
               scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              children: <Widget>[
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              children: [
                 _FilterChipButton(
                   title: vm.sortChipTitle(state),
                   active: state.hasNonDefaultSort,
@@ -166,11 +166,7 @@ class _ShopViewState extends State<ShopView> {
                   badgeCount: state.brandIds.length > 1 ? state.brandIds.length : 0,
                   onTap: () => _openBrandSheet(context),
                 ),
-                _FilterChipButton(
-                  title: 'محدوده قیمت',
-                  active: state.hasPriceFilter,
-                  onTap: () => _openPriceSheet(context),
-                ),
+                _FilterChipButton(title: 'محدوده قیمت', active: state.hasPriceFilter, onTap: () => _openPriceSheet(context)),
               ],
             ),
           ),
@@ -182,12 +178,12 @@ class _ShopViewState extends State<ShopView> {
   Widget _buildAttributeFilters(BuildContext context) {
     final state = vm.appliedFilters;
     return SizedBox(
-      height: 45,
+      height: 40,
       child: ListView.separated(
+        padding: EdgeInsets.symmetric(horizontal: 10),
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
         itemCount: vm.filters.attributes.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 7),
+        separatorBuilder: (_, _) => const SizedBox(width: 7),
         itemBuilder: (context, index) {
           final attribute = vm.filters.attributes[index];
           final count = state.selectedOptionsFor(attribute.id).length;
@@ -208,17 +204,12 @@ class _ShopViewState extends State<ShopView> {
       color: Colors.white,
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
       child: Row(
-        children: <Widget>[
-          const Icon(Icons.grid_view_rounded, size: 22, color: Colors.black87),
-          const Spacer(),
+        children: [
           Text(
-            '${_fa(vm.productCount)} کالا',
+            '${AppFunction.faDigit(vm.productCount)} کالا',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff202020)),
           ),
-          if (vm.isRefreshing) ...<Widget>[
-            const SizedBox(width: 10),
-            const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-          ],
+          if (vm.isRefreshing) ...[const SizedBox(width: 10), const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))],
         ],
       ),
     );
@@ -262,7 +253,7 @@ class _ShopViewState extends State<ShopView> {
               child: ListView.separated(
                 padding: EdgeInsets.zero,
                 itemCount: ShopSortOption.values.length,
-                separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xffeeeeee)),
+                separatorBuilder: (_, _) => const Divider(height: 1, color: Color(0xffeeeeee)),
                 itemBuilder: (context, index) {
                   final option = ShopSortOption.values[index];
                   final checked = option.title == selected.title;
@@ -270,7 +261,7 @@ class _ShopViewState extends State<ShopView> {
                     dense: true,
                     minVerticalPadding: 4,
                     title: Text(option.title, style: TextStyle(fontWeight: checked ? FontWeight.w700 : FontWeight.w400)),
-                    trailing: checked ? const Icon(Icons.check_rounded, color: _accent) : null,
+                    trailing: checked ? Icon(Icons.check_rounded, color: _accent) : null,
                     onTap: () {
                       setSheetState(() {
                         draft.orderby = option.orderby;
@@ -324,7 +315,7 @@ class _ShopViewState extends State<ShopView> {
               child: ListView.separated(
                 padding: EdgeInsets.zero,
                 itemCount: rows.length,
-                separatorBuilder: (_, __) => const Divider(height: 1, indent: 16, endIndent: 16, color: Color(0xfff0f0f0)),
+                separatorBuilder: (_, _) => const Divider(height: 1, indent: 16, endIndent: 16, color: Color(0xfff0f0f0)),
                 itemBuilder: (context, index) {
                   final row = rows[index];
                   final checked = draft.categoryIds.contains(row.category.id);
@@ -448,12 +439,16 @@ class _ShopViewState extends State<ShopView> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                 child: Column(
-                  children: <Widget>[
+                  children: [
                     Row(
-                      children: <Widget>[
-                        Expanded(child: _PriceLabel(label: 'از', value: draft.minPrice ?? vm.priceFloor)),
+                      children: [
+                        Expanded(
+                          child: _PriceLabel(label: 'از', value: draft.minPrice ?? vm.priceFloor),
+                        ),
                         const SizedBox(width: 14),
-                        Expanded(child: _PriceLabel(label: 'تا', value: draft.maxPrice ?? ceiling.toInt())),
+                        Expanded(
+                          child: _PriceLabel(label: 'تا', value: draft.maxPrice ?? ceiling.toInt()),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -462,7 +457,7 @@ class _ShopViewState extends State<ShopView> {
                       max: ceiling <= vm.priceFloor ? vm.priceFloor + 1 : ceiling,
                       values: RangeValues(start, end),
                       activeColor: _accent,
-                      labels: RangeLabels(_money(start.round()), _money(end.round())),
+                      labels: RangeLabels(AppFunction.faPrice(start.round()), AppFunction.faPrice(end.round())),
                       onChanged: (values) {
                         setSheetState(() {
                           draft.minPrice = values.start.round();
@@ -471,7 +466,7 @@ class _ShopViewState extends State<ShopView> {
                         vm.previewFilters(draft);
                       },
                     ),
-                    const Text('مبالغ بر حسب تومان هستند.', style: TextStyle(color: Colors.black45, fontSize: 12)),
+                    const Text('مبالغ بر حسب تومان هستند', style: TextStyle(color: Colors.black45, fontSize: 12)),
                   ],
                 ),
               ),
@@ -499,12 +494,7 @@ class _ShopViewState extends State<ShopView> {
             final isColor = _isColorAttribute(attribute);
             return _FilterSheetShell(
               title: attribute.name,
-              contentHeight: _adaptiveContentHeight(
-                context,
-                attribute.options.length,
-                itemExtent: isColor ? 88 : 55,
-                maxFactor: 0.62,
-              ),
+              contentHeight: _adaptiveContentHeight(context, attribute.options.length, itemExtent: isColor ? 88 : 55, maxFactor: 0.62),
               footer: _SheetFooter(
                 viewModel: vm,
                 deleteEnabled: selected.isNotEmpty,
@@ -535,7 +525,7 @@ class _ShopViewState extends State<ShopView> {
                   : ListView.separated(
                       padding: EdgeInsets.zero,
                       itemCount: attribute.options.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xffeeeeee)),
+                      separatorBuilder: (_, _) => const Divider(height: 1, color: Color(0xffeeeeee)),
                       itemBuilder: (context, index) {
                         final option = attribute.options[index];
                         final checked = selected.contains(option.id);
@@ -583,12 +573,7 @@ class _ShopViewState extends State<ShopView> {
     vm.cancelPreview();
   }
 
-  double _adaptiveContentHeight(
-    BuildContext context,
-    int itemCount, {
-    double itemExtent = 55,
-    double maxFactor = 0.60,
-  }) {
+  double _adaptiveContentHeight(BuildContext context, int itemCount, {double itemExtent = 55, double maxFactor = 0.60}) {
     final available = MediaQuery.sizeOf(context).height * maxFactor;
     return math.min(available, math.max(120, itemCount * itemExtent));
   }
@@ -630,13 +615,13 @@ class _FullFilterDialogState extends State<_FullFilterDialog> {
         child: Material(
           color: const Color(0xfff8f8f8),
           child: Column(
-            children: <Widget>[
+            children: [
               Container(
                 color: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 child: Row(
-                  children: <Widget>[
-                    IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
+                  children: [
+                    IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded), color: Colors.black54),
                     const Spacer(),
                     const Text('فیلترها', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                     const Spacer(),
@@ -647,31 +632,33 @@ class _FullFilterDialogState extends State<_FullFilterDialog> {
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
-                  children: <Widget>[
+                  children: [
                     _FullFilterSection(
                       title: 'مرتب‌سازی',
                       subtitle: vm.sortChipTitle(draft),
                       child: Column(
-                        children: ShopSortOption.values.map((option) {
-                          final selected = ShopSortOption.resolve(orderby: draft.orderby, order: draft.order, onSale: draft.onSale).title == option.title;
-                          return RadioListTile<String>(
-                            value: option.title,
-                            groupValue: selected ? option.title : null,
-                            title: Text(option.title),
-                            onChanged: (_) {
-                              draft.orderby = option.orderby;
-                              draft.order = option.order;
-                              draft.onSale = option.onSale;
-                              _changed();
-                            },
-                          );
-                        }).toList(growable: false),
+                        children: ShopSortOption.values
+                            .map((option) {
+                              final selected = ShopSortOption.resolve(orderby: draft.orderby, order: draft.order, onSale: draft.onSale).title == option.title;
+                              return RadioListTile<String>(
+                                value: option.title,
+                                groupValue: selected ? option.title : null,
+                                title: Text(option.title),
+                                onChanged: (_) {
+                                  draft.orderby = option.orderby;
+                                  draft.order = option.order;
+                                  draft.onSale = option.onSale;
+                                  _changed();
+                                },
+                              );
+                            })
+                            .toList(growable: false),
                       ),
                     ),
                     _FullFilterSection(
                       title: 'محدوده قیمت',
                       subtitle: draft.hasPriceFilter
-                          ? '${_money(draft.minPrice ?? vm.priceFloor)} تا ${_money(draft.maxPrice ?? ceiling)} تومان'
+                          ? '${AppFunction.faPrice(draft.minPrice ?? vm.priceFloor)} تا ${AppFunction.faPrice(draft.maxPrice ?? ceiling)} تومان'
                           : 'بدون محدودیت',
                       child: _InlinePriceFilter(
                         floor: vm.priceFloor,
@@ -687,55 +674,59 @@ class _FullFilterDialogState extends State<_FullFilterDialog> {
                     ),
                     _FullFilterSection(
                       title: 'دسته‌بندی',
-                      subtitle: draft.categoryIds.isEmpty ? 'همه دسته‌ها' : '${_fa(draft.categoryIds.length)} مورد انتخاب شده',
+                      subtitle: draft.categoryIds.isEmpty ? 'همه دسته‌ها' : '${AppFunction.faDigit(draft.categoryIds.length)} مورد انتخاب شده',
                       child: Column(
-                        children: categories.map((row) {
-                          return CheckboxListTile(
-                            value: draft.categoryIds.contains(row.category.id),
-                            controlAffinity: ListTileControlAffinity.leading,
-                            contentPadding: EdgeInsets.only(right: row.depth * 18.0, left: 4),
-                            dense: true,
-                            title: Text(row.category.name),
-                            onChanged: (value) {
-                              if (value == true) {
-                                draft.categoryIds.add(row.category.id);
-                              } else {
-                                draft.categoryIds.remove(row.category.id);
-                              }
-                              _changed();
-                            },
-                          );
-                        }).toList(growable: false),
+                        children: categories
+                            .map((row) {
+                              return CheckboxListTile(
+                                value: draft.categoryIds.contains(row.category.id),
+                                controlAffinity: ListTileControlAffinity.leading,
+                                contentPadding: EdgeInsets.only(right: row.depth * 18.0, left: 4),
+                                dense: true,
+                                title: Text(row.category.name),
+                                onChanged: (value) {
+                                  if (value == true) {
+                                    draft.categoryIds.add(row.category.id);
+                                  } else {
+                                    draft.categoryIds.remove(row.category.id);
+                                  }
+                                  _changed();
+                                },
+                              );
+                            })
+                            .toList(growable: false),
                       ),
                     ),
                     _FullFilterSection(
                       title: 'برند',
-                      subtitle: draft.brandIds.isEmpty ? 'همه برندها' : '${_fa(draft.brandIds.length)} مورد انتخاب شده',
+                      subtitle: draft.brandIds.isEmpty ? 'همه برندها' : '${AppFunction.faDigit(draft.brandIds.length)} مورد انتخاب شده',
                       child: Column(
-                        children: vm.filters.brands.map((brand) {
-                          return CheckboxListTile(
-                            value: draft.brandIds.contains(brand.id),
-                            controlAffinity: ListTileControlAffinity.leading,
-                            dense: true,
-                            title: Text(brand.name),
-                            subtitle: brand.count > 0 ? Text('${_fa(brand.count)} کالا') : null,
-                            onChanged: (value) {
-                              if (value == true) {
-                                draft.brandIds.add(brand.id);
-                              } else {
-                                draft.brandIds.remove(brand.id);
-                              }
-                              _changed();
-                            },
-                          );
-                        }).toList(growable: false),
+                        children: vm.filters.brands
+                            .map((brand) {
+                              return CheckboxListTile(
+                                value: draft.brandIds.contains(brand.id),
+                                controlAffinity: ListTileControlAffinity.leading,
+                                dense: true,
+                                title: Text(brand.name),
+                                subtitle: brand.count > 0 ? Text('${AppFunction.faDigit(brand.count)} کالا') : null,
+                                onChanged: (value) {
+                                  if (value == true) {
+                                    draft.brandIds.add(brand.id);
+                                  } else {
+                                    draft.brandIds.remove(brand.id);
+                                  }
+                                  _changed();
+                                },
+                              );
+                            })
+                            .toList(growable: false),
                       ),
                     ),
                     ...vm.filters.attributes.map((attribute) {
                       final selected = draft.attributeOptionIds.putIfAbsent(attribute.id, () => <int>{});
                       return _FullFilterSection(
                         title: attribute.name,
-                        subtitle: selected.isEmpty ? 'همه' : '${_fa(selected.length)} مورد انتخاب شده',
+                        subtitle: selected.isEmpty ? 'همه' : '${AppFunction.faDigit(selected.length)} مورد انتخاب شده',
                         child: _isColorAttribute(attribute)
                             ? _ColorOptionsGrid(
                                 options: attribute.options,
@@ -746,18 +737,20 @@ class _FullFilterDialogState extends State<_FullFilterDialog> {
                                 },
                               )
                             : Column(
-                                children: attribute.options.map((option) {
-                                  return CheckboxListTile(
-                                    value: selected.contains(option.id),
-                                    controlAffinity: ListTileControlAffinity.leading,
-                                    dense: true,
-                                    title: Text(option.name),
-                                    onChanged: (_) {
-                                      _toggleId(selected, option.id);
-                                      _changed();
-                                    },
-                                  );
-                                }).toList(growable: false),
+                                children: attribute.options
+                                    .map((option) {
+                                      return CheckboxListTile(
+                                        value: selected.contains(option.id),
+                                        controlAffinity: ListTileControlAffinity.leading,
+                                        dense: true,
+                                        title: Text(option.name),
+                                        onChanged: (_) {
+                                          _toggleId(selected, option.id);
+                                          _changed();
+                                        },
+                                      );
+                                    })
+                                    .toList(growable: false),
                               ),
                       );
                     }),
@@ -791,13 +784,7 @@ class _FullFilterDialogState extends State<_FullFilterDialog> {
 }
 
 class _InlinePriceFilter extends StatefulWidget {
-  const _InlinePriceFilter({
-    required this.floor,
-    required this.ceiling,
-    required this.minValue,
-    required this.maxValue,
-    required this.onChanged,
-  });
+  const _InlinePriceFilter({required this.floor, required this.ceiling, required this.minValue, required this.maxValue, required this.onChanged});
 
   final int floor;
   final int ceiling;
@@ -839,12 +826,16 @@ class _InlinePriceFilterState extends State<_InlinePriceFilter> {
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: Column(
-        children: <Widget>[
+        children: [
           Row(
-            children: <Widget>[
-              Expanded(child: _PriceLabel(label: 'از', value: values.start.round())),
+            children: [
+              Expanded(
+                child: _PriceLabel(label: 'از', value: values.start.round()),
+              ),
               const SizedBox(width: 10),
-              Expanded(child: _PriceLabel(label: 'تا', value: values.end.round())),
+              Expanded(
+                child: _PriceLabel(label: 'تا', value: values.end.round()),
+              ),
             ],
           ),
           RangeSlider(
@@ -891,7 +882,7 @@ class _FullFilterSection extends StatelessWidget {
         childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-        children: <Widget>[child],
+        children: [child],
       ),
     );
   }
@@ -914,12 +905,10 @@ class _BrandListState extends State<_BrandList> {
   @override
   Widget build(BuildContext context) {
     final normalized = query.trim().toLowerCase();
-    final visible = normalized.isEmpty
-        ? widget.brands
-        : widget.brands.where((brand) => brand.name.toLowerCase().contains(normalized)).toList(growable: false);
+    final visible = normalized.isEmpty ? widget.brands : widget.brands.where((brand) => brand.name.toLowerCase().contains(normalized)).toList(growable: false);
 
     return Column(
-      children: <Widget>[
+      children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
           child: TextField(
@@ -938,7 +927,7 @@ class _BrandListState extends State<_BrandList> {
           child: ListView.separated(
             padding: EdgeInsets.zero,
             itemCount: visible.length,
-            separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xffeeeeee)),
+            separatorBuilder: (_, _) => const Divider(height: 1, color: Color(0xffeeeeee)),
             itemBuilder: (context, index) {
               final brand = visible[index];
               final checked = widget.selectedIds.contains(brand.id);
@@ -946,7 +935,7 @@ class _BrandListState extends State<_BrandList> {
                 value: checked,
                 controlAffinity: ListTileControlAffinity.leading,
                 title: Text(brand.name),
-                subtitle: brand.count > 0 ? Text('${_fa(brand.count)} کالا') : null,
+                subtitle: brand.count > 0 ? Text('${AppFunction.faDigit(brand.count)} کالا') : null,
                 onChanged: (value) => widget.onChanged(brand, value == true),
               );
             },
@@ -973,62 +962,50 @@ class _ColorOptionsGrid extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           shrinkWrap: true,
           physics: const BouncingScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            mainAxisExtent: 96,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: columns, mainAxisExtent: 96, crossAxisSpacing: 10, mainAxisSpacing: 10),
           itemCount: options.length,
           itemBuilder: (context, index) {
-        final option = options[index];
-        final selected = selectedIds.contains(option.id);
-        final color = _colorForOption(option);
-        return InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () => onToggle(option),
-          child: Container(
-            padding: const EdgeInsets.all(7),
-            decoration: BoxDecoration(
+            final option = options[index];
+            final selected = selectedIds.contains(option.id);
+            final color = _colorForOption(option);
+            return InkWell(
               borderRadius: BorderRadius.circular(14),
-              color: selected ? _activeChipBackground : Colors.white,
-              border: Border.all(color: selected ? _accent : const Color(0xffe0e0e0), width: selected ? 1.4 : 1),
-            ),
-            child: Column(
-              children: <Widget>[
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: color,
-                      border: Border.all(color: color == Colors.white ? const Color(0xffdedede) : Colors.transparent),
-                    ),
-                    child: selected
-                        ? Icon(Icons.check_rounded, color: _bestForeground(color), size: 22)
-                        : null,
-                  ),
+              onTap: () => onToggle(option),
+              child: Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  color: selected ? _activeChipBackground : Colors.white,
+                  border: Border.all(color: selected ? _accent : const Color(0xffe0e0e0), width: selected ? 1.4 : 1),
                 ),
-                const SizedBox(height: 5),
-                Text(option.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
-              ],
-            ),
-          ),
-          );
-        },
-      );
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: color,
+                          border: Border.all(color: color == Colors.white ? const Color(0xffdedede) : Colors.transparent),
+                        ),
+                        child: selected ? Icon(Icons.check_rounded, color: _bestForeground(color), size: 22) : null,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(option.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
       },
     );
   }
 }
 
 class _FilterSheetShell extends StatelessWidget {
-  const _FilterSheetShell({
-    required this.title,
-    required this.contentHeight,
-    required this.child,
-    required this.footer,
-  });
+  const _FilterSheetShell({required this.title, required this.contentHeight, required this.child, required this.footer});
 
   final String title;
   final double contentHeight;
@@ -1050,14 +1027,18 @@ class _FilterSheetShell extends StatelessWidget {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
+          children: [
             const SizedBox(height: 8),
-            Container(width: 42, height: 4, decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(10))),
+            Container(
+              width: 42,
+              height: 4,
+              decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(10)),
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 8, 8),
               child: Row(
-                children: <Widget>[
-                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
+                children: [
+                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded), color: Colors.black54),
                   const Spacer(),
                   Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                   const Spacer(),
@@ -1076,13 +1057,7 @@ class _FilterSheetShell extends StatelessWidget {
 }
 
 class _SheetFooter extends StatelessWidget {
-  const _SheetFooter({
-    required this.viewModel,
-    required this.deleteEnabled,
-    required this.onDelete,
-    required this.onApply,
-    this.deleteLabel = 'حذف فیلتر',
-  });
+  const _SheetFooter({required this.viewModel, required this.deleteEnabled, required this.onDelete, required this.onApply, this.deleteLabel = 'حذف فیلتر'});
 
   final ShopViewModel viewModel;
   final bool deleteEnabled;
@@ -1129,8 +1104,8 @@ class _SheetFooter extends StatelessWidget {
                     child: viewModel.isPreviewLoading
                         ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                         : viewModel.previewErrorMessage != null
-                            ? const Text('خطا در محاسبه محصولات')
-                            : Text('مشاهده ${_fa(viewModel.previewCount)} محصول'),
+                        ? const Text('خطا در محاسبه محصولات')
+                        : Text('مشاهده ${AppFunction.faDigit(viewModel.previewCount)} محصول'),
                   ),
                 );
               },
@@ -1142,15 +1117,67 @@ class _SheetFooter extends StatelessWidget {
   }
 }
 
+class _AllFiltersChipBtn extends StatelessWidget {
+  const _AllFiltersChipBtn({required this.title, required this.onTap, this.badgeCount = 0, this.icon});
+
+  final String title;
+  final int badgeCount;
+  final IconData? icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        InkWell(
+          onTap: onTap,
+          child: Container(
+            height: 95,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400, width: 2),
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[Icon(icon, size: 18, color: Colors.black54), const SizedBox(height: 3)],
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 13, color: const Color(0xff333333), fontWeight: FontWeight.w400),
+                ),
+                Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Colors.black54),
+              ],
+            ),
+          ),
+        ),
+        if (badgeCount > 0)
+          Positioned(
+            top: -12,
+            left: 0,
+            right: 0,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              decoration: const BoxDecoration(color: _accent, shape: BoxShape.circle),
+              child: Text(
+                AppFunction.faDigit(badgeCount),
+                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class _FilterChipButton extends StatelessWidget {
-  const _FilterChipButton({
-    required this.title,
-    required this.active,
-    required this.onTap,
-    this.badgeCount = 0,
-    this.icon,
-    this.compactMargin = false,
-  });
+  const _FilterChipButton({required this.title, required this.active, required this.onTap, this.badgeCount = 0, this.icon, this.compactMargin = false});
 
   final String title;
   final bool active;
@@ -1182,17 +1209,18 @@ class _FilterChipButton extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    if (icon != null) ...<Widget>[
-                      Icon(icon, size: 18, color: active ? _accent : Colors.black54),
-                      const SizedBox(width: 5),
-                    ],
+                    if (icon != null) ...<Widget>[Icon(icon, size: 18, color: active ? _accent : Colors.black54), const SizedBox(width: 5)],
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 125),
                       child: Text(
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 13, color: active ? _accent : const Color(0xff333333), fontWeight: active ? FontWeight.w600 : FontWeight.w400),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: active ? _accent : const Color(0xff333333),
+                          fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -1204,95 +1232,20 @@ class _FilterChipButton extends StatelessWidget {
           ),
           if (badgeCount > 0)
             Positioned(
-              top: -5,
+              top: 0,
               left: -3,
               child: Container(
                 constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
                 alignment: Alignment.center,
                 padding: const EdgeInsets.symmetric(horizontal: 5),
                 decoration: const BoxDecoration(color: _accent, shape: BoxShape.circle),
-                child: Text(_fa(badgeCount), style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800)),
+                child: Text(
+                  AppFunction.faDigit(badgeCount),
+                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800),
+                ),
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _ShopProductCard extends StatelessWidget {
-  const _ShopProductCard({required this.product});
-
-  final ProductCardModel product;
-
-  @override
-  Widget build(BuildContext context) {
-    final displayName = (product.variationName?.trim().isNotEmpty ?? false) ? '${product.name} | ${product.variationName!.trim()}' : product.name;
-
-    return Material(
-      color: Colors.white,
-      child: InkWell(
-        onTap: () => toProduct(id: product.id),
-        child: Container(
-          height: 190,
-          padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xffeeeeee)))),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              SizedBox(
-                width: 145,
-                child: CachedNetworkImage(
-                  imageUrl: product.image,
-                  fit: BoxFit.contain,
-                  placeholder: (_, __) => const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))),
-                  errorWidget: (_, __, ___) => const Center(child: Icon(Icons.image_not_supported_outlined, size: 48, color: Colors.black26)),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    if (product.discountPercent > 0)
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: const Color(0xfffff0f3), borderRadius: BorderRadius.circular(8)),
-                          child: const Text('فروش ویژه', style: TextStyle(color: _accent, fontSize: 11, fontWeight: FontWeight.w600)),
-                        ),
-                      ),
-                    if (product.discountPercent > 0) const SizedBox(height: 7),
-                    Text(
-                      displayName,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 14, height: 1.55, fontWeight: FontWeight.w500, color: Color(0xff333333)),
-                    ),
-                    const SizedBox(height: 8),
-                    if (product.stockQuantity > 0 && product.stockQuantity <= 3)
-                      Text(
-                        '${_fa(product.stockQuantity)} عدد در انبار باقی مانده',
-                        style: const TextStyle(color: _accent, fontSize: 11.5, fontWeight: FontWeight.w600),
-                      )
-                    else if (product.stockQuantity > 0)
-                      const Text('موجود در انبار', style: TextStyle(color: Colors.black45, fontSize: 11.5)),
-                    const Spacer(),
-                    if (product.inquiry)
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
-                        decoration: BoxDecoration(color: const Color(0xffeef5fd), borderRadius: BorderRadius.circular(9)),
-                        child: const Text('استعلام قیمت و موجودی', textAlign: TextAlign.center, style: TextStyle(color: Color(0xff0353a4), fontSize: 12, fontWeight: FontWeight.w700)),
-                      )
-                    else
-                      PriceViewWidget(product: product),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -1317,7 +1270,13 @@ class _PriceLabel extends StatelessWidget {
         children: <Widget>[
           Text(label, style: const TextStyle(color: Colors.black45, fontSize: 12)),
           const Spacer(),
-          Flexible(child: Text('${_money(value)} تومان', overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12))),
+          Flexible(
+            child: Text(
+              '${AppFunction.faPrice(value)} تومان',
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+            ),
+          ),
         ],
       ),
     );
@@ -1416,32 +1375,5 @@ Color _colorForOption(ProductAttributeOptionModel option) {
       if (value != null) return Color(value);
     }
   }
-  return _colorForName(option.name);
-}
-
-Color _colorForName(String rawName) {
-  final name = rawName.replaceAll('\u200c', '').replaceAll(' ', '').toLowerCase();
-  if (name.contains('مشک')) return Colors.black;
-  if (name.contains('سفید')) return Colors.white;
-  if (name.contains('آبی') || name.contains('ابي')) return const Color(0xff2878c8);
-  if (name.contains('قرمز')) return const Color(0xffe53935);
-  if (name.contains('صورتی')) return const Color(0xffd81b60);
-  if (name.contains('بنفش')) return const Color(0xff7b1fa2);
-  if (name.contains('سبز')) return const Color(0xff5a9f32);
-  if (name.contains('نارنجی')) return const Color(0xffff8c1a);
-  if (name.contains('خاکستری') || name.contains('طوسی')) return const Color(0xff9e9e9e);
-  if (name.contains('طلایی') || name.contains('طلا')) return const Color(0xffffc107);
-  if (name.contains('قهوه')) return const Color(0xff795548);
-  if (name.contains('نقره')) return const Color(0xffc0c0c0);
   return const Color(0xff90a4ae);
 }
-
-Color _bestForeground(Color color) {
-  return ThemeData.estimateBrightnessForColor(color) == Brightness.dark ? Colors.white : Colors.black87;
-}
-
-String _fa(Object value) => value.toString().toPersianDigit();
-String _money(int value) => value.toString().toPersianDigit().seRagham();
-
-const Color _accent = Color(0xffe6123f);
-const Color _activeChipBackground = Color(0xfffff0f3);

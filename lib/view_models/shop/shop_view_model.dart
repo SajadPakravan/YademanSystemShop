@@ -19,7 +19,7 @@ class ShopSortOption {
     ShopSortOption(title: 'گران‌ترین', orderby: 'price', order: 'desc'),
     ShopSortOption(title: 'ارزان‌ترین', orderby: 'price', order: 'asc'),
     ShopSortOption(title: 'تخفیف‌دار', orderby: 'date', order: 'desc', onSale: true),
-    ShopSortOption(title: 'پرفروش‌ترین', orderby: 'cout_sales', order: 'desc'),
+    ShopSortOption(title: 'پرفروش‌ترین', orderby: 'count_sales', order: 'desc'),
     ShopSortOption(title: 'محبوب‌ترین', orderby: 'popularity', order: 'desc'),
   ];
 
@@ -37,15 +37,15 @@ class ShopFilterState {
     this.search = '',
     Set<int>? categoryIds,
     Set<int>? brandIds,
+    Map<int, Set<int>>? attributeOptionIds,
     this.minPrice,
     this.maxPrice,
     this.orderby = 'date',
     this.order = 'desc',
     this.onSale,
-    Map<int, Set<int>>? attributeOptionIds,
-  })  : categoryIds = categoryIds ?? <int>{},
-        brandIds = brandIds ?? <int>{},
-        attributeOptionIds = attributeOptionIds ?? <int, Set<int>>{};
+  }) : categoryIds = categoryIds ?? <int>{},
+       brandIds = brandIds ?? <int>{},
+       attributeOptionIds = attributeOptionIds ?? <int, Set<int>>{};
 
   String search;
   Set<int> categoryIds;
@@ -62,14 +62,12 @@ class ShopFilterState {
       search: filterBy.search ?? '',
       categoryIds: filterBy.categories.toSet(),
       brandIds: filterBy.brands.toSet(),
+      attributeOptionIds: <int, Set<int>>{for (final attribute in filterBy.attributes) attribute.id: attribute.options.toSet()},
       minPrice: filterBy.minPrice,
       maxPrice: filterBy.maxPrice,
       orderby: filterBy.orderby,
       order: filterBy.order,
       onSale: filterBy.onSale,
-      attributeOptionIds: <int, Set<int>>{
-        for (final attribute in filterBy.attributes) attribute.id: attribute.options.toSet(),
-      },
     );
   }
 
@@ -78,21 +76,21 @@ class ShopFilterState {
       search: search,
       categoryIds: Set<int>.from(categoryIds),
       brandIds: Set<int>.from(brandIds),
+      attributeOptionIds: attributeOptionIds.map((key, value) => MapEntry<int, Set<int>>(key, Set<int>.from(value))),
       minPrice: minPrice,
       maxPrice: maxPrice,
       orderby: orderby,
       order: order,
       onSale: onSale,
-      attributeOptionIds: attributeOptionIds.map(
-        (key, value) => MapEntry<int, Set<int>>(key, Set<int>.from(value)),
-      ),
     );
   }
 
   Set<int> selectedOptionsFor(int attributeId) => attributeOptionIds[attributeId] ?? <int>{};
 
   int get selectedAttributeOptionsCount => attributeOptionIds.values.fold<int>(0, (sum, values) => sum + values.length);
+
   bool get hasPriceFilter => minPrice != null || maxPrice != null;
+
   bool get hasNonDefaultSort => onSale == true || orderby != 'date' || order != 'desc';
 
   int get activeFilterGroupsCount {
@@ -122,14 +120,11 @@ class ShopFilterState {
 class ShopViewModel with ChangeNotifier {
   static const int _pageSize = 20;
   static const Duration _previewDebounceDuration = Duration(milliseconds: 280);
-
   final HttpRequest _httpRequest = HttpRequest();
-
   List<ProductCardModel> productsLst = <ProductCardModel>[];
   ProductsFiltersModel filters = ProductsFiltersModel.empty();
   ProductsPaginationModel pagination = ProductsPaginationModel.empty();
   ShopFilterState appliedFilters = ShopFilterState();
-
   bool initialized = false;
   bool isInitialLoading = false;
   bool isRefreshing = false;
@@ -139,8 +134,7 @@ class ShopViewModel with ChangeNotifier {
   String? previewErrorMessage;
   int previewCount = 0;
   int priceFloor = 0;
-  int priceCeiling = 100000000;
-
+  int priceCeiling = 500000000;
   Timer? _previewDebounce;
   int _previewRequestSerial = 0;
   ProductsListModel? _previewResponse;
@@ -148,13 +142,12 @@ class ShopViewModel with ChangeNotifier {
   bool _previewReady = false;
 
   int get productCount => pagination.totalItems;
+
   bool get hasNextPage => pagination.hasNext;
+
   bool get canApplyPreview => _previewReady && !isPreviewLoading && previewErrorMessage == null;
-  ShopSortOption get selectedSort => ShopSortOption.resolve(
-        orderby: appliedFilters.orderby,
-        order: appliedFilters.order,
-        onSale: appliedFilters.onSale,
-      );
+
+  ShopSortOption get selectedSort => ShopSortOption.resolve(orderby: appliedFilters.orderby, order: appliedFilters.order, onSale: appliedFilters.onSale);
 
   Future<void> loadInitial() async {
     if (initialized || isInitialLoading) return;
@@ -198,7 +191,6 @@ class ShopViewModel with ChangeNotifier {
     }
   }
 
-  /// برای ورود از Search یا مسیرهای دیگری که مستقیماً باید فیلتر را اعمال کنند.
   Future<void> applyFilters(ShopFilterState filtersToApply) async {
     errorMessage = null;
     isInitialLoading = productsLst.isEmpty;
@@ -243,11 +235,7 @@ class ShopViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _fetchProducts(
-        filters: appliedFilters,
-        page: pagination.currentPage + 1,
-        perPage: _pageSize,
-      );
+      final response = await _fetchProducts(filters: appliedFilters, page: pagination.currentPage + 1, perPage: _pageSize);
 
       final existingIds = productsLst.map((item) => item.id).toSet();
       for (final item in response.data) {
@@ -262,8 +250,6 @@ class ShopViewModel with ChangeNotifier {
     }
   }
 
-  /// هنگام باز شدن BottomSheet یا FullFilterDialog هیچ درخواست جدیدی زده
-  /// نمی‌شود. شمارنده از همان نتیجه فعلی صفحه فروشگاه استفاده می‌کند.
   void beginPreview() {
     _previewDebounce?.cancel();
     _previewRequestSerial++;
@@ -276,8 +262,6 @@ class ShopViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  /// با تغییر واقعی فیلتر، یک درخواست با همه فیلترهای فعال زده می‌شود.
-  /// پاسخ همان درخواست هم برای شمارنده و هم برای Apply نگه داشته می‌شود.
   void previewFilters(ShopFilterState draft) {
     _previewDebounce?.cancel();
 
@@ -358,8 +342,6 @@ class ShopViewModel with ChangeNotifier {
     }
   }
 
-  /// هیچ HTTP جدیدی اینجا وجود ندارد. اگر Preview آماده باشد همان پاسخ
-  /// قبلی تبدیل به لیست اصلی صفحه فروشگاه می‌شود.
   bool applyPreview(ShopFilterState draft) {
     if (!canApplyPreview || _previewFilterKey != _filterKey(draft)) return false;
 
@@ -369,7 +351,6 @@ class ShopViewModel with ChangeNotifier {
     if (response != null) {
       _acceptFirstPage(response);
     } else {
-      // یعنی draft همان فیلتر فعلی بوده و از ابتدا نیازی به درخواست نبود.
       previewCount = pagination.totalItems;
     }
 
@@ -437,20 +418,14 @@ class ShopViewModel with ChangeNotifier {
     if (rounded > priceCeiling) priceCeiling = rounded;
   }
 
-  Future<ProductsListModel> _fetchProducts({
-    required ShopFilterState filters,
-    required int page,
-    required int perPage,
-  }) async {
+  Future<ProductsListModel> _fetchProducts({required ShopFilterState filters, required int page, required int perPage}) async {
     final json = await _httpRequest.getProducts(
       page: page,
       perPage: perPage,
       search: filters.search,
       categories: filters.categoryIds.toList(growable: false),
       brands: filters.brandIds.toList(growable: false),
-      attributes: filters.attributeOptionIds.map(
-        (key, value) => MapEntry<int, List<int>>(key, value.toList(growable: false)),
-      ),
+      attributes: filters.attributeOptionIds.map((key, value) => MapEntry<int, List<int>>(key, value.toList(growable: false))),
       minPrice: filters.minPrice,
       maxPrice: filters.maxPrice,
       onSale: filters.onSale,
@@ -472,10 +447,12 @@ class ShopViewModel with ChangeNotifier {
     final categories = state.categoryIds.toList()..sort();
     final brands = state.brandIds.toList()..sort();
     final attributeIds = state.attributeOptionIds.entries.where((entry) => entry.value.isNotEmpty).map((entry) => entry.key).toList()..sort();
-    final attributes = attributeIds.map((id) {
-      final options = state.attributeOptionIds[id]!.toList()..sort();
-      return '$id:${options.join(',')}';
-    }).join('|');
+    final attributes = attributeIds
+        .map((id) {
+          final options = state.attributeOptionIds[id]!.toList()..sort();
+          return '$id:${options.join(',')}';
+        })
+        .join('|');
 
     return <String>[
       state.search.trim(),

@@ -27,12 +27,7 @@ class SplashView extends StatelessWidget {
           const _SplashBackground(),
           SafeArea(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                math.max(22.0, size.width * 0.07),
-                compact ? 26 : 44,
-                math.max(22.0, size.width * 0.07),
-                compact ? 24 : 34,
-              ),
+              padding: EdgeInsets.fromLTRB(math.max(22.0, size.width * 0.07), compact ? 26 : 44, math.max(22.0, size.width * 0.07), compact ? 24 : 34),
               child: Column(
                 children: <Widget>[
                   const Spacer(flex: 2),
@@ -46,28 +41,17 @@ class SplashView extends StatelessWidget {
                       fontSize: titleSize,
                       fontWeight: FontWeight.w900,
                       height: 1.35,
-                      shadows: const <Shadow>[
-                        Shadow(color: Color(0x50000000), blurRadius: 12, offset: Offset(0, 3)),
-                      ],
+                      shadows: const <Shadow>[Shadow(color: Color(0x50000000), blurRadius: 12, offset: Offset(0, 3))],
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'فروشگاه تخصصی لپ‌تاپ، کامپیوتر و لوازم جانبی دیجیتال',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.78),
-                      fontSize: subtitleSize,
-                      fontWeight: FontWeight.w500,
-                      height: 1.7,
-                    ),
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.78), fontSize: subtitleSize, fontWeight: FontWeight.w500, height: 1.7),
                   ),
                   const Spacer(flex: 3),
-                  _ConnectionCard(
-                    state: viewModel.state,
-                    onRetry: viewModel.checkConnection,
-                    compact: compact,
-                  ),
+                  _ConnectionCard(state: viewModel.state, onRetry: viewModel.checkConnection, compact: compact),
                 ],
               ),
             ),
@@ -85,34 +69,10 @@ class _LogoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: size,
       height: size,
-      padding: EdgeInsets.all(size * 0.035),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white.withValues(alpha: 0.98),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.85), width: 2),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: const Color(0xff001c39).withValues(alpha: 0.45),
-            blurRadius: size * 0.12,
-            spreadRadius: size * 0.015,
-            offset: Offset(0, size * 0.045),
-          ),
-          BoxShadow(
-            color: const Color(0xff4ec8e4).withValues(alpha: 0.20),
-            blurRadius: size * 0.16,
-            spreadRadius: size * 0.02,
-          ),
-        ],
-      ),
-      child: Image.memory(
-        _splashLogoBytes,
-        fit: BoxFit.contain,
-        filterQuality: FilterQuality.high,
-        gaplessPlayback: true,
-      ),
+      child: Image.memory(_splashLogoBytes, fit: BoxFit.contain),
     );
   }
 }
@@ -142,13 +102,13 @@ class _ConnectionCard extends StatelessWidget {
       case SplashConnectionState.offline:
         icon = Icons.wifi_off_rounded;
         title = 'اتصال اینترنت برقرار نیست';
-        description = 'اینترنت دستگاه را بررسی کنید و دوباره تلاش کنید.';
+        description = 'اینترنت دستگاه را بررسی کنید و دوباره تلاش کنید';
         iconColor = const Color(0xffffca5c);
         break;
       case SplashConnectionState.serverUnavailable:
         icon = Icons.cloud_off_rounded;
         title = 'ارتباط با سرور برقرار نشد';
-        description = 'وضعیت اینترنت را بررسی کنید و اگر VPN روشن است آن را خاموش کنید.';
+        description = 'وضعیت اینترنت را بررسی کنید و اگر VPN روشن است آن را خاموش کنید';
         iconColor = const Color(0xffff8d8d);
         break;
       case SplashConnectionState.connected:
@@ -170,24 +130,27 @@ class _ConnectionCard extends StatelessWidget {
       child: Row(
         children: <Widget>[
           if (state == SplashConnectionState.checking)
-            SizedBox(
-              width: 28,
-              height: 28,
-              child: CircularProgressIndicator(strokeWidth: 2.6, color: iconColor),
-            )
+            SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2.6, color: iconColor))
           else
-            Icon(icon, color: iconColor, size: 30),
+            Icon(icon, color: iconColor, size: 35),
           const SizedBox(width: 13),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800)),
+                Text(
+                  title,
+                  textAlign: TextAlign.start,
+                  textDirection: TextDirection.rtl,
+                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 3),
                 Text(
                   description,
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.68), fontSize: 11.5, height: 1.55),
+                  textAlign: TextAlign.start,
+                  textDirection: TextDirection.rtl,
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 11.5, height: 1.55),
                 ),
               ],
             ),
@@ -216,12 +179,7 @@ class _SplashBackground extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
-          colors: <Color>[
-            Color(0xff061b33),
-            Color(0xff073d6d),
-            Color(0xff0353a4),
-            Color(0xff05223f),
-          ],
+          colors: <Color>[Color(0xff061b33), Color(0xff073d6d), Color(0xff0353a4), Color(0xff05223f)],
           stops: <double>[0, 0.36, 0.68, 1],
         ),
       ),

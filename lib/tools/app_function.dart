@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/screens/categories/see_all_screen.dart';
 
 class AppFunction {
@@ -8,4 +9,8 @@ class AppFunction {
         duration: const Duration(milliseconds: 300),
         arguments: {'title': title, 'category': category, 'onSale': onSale},
       );
+
+  static String faDigit(Object value) => value.toString().toPersianDigit();
+
+  static String faPrice(int value) => value.toString().toPersianDigit().seRagham();
 }

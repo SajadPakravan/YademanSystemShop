@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/product_card_model.dart';
-import 'package:yad_sys/widgets/price_view_widget.dart';
+import 'package:yad_sys/widgets/product/price_view_widget.dart';
 
 class ProductHorizontalCardWidget extends StatelessWidget {
   const ProductHorizontalCardWidget({super.key, required this.product, required this.rows, required this.length, required this.index});
