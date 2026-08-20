@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:yad_sys/connections/http_request.dart';
+import 'package:yad_sys/models/product_card_model.dart';
 import 'package:yad_sys/models/products_list_model.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
 
@@ -16,10 +17,12 @@ class SearchViewModel with ChangeNotifier {
   bool isApplying = false;
   List<ProductCategoryFilterModel> categories = const <ProductCategoryFilterModel>[];
   List<ProductBrandFilterModel> brands = const <ProductBrandFilterModel>[];
-  List<ProductsListItemModel> products = const <ProductsListItemModel>[];
+  List<ProductCardModel> products = const <ProductCardModel>[];
 
   List<String> get recentSearches => List<String>.unmodifiable(_sessionRecentSearches);
+
   bool get canSearch => query.trim().length >= 3;
+
   bool get hasResults => categories.isNotEmpty || brands.isNotEmpty || products.isNotEmpty;
 
   void onQueryChanged(String value) {
@@ -31,7 +34,7 @@ class SearchViewModel with ChangeNotifier {
       isSearching = false;
       categories = const <ProductCategoryFilterModel>[];
       brands = const <ProductBrandFilterModel>[];
-      products = const <ProductsListItemModel>[];
+      products = const <ProductCardModel>[];
       notifyListeners();
       return;
     }
@@ -54,7 +57,7 @@ class SearchViewModel with ChangeNotifier {
       if (!response.success) return;
 
       final categoryIds = response.data.expand((item) => item.categories.map((category) => category.id)).toSet();
-      final brandIds = response.data.expand((item) => item.brand.map((brand) => brand.id)).toSet();
+      final brandId = response.data.map((item) => item.brand.id).toSet();
       final normalized = value.toLowerCase();
 
       categories = response.filters.flatCategories
@@ -62,7 +65,7 @@ class SearchViewModel with ChangeNotifier {
           .take(6)
           .toList(growable: false);
       brands = response.filters.brands
-          .where((item) => brandIds.contains(item.id) || item.name.toLowerCase().contains(normalized))
+          .where((item) => brandId.contains(item.id) || item.name.toLowerCase().contains(normalized))
           .take(6)
           .toList(growable: false);
       products = response.data.take(12).toList(growable: false);

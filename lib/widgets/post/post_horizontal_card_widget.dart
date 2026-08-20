@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/post_model.dart';
+import 'package:yad_sys/tools/app_function.dart';
 
 class PostHorizontalCardWidget extends StatelessWidget {
   const PostHorizontalCardWidget({super.key, required this.post, required this.rows, required this.length, required this.index});
@@ -45,7 +46,8 @@ class PostHorizontalCardWidget extends StatelessWidget {
                             height: double.infinity,
                             imageUrl: post.image,
                             fit: BoxFit.contain,
-                            placeholder: (context, url) => const Center(child: SizedBox(width: 23, height: 23, child: CircularProgressIndicator(strokeWidth: 2))),
+                            placeholder: (context, url) =>
+                                const Center(child: SizedBox(width: 23, height: 23, child: CircularProgressIndicator(strokeWidth: 2))),
                             errorWidget: (context, url, error) => const Center(child: Icon(Icons.broken_image_outlined, color: Colors.black26, size: 46)),
                           ),
                         ),
@@ -79,12 +81,35 @@ class PostHorizontalCardWidget extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: (cardHeight * 1).clamp(6.0, 20.0).toDouble()),
-                Text(
-                  post.date.toPersianDigit(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.start,
-                  style: TextStyle(fontSize: excerptFontSize, height: 1.45, fontWeight: FontWeight.w500),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      height: 20,
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: post.categories.length,
+                        itemBuilder: (context, index) {
+                          final category = post.categories[index];
+                          return Text(
+                            category.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.start,
+                            style: TextStyle(fontSize: excerptFontSize, height: 1.45, fontWeight: FontWeight.w500),
+                          );
+                        },
+                      ),
+                    ),
+                    Text(
+                      AppFunction.faDigit(post.date),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.start,
+                      style: TextStyle(fontSize: excerptFontSize, height: 1.45, fontWeight: FontWeight.w500),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -110,7 +135,7 @@ class PostHorizontalCardWidget extends StatelessWidget {
       if (i >= length - (rows - 1)) {
         if (i - (length - (rows - 1)) == 0) {
           return const BorderRadius.only(topLeft: Radius.circular(12));
-        } else if(i == length) {
+        } else if (i == length) {
           return const BorderRadius.only(bottomLeft: Radius.circular(12));
         }
       }

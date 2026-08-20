@@ -1074,7 +1074,7 @@ class _SheetFooter extends StatelessWidget {
         border: Border(top: BorderSide(color: Color(0xffeeeeee))),
       ),
       child: Row(
-        children: <Widget>[
+        children: [
           Expanded(
             child: OutlinedButton(
               onPressed: deleteEnabled ? onDelete : null,
@@ -1192,7 +1192,7 @@ class _FilterChipButton extends StatelessWidget {
       padding: EdgeInsets.only(left: compactMargin ? 0 : 7),
       child: Stack(
         clipBehavior: Clip.none,
-        children: <Widget>[
+        children: [
           Material(
             color: active ? _activeChipBackground : Colors.white,
             borderRadius: BorderRadius.circular(24),
@@ -1208,7 +1208,7 @@ class _FilterChipButton extends StatelessWidget {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
+                  children: [
                     if (icon != null) ...<Widget>[Icon(icon, size: 18, color: active ? _accent : Colors.black54), const SizedBox(width: 5)],
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 125),
@@ -1267,7 +1267,7 @@ class _PriceLabel extends StatelessWidget {
         border: Border.all(color: const Color(0xffe7e7e7)),
       ),
       child: Row(
-        children: <Widget>[
+        children: [
           Text(label, style: const TextStyle(color: Colors.black45, fontSize: 12)),
           const Spacer(),
           Flexible(
@@ -1296,7 +1296,7 @@ class _ErrorState extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
+          children: [
             const Icon(Icons.wifi_off_rounded, size: 52, color: Colors.black26),
             const SizedBox(height: 14),
             Text(message, textAlign: TextAlign.center, style: const TextStyle(height: 1.6)),
@@ -1319,7 +1319,7 @@ class _EmptyState extends StatelessWidget {
         padding: EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
+          children: [
             Icon(Icons.search_off_rounded, size: 52, color: Colors.black26),
             SizedBox(height: 12),
             Text('محصولی با این فیلترها پیدا نشد.', style: TextStyle(fontWeight: FontWeight.w600)),

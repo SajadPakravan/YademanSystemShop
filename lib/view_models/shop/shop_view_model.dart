@@ -406,7 +406,7 @@ class ShopViewModel with ChangeNotifier {
     _updatePriceCeiling(response.data);
   }
 
-  void _updatePriceCeiling(List<ProductsListItemModel> items) {
+  void _updatePriceCeiling(List<ProductCardModel> items) {
     var maxPrice = 0;
     for (final item in items) {
       if (item.price > maxPrice) maxPrice = item.price;
@@ -467,7 +467,7 @@ class ShopViewModel with ChangeNotifier {
     ].join('~');
   }
 
-  ProductCardModel _toProductCard(ProductsListItemModel item) {
+  ProductCardModel _toProductCard(ProductCardModel item) {
     return ProductCardModel(
       id: item.id,
       name: item.name,
@@ -477,6 +477,11 @@ class ShopViewModel with ChangeNotifier {
       stockQuantity: item.stockQuantity,
       image: item.image,
       variationName: item.variationName,
+      totalSales: item.totalSales,
+      averageRating: item.averageRating,
+      categories: item.categories,
+      brand: item.brand,
+      colors: item.colors,
     );
   }
 

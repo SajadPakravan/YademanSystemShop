@@ -57,6 +57,6 @@ class PriceViewWidget extends StatelessWidget {
 
   String _formatPrice(int? value) {
     final safeValue = value ?? 0;
-    return AppFunction.faDigit(safeValue);
+    return AppFunction.faPrice(safeValue);
   }
 }

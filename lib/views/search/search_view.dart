@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:yad_sys/models/product_card_model.dart';
 import 'package:yad_sys/models/products_list_model.dart';
 import 'package:yad_sys/screens/main_screen.dart';
 import 'package:yad_sys/tools/go_page.dart';
@@ -298,13 +299,13 @@ class _SectionTitle extends StatelessWidget {
 
 class _ProductSuggestion extends StatelessWidget {
   const _ProductSuggestion({required this.product});
-  final ProductsListItemModel product;
+  final ProductCardModel product;
 
   @override
   Widget build(BuildContext context) {
     final subtitleParts = <String>[
       if (product.categories.isNotEmpty) product.categories.first.name,
-      if (product.brand.isNotEmpty) product.brand.first.name,
+      if (product.brand.name.isNotEmpty) product.brand.name,
     ];
 
     return ListTile(
@@ -316,7 +317,7 @@ class _ProductSuggestion extends StatelessWidget {
         child: CachedNetworkImage(
           imageUrl: product.image,
           fit: BoxFit.contain,
-          errorWidget: (_, __, ___) => const Icon(Icons.image_not_supported_outlined, color: Colors.black26),
+          errorWidget: (_, _, _) => const Icon(Icons.image_not_supported_outlined, color: Colors.black26),
         ),
       ),
       title: Text(product.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),

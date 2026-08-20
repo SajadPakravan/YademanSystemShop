@@ -1,3 +1,5 @@
+import 'package:yad_sys/models/product_card_model.dart';
+
 class ProductsListModel {
   const ProductsListModel({required this.success, required this.pagination, required this.filters, required this.filterBy, required this.data});
 
@@ -5,7 +7,7 @@ class ProductsListModel {
   final ProductsPaginationModel pagination;
   final ProductsFiltersModel filters;
   final ProductsFilterByModel filterBy;
-  final List<ProductsListItemModel> data;
+  final List<ProductCardModel> data;
 
   factory ProductsListModel.fromJson(Map<String, dynamic> json) {
     return ProductsListModel(
@@ -13,7 +15,7 @@ class ProductsListModel {
       pagination: ProductsPaginationModel.fromJson(json['pagination']),
       filters: ProductsFiltersModel.fromJson(json['filters']),
       filterBy: ProductsFilterByModel.fromJson(json['filter_by']),
-      data: List.castFrom(json['data']).map((item) => ProductsListItemModel.fromJson(item)).toList(growable: false),
+      data: List.castFrom(json['data']).map((item) => ProductCardModel.fromJson(item)).toList(growable: false),
     );
   }
 }
@@ -233,104 +235,5 @@ class ProductAttributeFilterByModel {
 
   factory ProductAttributeFilterByModel.fromJson(Map<String, dynamic> json) {
     return ProductAttributeFilterByModel(id: json['id'], options: List<int>.from(json['options']));
-  }
-}
-
-class ProductsListItemModel {
-  const ProductsListItemModel({
-    required this.id,
-    required this.name,
-    required this.price,
-    required this.regularPrice,
-    required this.discountPercent,
-    required this.stockQuantity,
-    required this.image,
-    required this.variationName,
-    required this.totalSales,
-    required this.averageRating,
-    required this.categories,
-    required this.brand,
-    required this.attributes,
-  });
-
-  final int id;
-  final String name;
-  final int price;
-  final int regularPrice;
-  final int discountPercent;
-  final int stockQuantity;
-  final String image;
-  final String variationName;
-  final int totalSales;
-  final int averageRating;
-  final List<ProductsListItemCategories> categories;
-  final List<ProductsListItemBrand> brand;
-  final List<ProductsListItemAttributes> attributes;
-
-  factory ProductsListItemModel.fromJson(Map<String, dynamic> json) {
-    return ProductsListItemModel(
-      id: json['id'],
-      name: json['name'],
-      price: json['price'],
-      regularPrice: json['regular_price'],
-      discountPercent: json['discount_percent'],
-      stockQuantity: json['stock_quantity'],
-      image: json['image'],
-      variationName: json['variation_name'],
-      totalSales: json['total_sales'],
-      averageRating: json['average_rating'],
-      categories: List.castFrom(json['categories']).map((item) => ProductsListItemCategories.fromJson(item)).toList(growable: false),
-      brand: List.castFrom(json['brand']).map((item) => ProductsListItemBrand.fromJson(item)).toList(growable: false),
-      attributes: List.castFrom(json['attributes']).map((item) => ProductsListItemAttributes.fromJson(item)).toList(growable: false),
-    );
-  }
-}
-
-class ProductsListItemCategories {
-  const ProductsListItemCategories({required this.id, required this.name});
-
-  final int id;
-  final String name;
-
-  factory ProductsListItemCategories.fromJson(Map<String, dynamic> json) {
-    return ProductsListItemCategories(id: json['id'], name: json['name']);
-  }
-}
-
-class ProductsListItemBrand {
-  const ProductsListItemBrand({required this.id, required this.name});
-
-  final int id;
-  final String name;
-
-  factory ProductsListItemBrand.fromJson(Map<String, dynamic> json) {
-    return ProductsListItemBrand(id: json['id'], name: json['name']);
-  }
-}
-
-class ProductsListItemAttributes {
-  const ProductsListItemAttributes({required this.id, required this.name, required this.options});
-
-  final int id;
-  final String name;
-  final List<ProductsListItemAttributesOptions> options;
-
-  factory ProductsListItemAttributes.fromJson(Map<String, dynamic> json) {
-    return ProductsListItemAttributes(
-      id: json['id'],
-      name: json['name'],
-      options: List.castFrom(json['options']).map((item) => ProductsListItemAttributesOptions.fromJson(item)).toList(),
-    );
-  }
-}
-
-class ProductsListItemAttributesOptions {
-  const ProductsListItemAttributesOptions({required this.id, required this.name});
-
-  final int id;
-  final String name;
-
-  factory ProductsListItemAttributesOptions.fromJson(Map<String, dynamic> json) {
-    return ProductsListItemAttributesOptions(id: json['id'], name: json['name']);
   }
 }
