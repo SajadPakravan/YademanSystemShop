@@ -112,7 +112,7 @@ class _ShopViewState extends State<ShopView> {
   }
 
   Widget _buildFiltersArea(BuildContext context) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
+    if(vm.filters.categories.isEmpty) return SizedBox.shrink();
     final state = vm.appliedFilters;
     return Material(
       color: Colors.white,
@@ -127,7 +127,7 @@ class _ShopViewState extends State<ShopView> {
                 spacing: 8,
                 children: [
                   _buildPrimaryFilters(context),
-                  if (vm.filters.attributes.isNotEmpty) ...[_buildAttributeFilters(context)],
+                  _buildAttributeFilters(context),
                 ],
               ),
             ),

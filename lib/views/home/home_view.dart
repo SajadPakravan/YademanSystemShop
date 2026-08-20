@@ -62,19 +62,14 @@ class HomeView extends StatelessWidget {
       );
     }
 
-    return Stack(
-      children: [
-        RefreshIndicator(
-          onRefresh: onRefresh,
-          child: ListView.builder(
-            padding: const EdgeInsets.only(bottom: 20),
-            physics: AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-            itemCount: sections.length,
-            itemBuilder: (context, index) => HomeSectionRenderer(section: sections[index]),
-          ),
-        ),
-        if (isRefreshing) const Positioned(top: 0, left: 0, right: 0, child: LinearProgressIndicator(minHeight: 2)),
-      ],
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView.builder(
+        padding: const EdgeInsets.only(bottom: 20,top: 10),
+        physics: AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+        itemCount: sections.length,
+        itemBuilder: (context, index) => HomeSectionRenderer(section: sections[index]),
+      ),
     );
   }
 }

@@ -55,6 +55,7 @@ class ShopProductCard extends StatelessWidget {
                 child: Column(
                   spacing: 10,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     if (product.discountPercent > 0)
                       Align(
