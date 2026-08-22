@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yad_sys/themes/color_style.dart';
 import 'package:yad_sys/widgets/text_views/text_body_medium_view.dart';
 
-bottomSheetPickImage({required BuildContext context, required Function() onTapCamera, required Function() onTapGallery}) {
+void bottomSheetPickImage({required BuildContext context, required Function() onTapCamera, required Function() onTapGallery}) {
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.white,
