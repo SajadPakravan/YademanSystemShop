@@ -10,4 +10,4 @@ Future<dynamic>? zoomToPage(dynamic page, {dynamic arguments}) {
   return Get.to(page, transition: Transition.zoom, duration: const Duration(milliseconds: 300), arguments: arguments);
 }
 
-dynamic toProduct({ProductModel? product, int? id}) => zoomToPage(const ProductScreen(), arguments: {'product': product, 'id': id});
+dynamic toProduct({int? id}) => zoomToPage(const ProductScreen(), arguments: {'id': id});

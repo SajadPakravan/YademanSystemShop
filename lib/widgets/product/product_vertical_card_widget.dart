@@ -5,7 +5,7 @@ import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/widgets/product/price_view_widget.dart';
 
 class ProductVerticalCardWidget extends StatelessWidget {
-  const ProductVerticalCardWidget({super.key, required this.product, required this.rows, required this.length, required this.index});
+  const ProductVerticalCardWidget({super.key, required this.product, this.rows = 1, required this.length, required this.index});
 
   final ProductCardModel product;
   final int rows;

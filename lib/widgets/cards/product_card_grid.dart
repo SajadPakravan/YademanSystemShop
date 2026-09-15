@@ -60,7 +60,7 @@ class ProductCardGrid extends StatelessWidget {
             percent = (((price - regularPrice) / regularPrice) * 100).roundToDouble().toInt();
           }
           return InkWell(
-            onTap: () => toProduct(product: product),
+            onTap: () => toProduct(id: product.id),
             child: Container(
               width: width * 0.45,
               height: height,

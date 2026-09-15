@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/product_card_model.dart';

@@ -42,7 +42,7 @@ class HttpRequest {
 
   String get _urlHome => 'https://$_urlMain/wp-json/app-api/v1/home';
 
-  String get _urlProducts => 'https://$_urlMain/wp-json/app-api/v1/products';
+  String get _urlProducts => 'https://$_urlMain/wp-json/app-api/v1/products/';
 
   Future<dynamic> _getRequest({required String url, String id = '', String details = ''}) async {
     Map<String, String> headers = {'accept': 'application/json', 'Content-Type': 'application/json'};
@@ -79,6 +79,7 @@ class HttpRequest {
 
       final dynamic decoded = jsonDecode(utf8.decode(response.bodyBytes));
       if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (kDebugMode) print('JSON >>>> $decoded}');
         return decoded;
       }
 
@@ -155,9 +156,7 @@ class HttpRequest {
     }
   }
 
-  Future<dynamic> getHome() async {
-    return _getPublicRequest(url: _urlHome);
-  }
+  Future<dynamic> getHome() async => _getPublicRequest(url: _urlHome);
 
   Future<dynamic> getProducts({
     int page = 1,
@@ -195,6 +194,8 @@ class HttpRequest {
     return _getPublicRequest(url: uri.toString());
   }
 
+  Future<dynamic> getProduct({required int id}) async => _getPublicRequest(url: '$_urlProducts$id');
+
   Future<dynamic> getProducts2({
     int perPage = 10,
     int page = 1,
@@ -222,8 +223,6 @@ class HttpRequest {
     String details = "$addOnSale$addSearch";
     return _getRequest(url: '$_urlProducts2$id/variations', details: details);
   }
-
-  Future<dynamic> getProduct({required int id}) async => _getRequest(url: _urlProducts2, id: id.toString());
 
   Future<dynamic> getCategories({int parent = 0, int perPage = 10, String include = ''}) async {
     String addInclude = "";

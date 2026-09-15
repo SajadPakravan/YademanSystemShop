@@ -1,73 +1,53 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
-import 'package:yad_sys/models/product_model.dart';
-import 'package:yad_sys/models/review_model.dart';
+import 'package:yad_sys/models/product_detail_model.dart';
 import 'package:yad_sys/widgets/app_bar_view.dart';
 import 'package:yad_sys/widgets/text_views/text_body_medium_view.dart';
 
-class ProductInfoScreen extends StatefulWidget {
+class ProductInfoScreen extends StatelessWidget {
   const ProductInfoScreen({super.key});
 
   @override
-  State<ProductInfoScreen> createState() => _ProductInfoScreenState();
-}
-
-class _ProductInfoScreenState extends State<ProductInfoScreen> {
-  String title = '';
-  Widget body = Container();
-  List<Attribute> attributesLst = [];
-  List<ReviewModel> reviewsLst = [];
-
-  loadContent() async {
-    switch (Get.arguments['content']) {
-      case 1:
-        {
-          setState(() {
-            title = 'معرفی محصول';
-            body = description();
-          });
-          break;
-        }
-      case 2:
-        {
-          setState(() {
-            title = 'مشخصات محصول';
-            attributesLst = Get.arguments['attributes'];
-            body = attributes();
-          });
-          break;
-        }
-      case 3:
-        {
-          setState(() {
-            title = 'دیدگاه‌ها';
-            reviewsLst = Get.arguments['reviews'];
-            body = reviews();
-          });
-          break;
-        }
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    loadContent();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Directionality(textDirection: TextDirection.rtl, child: Scaffold(appBar: AppBarView(title: title), body: body));
+    final int content = Get.arguments['content'];
+
+    late final String title;
+    late final Widget body;
+
+    switch (content) {
+      case 1:
+        title = 'معرفی محصول';
+        body = _description();
+        break;
+      case 2:
+        title = 'مشخصات محصول';
+        body = _attributes();
+        break;
+      case 3:
+        title = 'دیدگاه‌ها';
+        body = _reviews();
+        break;
+      default:
+        title = '';
+        body = const SizedBox.shrink();
+    }
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        appBar: AppBarView(title: title),
+        body: body,
+      ),
+    );
   }
 
-  description() {
+  Widget _description() {
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(12),
         child: HtmlWidget(
           Get.arguments['description'].toString().toPersianDigit(),
           textStyle: ThemeData.light().textTheme.bodyMedium!.copyWith(height: 2, fontSize: 16),
@@ -76,19 +56,31 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
     );
   }
 
-  attributes() {
-    return ListView.builder(
-      itemCount: attributesLst.length,
-      itemBuilder: (BuildContext context, int index) {
-        Attribute attribute = attributesLst[index];
-        String name = attribute.name!.replaceAll('-', ' ');
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black26))),
+  Widget _attributes() {
+    final List<ProductAttribute> attributes = List<ProductAttribute>.from(Get.arguments['attributes']);
+
+    return ListView.separated(
+      itemCount: attributes.length,
+      separatorBuilder: (context, index) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final attribute = attributes[index];
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: TextBodyMediumView(name, color: Colors.black54)),
-              Expanded(child: TextBodyMediumView(attribute.options![0].toString().toPersianDigit())),
+              Expanded(
+                child: TextBodyMediumView(
+                  attribute.name.replaceAll('-', ' '),
+                  color: Colors.black54,
+                ),
+              ),
+              Expanded(
+                child: TextBodyMediumView(
+                  attribute.options.join('، ').toPersianDigit(),
+                ),
+              ),
             ],
           ),
         );
@@ -96,53 +88,47 @@ class _ProductInfoScreenState extends State<ProductInfoScreen> {
     );
   }
 
-  reviews() {
-    return ListView.builder(
-      itemCount: reviewsLst.length,
-      itemBuilder: (BuildContext context, int index) {
-        ReviewModel review = reviewsLst[index];
-        ReviewerAvatarUrls avatar = review.avatarUrls!;
-        return Container(
-          padding: const EdgeInsets.all(10),
-          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black26))),
+  Widget _reviews() {
+    final List<ProductDetailReview> reviews = List<ProductDetailReview>.from(Get.arguments['reviews']);
+
+    return ListView.separated(
+      itemCount: reviews.length,
+      separatorBuilder: (context, index) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final r = reviews[index];
+        final review = r.data[index];
+        final firstLetter = review.author.trim().isEmpty ? '?' : review.author.trim().substring(0, 1);
+
+        return Padding(
+          padding: const EdgeInsets.all(12),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                flex: 1,
-                child: Row(
-                  children: [
-                    CachedNetworkImage(imageUrl: avatar.s48!),
-                    const SizedBox(width: 10),
-                    Expanded(child: TextBodyMediumView(review.reviewer!))
-                  ],
-                ),
+              CircleAvatar(
+                backgroundColor: const Color(0xffeef5fd),
+                foregroundColor: const Color(0xff0353a4),
+                child: Text(firstLetter),
               ),
+              const SizedBox(width: 10),
               Expanded(
-                flex: 2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    HtmlWidget(
-                      review.review!,
-                      textStyle: ThemeData.light().textTheme.bodyMedium!.copyWith(color: Colors.black87, fontSize: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(child: TextBodyMediumView(review.author, fontWeight: FontWeight.bold)),
+                        Text(review.date, style: const TextStyle(color: Colors.black45, fontSize: 11)),
+                      ],
                     ),
-                    Container(
-                      height: MediaQuery.of(context).size.height * 0.03,
-                      margin: const EdgeInsets.only(top: 10),
-                      alignment: Alignment.bottomLeft,
-                      child: FittedBox(
-                        fit: BoxFit.fitHeight,
-                        child: RatingBar.builder(
-                          initialRating: review.rating!.toDouble(),
-                          minRating: 1,
-                          direction: Axis.horizontal,
-                          allowHalfRating: false,
-                          itemCount: 5,
-                          ignoreGestures: true,
-                          itemBuilder: (context, _) => const Icon(Icons.star, color: Colors.amber),
-                          onRatingUpdate: (double value) {},
-                        ),
-                      ),
+                    const SizedBox(height: 8),
+                    TextBodyMediumView(review.content),
+                    const SizedBox(height: 8),
+                    RatingBarIndicator(
+                      rating: review.rating.toDouble(),
+                      itemCount: 5,
+                      itemSize: 18,
+                      itemBuilder: (context, _) => const Icon(Icons.star, color: Colors.amber),
                     ),
                   ],
                 ),

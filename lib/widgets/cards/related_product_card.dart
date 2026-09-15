@@ -1,140 +1,90 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
-import 'package:persian_number_utility/persian_number_utility.dart';
-import 'package:yad_sys/models/product_model.dart';
-import 'package:yad_sys/tools/app_function.dart';
-import 'package:yad_sys/widgets/text_views/text_body_medium_view.dart';
+import 'package:yad_sys/models/product_card_model.dart';
+import 'package:yad_sys/models/product_detail_model.dart';
+import 'package:yad_sys/tools/section_action_handler.dart';
+import 'package:yad_sys/widgets/cards/view_all_widget.dart';
+import 'package:yad_sys/widgets/product/product_vertical_card_widget.dart';
 
 class RelatedProductCard extends StatelessWidget {
-  RelatedProductCard({super.key, this.physics = const AlwaysScrollableScrollPhysics(), required this.list, required this.onTap});
+  const RelatedProductCard({super.key, required this.list});
 
-  final AppFunction appFun = AppFunction();
-  final ScrollPhysics physics;
-  final List<ProductModel> list;
-  final Function(ProductModel) onTap;
+  final List<RelatedProduct> list;
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: SizedBox(
-        height: 300,
-        child: ListView.builder(
-          itemCount: list.length,
-          scrollDirection: Axis.horizontal,
-          physics: physics,
-          shrinkWrap: true,
-          primary: false,
-          itemBuilder: (BuildContext context, int index) {
-            ProductModel product = list[index];
-            ProductImage img = product.images![0];
+    const rows = 1;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final horizontalPadding = (screenWidth * 0.025).clamp(8.0, 12.0).toDouble();
+    final verticalPadding = (screenWidth * 0.025).clamp(8.0, 12.0).toDouble();
+    final spacing = (screenWidth * 0.005).clamp(3.0, 12.0).toDouble();
+    final cardWidth = (screenWidth * 0.35).clamp(150.0, 220.0).toDouble();
+    final cardHeight = (cardWidth * 1.7).clamp(200.0, 300.0).toDouble();
+    final contentHeight = (cardHeight * rows) + (spacing * (rows - 1));
+    final sectionHeight = contentHeight + (verticalPadding * 2);
 
-            int price = int.parse(product.price!);
-            int regularPrice = int.parse(product.regularPrice!);
-            int percent = 0;
-            String toman = ' تومان';
-            Color textColor = Colors.black87;
-            double fontSize = 14;
+    final products = <ProductCardModel>[];
+    ProductDetailViewAll? viewAll;
 
-            if (product.onSale!) {
-              textColor = Colors.black45;
-              fontSize = 12;
-              toman = '';
-              percent = (((price - regularPrice) / regularPrice) * 100).roundToDouble().toInt();
-            }
-            return InkWell(
-              onTap: () => onTap(product),
-              child: Container(
-                width: width * 0.45,
-                padding: const EdgeInsets.all(10),
-                margin: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.black54, width: 2),
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        child: CachedNetworkImage(
-                          imageUrl: img.src!,
-                          fit: BoxFit.contain,
-                          errorWidget: (context, str, dyn) => const Icon(Icons.image, color: Colors.black26, size: 100),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      alignment: Alignment.centerRight,
-                      margin: const EdgeInsets.symmetric(vertical: 10),
-                      child: TextBodyMediumView(product.name!, maxLines: 2),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Visibility(
-                          visible: product.onSale!,
-                          child: Container(
-                            alignment: Alignment.center,
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(color: Colors.red.shade600),
-                            child: TextBodyMediumView(
-                              "${percent.toString().replaceAll('-', '').toPersianDigit()}%",
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Visibility(
-                                visible: product.onSale!,
-                                child: Container(
-                                  alignment: Alignment.centerLeft,
-                                  margin: const EdgeInsets.only(bottom: 5),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      TextBodyMediumView(
-                                        price.toString().toPersianDigit().seRagham(),
-                                        textAlign: TextAlign.left,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      const TextBodyMediumView("تومان", fontWeight: FontWeight.bold),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                alignment: Alignment.centerLeft,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    TextBodyMediumView(
-                                      regularPrice.toString().toPersianDigit().seRagham(),
-                                      textAlign: TextAlign.left,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: fontSize,
-                                      color: textColor,
-                                    ),
-                                    TextBodyMediumView(toman, fontWeight: FontWeight.bold),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+    for (final item in list) {
+      products.addAll(item.data);
+      viewAll ??= item.viewAll;
+    }
+
+    final columnCount = (products.length / rows).ceil();
+    final gridWidth = (horizontalPadding * 2) + (columnCount * cardWidth) + (math.max(0, columnCount - 1) * spacing);
+    final viewAllWidth = (screenWidth * 0.28).clamp(110.0, 150.0).toDouble();
+
+    if (products.isEmpty && viewAll == null) {
+      return const SizedBox.shrink();
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      height: sectionHeight,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (products.isNotEmpty)
+              SizedBox(
+                width: gridWidth,
+                height: sectionHeight,
+                child: GridView.builder(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalPadding),
+                  physics: const NeverScrollableScrollPhysics(),
+                  primary: false,
+                  shrinkWrap: false,
+                  scrollDirection: Axis.horizontal,
+                  itemCount: products.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: rows,
+                    mainAxisSpacing: spacing,
+                    crossAxisSpacing: spacing,
+                    mainAxisExtent: cardWidth,
+                  ),
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    return ProductVerticalCardWidget(product: product, rows: rows, length: products.length, index: index);
+                  },
                 ),
               ),
-            );
-          },
+            if (viewAll != null && products.length > 10)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: verticalPadding),
+                child: SizedBox(
+                  width: viewAllWidth,
+                  height: contentHeight,
+                  child: ViewAllWidget(
+                    title: viewAll.title,
+                    onTap: () => SectionActionHandler.handle(context: context, action: viewAll!.action),
+                  ),
+                ),
+              ),
+            SizedBox(width: horizontalPadding),
+          ],
         ),
       ),
     );
