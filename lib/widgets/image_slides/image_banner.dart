@@ -1,25 +1,22 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 
-// ignore: must_be_immutable
 class ImageBanner extends StatelessWidget {
-  ImageBanner({
-    required this.image,
-    super.key,
-  });
+  const ImageBanner({required this.image, super.key});
 
-  String image = "";
+  final String image;
 
   @override
   Widget build(BuildContext context) {
+    final r = context.responsive;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(r.radius(10)),
       child: CachedNetworkImage(
         imageUrl: image,
         fit: BoxFit.contain,
-        errorWidget: (context, str, dyn) {
-          return const Icon(Icons.image, color: Colors.black26, size: 100);
-        },
+        errorWidget: (context, str, dyn) => Icon(Icons.image_outlined, color: context.appColors.textMuted, size: r.icon(72)),
       ),
     );
   }

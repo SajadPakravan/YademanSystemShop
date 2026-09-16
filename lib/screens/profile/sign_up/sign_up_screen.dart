@@ -28,8 +28,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool rePassErrVis = false;
   String rePassErrStr = "";
 
-  showPassFun(v) {
-    if (v) {
+  void showPassFun(bool? v) {
+    if (v!) {
       setState(() {
         showPass = v;
         obscureText = false;
@@ -42,7 +42,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  signUpFun() async {
+  Future<void> signUpFun() async {
     setState(() {
       emailErrVis = false;
       passErrVis = false;
@@ -104,7 +104,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return SignUpView(
-      context: context,
       emailCtrl: emailCtrl,
       passCtrl: passCtrl,
       rePassCtrl: rePassCtrl,

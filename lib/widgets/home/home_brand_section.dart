@@ -2,8 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/brand_model.dart';
 import 'package:yad_sys/models/section_model.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/section_item_action_handler.dart';
 import 'package:yad_sys/widgets/home/section_header.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class HomeBrandSection extends StatelessWidget {
   const HomeBrandSection({super.key, required this.section});
@@ -14,27 +17,30 @@ class HomeBrandSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = section.brands;
     if (items.isEmpty) return const SizedBox.shrink();
+
     final rows = section.layout.rows.clamp(1, 3).toInt();
     final columns = section.layout.columns.clamp(2, 6).toInt();
-    final width = MediaQuery.sizeOf(context).width;
-    final itemWidth = ((width - 20 - ((columns - 1) * 10)) / columns).clamp(68.0, 150.0).toDouble();
-    const itemHeight = 106.0;
+    final r = context.responsive;
+    final spacing = r.space(10, min: 7, max: 13);
+    final horizontalPadding = r.pageHorizontalPadding;
+    final itemWidth = ((r.width - (horizontalPadding * 2) - ((columns - 1) * spacing)) / columns).clamp(64.0, r.isTablet ? 170.0 : 150.0).toDouble();
+    final itemHeight = r.space(106, min: 96, max: 126);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: r.sectionVerticalGap),
       child: Column(
         children: [
           SectionHeader(section: section),
           SizedBox(
-            height: (itemHeight * rows) + ((rows - 1) * 10),
+            height: (itemHeight * rows) + ((rows - 1) * spacing),
             child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
               scrollDirection: Axis.horizontal,
               itemCount: items.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: rows,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
+                mainAxisSpacing: spacing,
+                crossAxisSpacing: spacing,
                 mainAxisExtent: itemWidth,
               ),
               itemBuilder: (context, index) => _BrandCard(item: items[index]),
@@ -53,37 +59,31 @@ class _BrandCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final r = context.responsive;
+
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
+      color: colors.surface,
+      borderRadius: BorderRadius.circular(r.cardRadius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(r.cardRadius),
         onTap: () => SectionItemActionHandler.handle(context: context, type: 'brand', title: item.name, destinationId: item.id),
         child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.black12),
-            borderRadius: BorderRadius.circular(12),
-          ),
+          padding: EdgeInsets.all(r.space(10)),
+          decoration: BoxDecoration(border: Border.all(color: colors.border), borderRadius: BorderRadius.circular(r.cardRadius)),
           child: Column(
             children: [
               Expanded(
                 child: item.image.isEmpty
-                    ? const Icon(Icons.workspace_premium_outlined, color: Colors.black26, size: 38)
+                    ? Icon(Icons.workspace_premium_outlined, color: colors.textMuted, size: r.icon(38))
                     : CachedNetworkImage(
                         imageUrl: item.image,
                         fit: BoxFit.contain,
-                        errorWidget: (context, url, error) => const Icon(Icons.workspace_premium_outlined, color: Colors.black26, size: 38),
+                        errorWidget: (context, url, error) => Icon(Icons.workspace_premium_outlined, color: colors.textMuted, size: r.icon(38)),
                       ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                item.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
-              ),
+              SizedBox(height: r.space(6)),
+              AppText.bodySmall(item.name, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, fontWeight: FontWeight.w600),
             ],
           ),
         ),

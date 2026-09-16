@@ -7,7 +7,6 @@ import 'package:yad_sys/database/favorite_model.dart';
 import 'package:yad_sys/models/product_detail_model.dart';
 import 'package:yad_sys/screens/product/product_images_screen.dart';
 import 'package:yad_sys/tools/app_cache.dart';
-import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/tools/product_detail_cache.dart';
 import 'package:yad_sys/widgets/snack_bar_view.dart';
 

@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/app_function.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class FilterChipButtonWidget extends StatelessWidget {
-  const FilterChipButtonWidget({super.key, required this.title, required this.active, required this.onTap, this.badgeCount = 0, this.icon, this.compactMargin = false});
+  const FilterChipButtonWidget({
+    super.key,
+    required this.title,
+    required this.active,
+    required this.onTap,
+    this.badgeCount = 0,
+    this.icon,
+    this.compactMargin = false,
+  });
 
   final String title;
   final bool active;
@@ -14,43 +24,47 @@ class FilterChipButtonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final r = context.responsive;
+    final foreground = active ? AppColors.accent : colors.textPrimary;
+
     return Padding(
-      padding: EdgeInsets.only(left: compactMargin ? 0 : 7),
+      padding: EdgeInsets.only(left: compactMargin ? 0 : r.space(7)),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Material(
-            color: active ? AppColors.activeChipBackground : Colors.white,
-            borderRadius: BorderRadius.circular(24),
+            color: active ? colors.chipActiveBackground : colors.chipBackground,
+            borderRadius: BorderRadius.circular(r.radius(24)),
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(r.radius(24)),
               child: Container(
-                height: 40,
-                padding: const EdgeInsets.symmetric(horizontal: 13),
+                height: r.chipHeight,
+                padding: EdgeInsets.symmetric(horizontal: r.space(13)),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: active ? const Color(0xffffc9d3) : const Color(0xffdddddd)),
+                  borderRadius: BorderRadius.circular(r.radius(24)),
+                  border: Border.all(color: active ? AppColors.accent.withValues(alpha: 0.25) : colors.border),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (icon != null) ...<Widget>[Icon(icon, size: 18, color: active ? AppColors.accent : Colors.black54), const SizedBox(width: 5)],
+                    if (icon != null) ...<Widget>[
+                      Icon(icon, size: r.icon(18), color: active ? AppColors.accent : colors.textSecondary),
+                      SizedBox(width: r.space(5)),
+                    ],
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 125),
-                      child: Text(
+                      constraints: BoxConstraints(maxWidth: r.percentWidth(0.31, min: 105, max: 150)),
+                      child: AppText.bodySmall(
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: active ? AppColors.accent : const Color(0xff333333),
-                          fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                        ),
+                        color: foreground,
+                        fontWeight: active ? FontWeight.w600 : FontWeight.w400,
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: active ? AppColors.accent : Colors.black54),
+                    SizedBox(width: r.space(4)),
+                    Icon(Icons.keyboard_arrow_down_rounded, size: r.icon(18), color: active ? AppColors.accent : colors.textSecondary),
                   ],
                 ),
               ),
@@ -58,16 +72,18 @@ class FilterChipButtonWidget extends StatelessWidget {
           ),
           if (badgeCount > 0)
             Positioned(
-              top: 0,
-              left: -3,
+              top: -r.space(2),
+              left: -r.space(3),
               child: Container(
-                constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                constraints: BoxConstraints(minWidth: r.icon(20), minHeight: r.icon(20)),
                 alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(horizontal: 5),
+                padding: EdgeInsets.symmetric(horizontal: r.space(5)),
                 decoration: const BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
-                child: Text(
+                child: AppText.labelSmall(
                   AppFunction.faDigit(badgeCount),
-                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800),
+                  color: AppColors.onBrand,
+                  fontWeight: FontWeight.w800,
+                  responsive: false,
                 ),
               ),
             ),

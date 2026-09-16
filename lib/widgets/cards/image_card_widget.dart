@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/image_item_model.dart';
 import 'package:yad_sys/models/section_model.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
 
 class ImageCardWidget extends StatelessWidget {
@@ -11,42 +13,41 @@ class ImageCardWidget extends StatelessWidget {
 
   final SectionModel section;
 
-  static const double _horizontalPadding = 10;
-  static const double _spacing = 8;
-  static const double _borderRadius = 14;
-
   @override
   Widget build(BuildContext context) {
     final items = section.images;
+    if (items.isEmpty) return const SizedBox.shrink();
 
-    if (items.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final r = context.responsive;
+    final horizontalPadding = r.space(10, min: 8, max: 16);
+    final spacing = r.space(8, min: 6, max: 12);
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final availableWidth = constraints.hasBoundedWidth ? constraints.maxWidth : MediaQuery.sizeOf(context).width;
-        final layout = _resolveLayout(itemCount: items.length, requestedRows: section.layout.rows, requestedColumns: section.layout.columns);
-        final contentWidth = math.max(0.0, availableWidth - (_horizontalPadding * 2));
-        final itemWidth = math.max(1.0, (contentWidth - ((layout.columns - 1) * _spacing)) / layout.columns);
+        final availableWidth = constraints.hasBoundedWidth ? constraints.maxWidth : r.width;
+        final layout = _resolveLayout(
+          itemCount: items.length,
+          requestedRows: section.layout.rows,
+          requestedColumns: section.layout.columns,
+        );
+        final contentWidth = math.max(0.0, availableWidth - (horizontalPadding * 2));
+        final itemWidth = math.max(1.0, (contentWidth - ((layout.columns - 1) * spacing)) / layout.columns);
         final aspectRatio = ((16 / 9) * math.sqrt(layout.rows / layout.columns)).clamp(0.9, 1.9).toDouble();
-        final itemHeight = (itemWidth / aspectRatio).clamp(90.0, 420.0).toDouble();
+        final itemHeight = (itemWidth / aspectRatio).clamp(r.space(90), r.isTablet ? 520.0 : 420.0).toDouble();
 
         return GridView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           shrinkWrap: true,
           primary: false,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: items.length,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: layout.columns,
-            mainAxisSpacing: _spacing,
-            crossAxisSpacing: _spacing,
+            mainAxisSpacing: spacing,
+            crossAxisSpacing: spacing,
             mainAxisExtent: itemHeight,
           ),
-          itemBuilder: (context, index) {
-            return _ImageCard(item: items[index], borderRadius: _borderRadius);
-          },
+          itemBuilder: (context, index) => _ImageCard(item: items[index]),
         );
       },
     );
@@ -80,18 +81,19 @@ class _ResolvedImageLayout {
 }
 
 class _ImageCard extends StatelessWidget {
-  const _ImageCard({required this.item, required this.borderRadius});
+  const _ImageCard({required this.item});
 
   final ImageItemModel item;
-  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
     final imageUrl = item.image.trim();
+    final colors = context.appColors;
+    final r = context.responsive;
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(borderRadius),
+      color: colors.surface,
+      borderRadius: BorderRadius.circular(r.radius(14)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => SectionActionHandler.handle(context: context, action: item.action),
@@ -116,10 +118,15 @@ class _ImageLoadingPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: Color(0xfff4f7fb),
+    final r = context.responsive;
+    return ColoredBox(
+      color: context.appColors.surfaceVariant,
       child: Center(
-        child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xff0353a4))),
+        child: SizedBox(
+          width: r.icon(24),
+          height: r.icon(24),
+          child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+        ),
       ),
     );
   }
@@ -130,9 +137,9 @@ class _ImageErrorPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: Color(0xfff4f7fb),
-      child: Center(child: Icon(Icons.broken_image_outlined, color: Color(0xff0353a4), size: 36)),
+    return ColoredBox(
+      color: context.appColors.surfaceVariant,
+      child: Center(child: Icon(Icons.broken_image_outlined, color: context.appColors.textMuted, size: context.responsive.icon(36))),
     );
   }
 }

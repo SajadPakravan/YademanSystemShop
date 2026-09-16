@@ -5,9 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:yad_sys/models/product_card_model.dart';
 import 'package:yad_sys/models/products_list_model.dart';
 import 'package:yad_sys/screens/main_screen.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/view_models/search/search_view_model.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class SearchView extends StatefulWidget {
   const SearchView({super.key});
@@ -42,7 +45,6 @@ class _SearchViewState extends State<SearchView> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
         body: SafeArea(
           child: Column(
             children: <Widget>[
@@ -59,7 +61,7 @@ class _SearchViewState extends State<SearchView> {
                   _focusNode.requestFocus();
                 },
               ),
-              const Divider(height: 1, color: Color(0xffeeeeee)),
+              const Divider(height: 1),
               Expanded(
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 180),
@@ -75,10 +77,7 @@ class _SearchViewState extends State<SearchView> {
                           recentSearches: vm.recentSearches,
                           onClearRecent: vm.clearRecentSearches,
                           onRecentTap: (value) {
-                            _controller.value = TextEditingValue(
-                              text: value,
-                              selection: TextSelection.collapsed(offset: value.length),
-                            );
+                            _controller.value = TextEditingValue(text: value, selection: TextSelection.collapsed(offset: value.length));
                             vm.useRecent(value);
                             _focusNode.requestFocus();
                           },
@@ -135,12 +134,15 @@ class _SearchHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.responsive;
+    final colors = context.appColors;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      padding: EdgeInsets.all(r.space(10)),
       child: Row(
         children: <Widget>[
-          IconButton(onPressed: onBack, icon: const Icon(Icons.arrow_forward_rounded, size: 28)),
-          const SizedBox(width: 4),
+          IconButton(onPressed: onBack, icon: Icon(Icons.arrow_forward_rounded, size: r.icon(28), color: colors.textPrimary)),
+          SizedBox(width: r.space(4)),
           Expanded(
             child: ValueListenableBuilder<TextEditingValue>(
               valueListenable: controller,
@@ -154,22 +156,12 @@ class _SearchHeader extends StatelessWidget {
                   onSubmitted: (_) => onSubmit(),
                   decoration: InputDecoration(
                     hintText: 'جستجو در همه کالاها',
-                    hintStyle: const TextStyle(color: Colors.black45, fontSize: 14),
-                    prefixIcon: IconButton(onPressed: loading ? null : onSubmit, icon: const Icon(Icons.search_rounded, color: Colors.black54)),
-                    suffixIcon: value.text.isEmpty
-                        ? null
-                        : IconButton(onPressed: onClear, icon: const Icon(Icons.close_rounded, color: Colors.black87)),
-                    filled: true,
-                    fillColor: const Color(0xfffafafa),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(28),
-                      borderSide: const BorderSide(color: Color(0xffdedede)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(28),
-                      borderSide: const BorderSide(color: Color(0xffbdbdbd), width: 1.2),
-                    ),
+                    prefixIcon: IconButton(onPressed: loading ? null : onSubmit, icon: Icon(Icons.search_rounded, color: colors.textSecondary)),
+                    suffixIcon: value.text.isEmpty ? null : IconButton(onPressed: onClear, icon: Icon(Icons.close_rounded, color: colors.textPrimary)),
+                    contentPadding: EdgeInsets.symmetric(horizontal: r.space(14), vertical: r.space(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(r.radius(28)), borderSide: BorderSide(color: colors.border)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(r.radius(28)), borderSide: BorderSide(color: colors.border)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(r.radius(28)), borderSide: const BorderSide(color: AppColors.primary, width: 1.3)),
                   ),
                 );
               },
@@ -190,37 +182,37 @@ class _SearchIdle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.responsive;
+    final colors = context.appColors;
+
     return ListView(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 30),
+      padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(18), r.pageHorizontalPadding, r.space(30)),
       children: <Widget>[
         if (recentSearches.isNotEmpty) ...<Widget>[
           Row(
             children: <Widget>[
-              const Text('جستجوهای اخیر', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+              const AppText.titleSmall('جستجوهای اخیر', fontWeight: FontWeight.w700),
               const Spacer(),
-              TextButton(onPressed: onClearRecent, child: const Text('پاک کردن', style: TextStyle(color: Colors.black54))),
+              TextButton(onPressed: onClearRecent, child: AppText.labelMedium('پاک کردن', color: colors.textSecondary)),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: r.space(8)),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: r.space(8),
+            runSpacing: r.space(8),
             children: recentSearches
                 .map(
                   (value) => ActionChip(
                     onPressed: () => onRecentTap(value),
-                    avatar: const Icon(Icons.history_rounded, size: 17),
-                    label: Text(value),
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(color: Color(0xffdddddd)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+                    avatar: Icon(Icons.history_rounded, size: r.icon(17), color: colors.textSecondary),
+                    label: AppText.bodySmall(value),
                   ),
                 )
                 .toList(growable: false),
           ),
-          const SizedBox(height: 26),
+          SizedBox(height: r.space(26)),
         ],
-        const Text('برای شروع جستجو حداقل ۳ کاراکتر وارد کنید.', style: TextStyle(color: Colors.black45, fontSize: 13)),
+        AppText.bodySmall('برای شروع جستجو حداقل ۳ کاراکتر وارد کنید.', color: colors.textMuted),
       ],
     );
   }
@@ -235,21 +227,20 @@ class _SearchResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // if (!viewModel.hasLocalResults) {
-    //   return const Center(child: Text('نتیجه‌ای پیدا نشد.', style: TextStyle(color: Colors.black54)));
-    // }
+    final r = context.responsive;
+    final colors = context.appColors;
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: 28),
+      padding: EdgeInsets.only(bottom: r.space(28)),
       children: <Widget>[
         if (viewModel.categories.isNotEmpty) ...<Widget>[
           const _SectionTitle(title: 'دسته‌بندی‌ها'),
           ...viewModel.categories.map(
             (item) => ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 18),
-              leading: const Icon(Icons.grid_view_rounded, color: Colors.black54),
-              title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-              subtitle: const Text('دسته‌بندی', style: TextStyle(color: Color(0xff2682bd), fontSize: 12)),
+              contentPadding: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding),
+              leading: Icon(Icons.grid_view_rounded, color: colors.textSecondary),
+              title: AppText.bodyMedium(item.name, fontWeight: FontWeight.w600),
+              subtitle: const AppText.bodySmall('دسته‌بندی', color: AppColors.primary),
               trailing: const Icon(Icons.chevron_left_rounded),
               onTap: () => onCategory(item),
             ),
@@ -259,16 +250,12 @@ class _SearchResults extends StatelessWidget {
           const _SectionTitle(title: 'برندها'),
           ...viewModel.brands.map(
             (item) => ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 18),
+              contentPadding: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding),
               leading: item.image.isEmpty
-                  ? const Icon(Icons.sell_outlined, color: Colors.black54)
-                  : SizedBox(
-                      width: 38,
-                      height: 38,
-                      child: CachedNetworkImage(imageUrl: item.image, fit: BoxFit.contain),
-                    ),
-              title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-              subtitle: const Text('برند', style: TextStyle(color: Color(0xff2682bd), fontSize: 12)),
+                  ? Icon(Icons.sell_outlined, color: colors.textSecondary)
+                  : SizedBox(width: r.icon(38), height: r.icon(38), child: CachedNetworkImage(imageUrl: item.image, fit: BoxFit.contain)),
+              title: AppText.bodyMedium(item.name, fontWeight: FontWeight.w600),
+              subtitle: const AppText.bodySmall('برند', color: AppColors.primary),
               trailing: const Icon(Icons.chevron_left_rounded),
               onTap: () => onBrand(item),
             ),
@@ -289,10 +276,13 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.responsive;
+    final colors = context.appColors;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
-      color: const Color(0xfffafafa),
-      child: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+      padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(18), r.pageHorizontalPadding, r.space(8)),
+      color: colors.surfaceVariant,
+      child: AppText.bodyMedium(title, fontWeight: FontWeight.w800),
     );
   }
 }
@@ -303,6 +293,8 @@ class _ProductSuggestion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.responsive;
+    final colors = context.appColors;
     final subtitleParts = <String>[
       if (product.categories.isNotEmpty) product.categories.first.name,
       if (product.brand.name.isNotEmpty) product.brand.name,
@@ -310,18 +302,18 @@ class _ProductSuggestion extends StatelessWidget {
 
     return ListTile(
       onTap: () => toProduct(id: product.id),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 5),
+      contentPadding: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding, vertical: r.space(5)),
       leading: SizedBox(
-        width: 54,
-        height: 54,
+        width: r.icon(54),
+        height: r.icon(54),
         child: CachedNetworkImage(
           imageUrl: product.image,
           fit: BoxFit.contain,
-          errorWidget: (_, _, _) => const Icon(Icons.image_not_supported_outlined, color: Colors.black26),
+          errorWidget: (_, _, _) => Icon(Icons.image_not_supported_outlined, color: colors.textMuted),
         ),
       ),
-      title: Text(product.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-      subtitle: subtitleParts.isEmpty ? null : Text(subtitleParts.join(' • '), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xff2682bd), fontSize: 12)),
+      title: AppText.bodyMedium(product.name, maxLines: 2, overflow: TextOverflow.ellipsis, fontWeight: FontWeight.w600),
+      subtitle: subtitleParts.isEmpty ? null : AppText.bodySmall(subtitleParts.join(' • '), maxLines: 1, overflow: TextOverflow.ellipsis, color: AppColors.primary),
       trailing: const Icon(Icons.chevron_left_rounded),
     );
   }

@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:yad_sys/themes/color_style.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/widgets/text_views/text_body_medium_view.dart';
 
-void bottomSheetPickImage({required BuildContext context, required Function() onTapCamera, required Function() onTapGallery}) {
+void bottomSheetPickImage({
+  required BuildContext context,
+  required Function() onTapCamera,
+  required Function() onTapGallery,
+}) {
   showModalBottomSheet(
     context: context,
-    backgroundColor: Colors.white,
     showDragHandle: true,
     enableDrag: true,
     isScrollControlled: true,
     builder: (BuildContext context) {
-      return Container(
-        padding: const EdgeInsets.all(20),
+      final r = context.responsive;
+      return Padding(
+        padding: EdgeInsets.all(r.space(20)),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            option(context: context, icon: Icons.camera_alt_rounded, title: 'دوربین', onTap: onTapCamera),
-            option(context: context, icon: Icons.photo, title: 'گالری', onTap: onTapGallery),
+            _option(context: context, icon: Icons.camera_alt_rounded, title: 'دوربین', onTap: onTapCamera),
+            _option(context: context, icon: Icons.photo, title: 'گالری', onTap: onTapGallery),
           ],
         ),
       );
@@ -24,12 +29,18 @@ void bottomSheetPickImage({required BuildContext context, required Function() on
   );
 }
 
-option({required BuildContext context, required String title, required IconData icon, required Function() onTap}) {
+Widget _option({
+  required BuildContext context,
+  required String title,
+  required IconData icon,
+  required Function() onTap,
+}) {
+  final r = context.responsive;
   return SizedBox(
-    width: 100,
-    height: 100,
+    width: r.percentWidth(0.26, min: 92, max: 130),
+    height: r.percentWidth(0.26, min: 92, max: 130),
     child: ListTile(
-      title: Icon(icon, size: 60, color: ColorStyle.blueFav),
+      title: Icon(icon, size: r.icon(52), color: AppColors.primary),
       subtitle: TextBodyMediumView(title, textAlign: TextAlign.center),
       onTap: onTap,
     ),

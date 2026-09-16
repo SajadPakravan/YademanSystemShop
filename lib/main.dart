@@ -8,7 +8,7 @@ import 'package:yad_sys/database/cart_model.dart';
 import 'package:yad_sys/database/favorite_model.dart';
 import 'package:yad_sys/models/category_model.dart';
 import 'package:yad_sys/screens/splash/splash_screen.dart';
-import 'package:yad_sys/themes/theme.dart';
+import 'package:yad_sys/themes/app_themes.dart';
 import 'package:yad_sys/tools/app_texts.dart';
 import 'package:yad_sys/view_models/categories/categories_view_model.dart';
 import 'package:yad_sys/view_models/home/home_view_model.dart';
@@ -52,7 +52,9 @@ class _YademanSystemShop extends State<YademanSystemShop> {
       debugShowCheckedModeBanner: false,
       title: appTextStrings.appTitle,
       useInheritedMediaQuery: true,
-      theme: appTheme,
+      theme: AppThemes.light,
+      darkTheme: AppThemes.dark,
+      themeMode: ThemeMode.system,
       home: const SplashScreen(),
     );
   }

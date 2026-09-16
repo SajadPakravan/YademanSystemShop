@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yad_sys/widgets/text_views/text_title_medium_view.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class AppBarView extends StatelessWidget implements PreferredSizeWidget {
   const AppBarView({super.key, required this.title});
@@ -9,9 +9,8 @@ class AppBarView extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      iconTheme: Theme.of(context).iconTheme,
       centerTitle: true,
-      title: TextTitleMediumView(title, color: Colors.white),
+      title: AppText.titleMedium(title, fontWeight: FontWeight.w700),
     );
   }
 

@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/order_model.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/widgets/text_views/text_body_medium_view.dart';
 
 class OrderTabScreen extends StatelessWidget {
@@ -11,50 +13,61 @@ class OrderTabScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
+    final colors = context.appColors;
+    final r = context.responsive;
+
     return list.isEmpty
         ? const Center(child: TextBodyMediumView('سفارشی وجود ندارد'))
         : ListView.builder(
+            padding: EdgeInsets.symmetric(vertical: r.space(6)),
             itemCount: list.length,
             itemBuilder: (context, index) {
-              OrderModel order = list[index];
-              List<LineItems> itemsLst = order.lineItems!;
-              String date = order.dateCreated.toString().toPersianDate();
-              List<String> t = order.dateCreated.toString().split('T');
-              String h = t[1].split(':')[0];
-              String m = t[1].split(':')[1];
-              String time = '$h:$m'.toPersianDigit();
+              final order = list[index];
+              final itemsLst = order.lineItems!;
+              final date = order.dateCreated.toString().toPersianDate();
+              final t = order.dateCreated.toString().split('T');
+              final h = t[1].split(':')[0];
+              final m = t[1].split(':')[1];
+              final time = '$h:$m'.toPersianDigit();
+
               return Container(
-                decoration: BoxDecoration(border: Border.all(color: Colors.black87), borderRadius: BorderRadius.circular(10)),
-                margin: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  border: Border.all(color: colors.border),
+                  borderRadius: BorderRadius.circular(r.cardRadius),
+                ),
+                margin: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding, vertical: r.space(6)),
                 child: ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 5, 10, 20),
+                    padding: EdgeInsets.fromLTRB(r.space(10), r.space(5), r.space(10), r.space(16)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TextBodyMediumView('کد سفارش: ${order.id.toString().toPersianDigit()}'),
-                        const SizedBox(height: 10),
+                        SizedBox(height: r.space(8)),
                         TextBodyMediumView('زمان ثبت: $date - $time'),
-                        const SizedBox(height: 10),
-                        TextBodyMediumView('مجموع: ${(order.total).toString().toPersianDigit().seRagham()} تومان'),
+                        SizedBox(height: r.space(8)),
+                        TextBodyMediumView('مجموع: ${(order.total).toString().toPersianDigit().seRagham()} تومان', fontWeight: FontWeight.bold),
                       ],
                     ),
                   ),
                   subtitle: SizedBox(
-                    height: height * 0.1,
+                    height: r.percentHeight(0.1, min: 72, max: 108),
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: itemsLst.length,
                       itemBuilder: (context, itemIndex) {
-                        LineItems item = itemsLst[itemIndex];
+                        final item = itemsLst[itemIndex];
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          padding: EdgeInsets.symmetric(horizontal: r.space(10)),
                           decoration: itemIndex + 1 != itemsLst.length
-                              ? const BoxDecoration(border: Border(left: BorderSide(color: Colors.black38)))
+                              ? BoxDecoration(border: Border(left: BorderSide(color: colors.divider)))
                               : null,
-                          child: CachedNetworkImage(imageUrl: item.image!.src!),
+                          child: CachedNetworkImage(
+                            imageUrl: item.image!.src!,
+                            errorWidget: (_, _, _) => Icon(Icons.image_not_supported_outlined, color: colors.textMuted),
+                          ),
                         );
                       },
                     ),

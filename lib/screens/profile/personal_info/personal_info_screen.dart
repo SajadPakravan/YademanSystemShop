@@ -3,11 +3,12 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/tools/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/customer_model.dart';
-import 'package:yad_sys/themes/color_style.dart';
 import 'package:yad_sys/tools/app_cache.dart';
 import 'package:yad_sys/widgets/app_bar_view.dart';
 import 'package:yad_sys/widgets/app_dialogs.dart';
@@ -39,7 +40,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   File? avatarFile;
   ImagePicker imagePicker = ImagePicker();
 
-  profileChanged(bool value) async => await cache.setBool('profileChanged', value);
+  Future<void> profileChanged(bool value) async => await cache.setBool('profileChanged', value);
 
   @override
   void initState() {
@@ -58,7 +59,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    final r = context.responsive;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -95,13 +96,13 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               const SizedBox(height: 20),
               profileChangeView(),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: width * 0.1, vertical: 20),
+                padding: EdgeInsets.symmetric(horizontal: r.percentWidth(0.1, min: 24, max: 60), vertical: r.space(20)),
                 child: EasyButton(
-                  idleStateWidget: const TextBodyMediumView('ذخیره', color: Colors.white, fontWeight: FontWeight.bold),
-                  loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: Colors.white)),
-                  buttonColor: ColorStyle.blueFav,
+                  idleStateWidget: const TextBodyMediumView('ذخیره', color: AppColors.onBrand, fontWeight: FontWeight.bold),
+                  loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: AppColors.onBrand)),
+                  buttonColor: AppColors.primary,
                   borderRadius: 10,
-                  height: width * 0.13,
+                  height: r.buttonHeight,
                   onPressed: () async {
                     if (formValidation()) {
                       dynamic jsonUpdateCustomer = await httpRequest.updateCustomer(
@@ -172,12 +173,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     return Card(
       margin: const EdgeInsets.all(10),
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5), side: const BorderSide()),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(context.responsive.radius(8)), side: BorderSide(color: context.appColors.border)),
       child: ListTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(context.responsive.radius(8))),
         title: TextBodyMediumView(title),
         subtitle: Padding(padding: const EdgeInsets.only(top: 10), child: TextBodyLargeView(subtitle, fontWeight: FontWeight.bold)),
-        leading: Icon(icon, color: Colors.indigo),
+        leading: Icon(icon, color: AppColors.primary),
         trailing: trailing,
         onTap: () => appDialogs.editeValue(
           context: context,
@@ -193,16 +194,16 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 
-  profileChangeView() {
+  Widget profileChangeView() {
     return CircleAvatar(
-      radius: 140 / 2,
+      radius: context.responsive.icon(70, min: 58, max: 84),
       backgroundImage: avatarFile == null ? CachedNetworkImageProvider(customer.avatarUrl!) : Image.file(File(avatarFile!.path)).image,
-      backgroundColor: Colors.grey,
+      backgroundColor: context.appColors.surfaceVariant,
       child: Align(
         alignment: Alignment.bottomCenter,
         child: IconButton(
           icon: const Icon(Icons.edit),
-          style: ButtonStyle(backgroundColor: WidgetStateProperty.all(Colors.black54)),
+          style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(context.appColors.overlay)),
           onPressed: () => bottomSheetPickImage(
             context: context,
             onTapCamera: () => pickImage(context: context, gallery: false),

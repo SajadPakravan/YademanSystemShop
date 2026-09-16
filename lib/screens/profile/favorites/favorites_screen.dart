@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/database/favorite_model.dart';
-import 'package:yad_sys/themes/color_style.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/widgets/app_bar_view.dart';
 import 'package:yad_sys/widgets/text_views/text_body_medium_view.dart';
@@ -16,15 +17,18 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  Box<FavoriteModel> favoritesBox = Hive.box<FavoriteModel>('favoritesBox');
+  final Box<FavoriteModel> favoritesBox = Hive.box<FavoriteModel>('favoritesBox');
 
-  deleteFavorite({required int id}) async {
+  Future<void> deleteFavorite({required int id}) async {
     final fav = favoritesBox.values.firstWhere((element) => element.id == id);
-    fav.delete();
+    await fav.delete();
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final r = context.responsive;
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -32,107 +36,104 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         body: ValueListenableBuilder(
           valueListenable: favoritesBox.listenable(),
           builder: (context, Box<FavoriteModel> box, _) {
-            if (box.isEmpty) return const Center(child: TextBodyMediumView('لیست علاقه‌مندی‌های شما خالی است'));
+            if (box.isEmpty) {
+              return const Center(child: TextBodyMediumView('لیست علاقه‌مندی‌های شما خالی است'));
+            }
+
             return ListView.builder(
+              padding: EdgeInsets.symmetric(vertical: r.space(6)),
               itemCount: box.length,
               itemBuilder: (context, index) {
-                FavoriteModel favorite = box.getAt(index)!;
+                final favorite = box.getAt(index)!;
+                final price = favorite.price;
+                final regularPrice = favorite.regularPrice;
+                final percent = favorite.onSale && regularPrice > 0
+                    ? (((price - regularPrice) / regularPrice) * 100).roundToDouble().toInt().abs()
+                    : 0;
 
-                int price = favorite.price;
-                int regularPrice = favorite.regularPrice;
-                int percent = 0;
-                String toman = ' تومان';
-                Color textColor = Colors.black87;
-                double fontSize = 14;
-
-                if (favorite.onSale) {
-                  textColor = Colors.black45;
-                  fontSize = 12;
-                  toman = '';
-                  percent = (((price - regularPrice) / regularPrice) * 100).roundToDouble().toInt();
-                }
                 return Container(
-                  margin: const EdgeInsets.all(10),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(border: Border.all(), borderRadius: BorderRadius.circular(10)),
+                  margin: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding, vertical: r.space(6)),
+                  padding: EdgeInsets.all(r.space(10)),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    border: Border.all(color: colors.border),
+                    borderRadius: BorderRadius.circular(r.cardRadius),
+                  ),
                   child: Row(
                     children: [
-                      Flexible(flex: 1, child: CachedNetworkImage(imageUrl: favorite.image, fit: BoxFit.contain)),
+                      Flexible(
+                        flex: 1,
+                        child: CachedNetworkImage(
+                          imageUrl: favorite.image,
+                          fit: BoxFit.contain,
+                          errorWidget: (_, _, _) => Icon(Icons.image_not_supported_outlined, color: colors.textMuted, size: r.icon(42)),
+                        ),
+                      ),
                       Flexible(
                         flex: 2,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          padding: EdgeInsets.symmetric(horizontal: r.space(10)),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              TextBodyMediumView(favorite.name, fontWeight: FontWeight.bold, textAlign: TextAlign.center, maxLines: 1),
-                              const SizedBox(height: 10),
+                              TextBodyMediumView(
+                                favorite.name,
+                                fontWeight: FontWeight.bold,
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: r.space(10)),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Visibility(
-                                    visible: favorite.onSale,
-                                    child: Container(
+                                  if (favorite.onSale) ...[
+                                    Container(
                                       alignment: Alignment.center,
-                                      padding: const EdgeInsets.all(5),
-                                      decoration: BoxDecoration(color: Colors.red.shade600),
+                                      padding: EdgeInsets.symmetric(horizontal: r.space(7), vertical: r.space(4)),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accent,
+                                        borderRadius: BorderRadius.circular(r.radius(10)),
+                                      ),
                                       child: TextBodyMediumView(
-                                        "${percent.toString().replaceAll('-', '').toPersianDigit()}%",
-                                        color: Colors.white,
+                                        '${percent.toString().toPersianDigit()}%',
+                                        color: AppColors.onBrand,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 10),
+                                    SizedBox(width: r.space(10)),
+                                  ],
                                   Column(
                                     children: [
-                                      Visibility(
-                                        visible: favorite.onSale,
-                                        child: Container(
-                                          alignment: Alignment.centerLeft,
-                                          margin: const EdgeInsets.only(bottom: 5),
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.end,
-                                            children: [
-                                              TextBodyMediumView(
-                                                '${price.toString().toPersianDigit().seRagham()} تومان',
-                                                textAlign: TextAlign.left,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ],
-                                          ),
+                                      if (favorite.onSale) ...[
+                                        TextBodyMediumView(
+                                          '${price.toString().toPersianDigit().seRagham()} تومان',
+                                          textAlign: TextAlign.left,
+                                          fontWeight: FontWeight.bold,
                                         ),
+                                        SizedBox(height: r.space(4)),
+                                      ],
+                                      TextBodyMediumView(
+                                        '${regularPrice.toString().toPersianDigit().seRagham()}${favorite.onSale ? '' : ' تومان'}',
+                                        textAlign: TextAlign.left,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: favorite.onSale ? 12 : 14,
+                                        color: favorite.onSale ? colors.textMuted : colors.textPrimary,
                                       ),
-                                      Container(
-                                        alignment: Alignment.centerLeft,
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                          children: [
-                                            TextBodyMediumView(
-                                              regularPrice.toString().toPersianDigit().seRagham(),
-                                              textAlign: TextAlign.left,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: fontSize,
-                                              color: textColor,
-                                            ),
-                                            TextBodyMediumView(toman, fontWeight: FontWeight.bold),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
                                     ],
                                   ),
                                 ],
                               ),
+                              SizedBox(height: r.space(8)),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.open_in_browser, color: ColorStyle.blueFav, size: 40),
+                                    icon: Icon(Icons.open_in_browser, color: AppColors.primary, size: r.icon(34)),
                                     onPressed: () => toProduct(id: favorite.id),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.delete, color: ColorStyle.blueFav, size: 40),
+                                    icon: Icon(Icons.delete_outline_rounded, color: AppColors.accent, size: r.icon(34)),
                                     onPressed: () => deleteFavorite(id: favorite.id),
                                   ),
                                 ],

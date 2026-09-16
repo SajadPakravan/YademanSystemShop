@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/tools/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:yad_sys/connections/http_request.dart';
-import 'package:yad_sys/themes/color_style.dart';
 import 'package:yad_sys/widgets/app_bar_view.dart';
 import 'package:yad_sys/widgets/loading.dart';
 import 'package:yad_sys/widgets/snack_bar_view.dart';
@@ -27,7 +28,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    final r = context.responsive;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -49,17 +50,17 @@ class _ForgetPasswordState extends State<ForgetPassword> {
                     obscureText: true,
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: width * 0.1, vertical: 20),
+                    padding: EdgeInsets.symmetric(horizontal: r.percentWidth(0.1, min: 24, max: 60), vertical: r.space(20)),
                     child: EasyButton(
                       idleStateWidget: TextBodyMediumView(
                         recoveryPassStatus ? 'تغییر رمز' : 'ارسال کد تایید',
-                        color: Colors.white,
+                        color: AppColors.onBrand,
                         fontWeight: FontWeight.bold,
                       ),
-                      loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: Colors.white)),
-                      buttonColor: ColorStyle.blueFav,
+                      loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: AppColors.onBrand)),
+                      buttonColor: AppColors.primary,
                       borderRadius: 10,
-                      height: width * 0.13,
+                      height: r.buttonHeight,
                       onPressed: () async {
                         if (recoveryPassStatus) {
                           if (formValidation()) {
@@ -98,7 +99,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
     );
   }
 
-  field({
+  Widget field({
     bool visible = true,
     required TextEditingController controller,
     bool readOnly = false,
@@ -121,12 +122,12 @@ class _ForgetPasswordState extends State<ForgetPassword> {
             labelText: label,
             labelStyle: Theme.of(context).textTheme.bodyMedium,
             contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-            fillColor: const Color.fromRGBO(223, 228, 234, 1.0),
+            fillColor: context.appColors.surfaceVariant,
             filled: true,
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide()),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(context.responsive.radius(10)), borderSide: BorderSide(color: context.appColors.border)),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: ColorStyle.blueFav),
+              borderRadius: BorderRadius.circular(context.responsive.radius(10)),
+              borderSide: const BorderSide(color: AppColors.primary),
             ),
           ),
         ),
@@ -134,7 +135,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
     );
   }
 
-  formValidation() {
+  bool formValidation() {
     if (code.text.isNotEmpty && password.text.isNotEmpty && rePassword.text.isNotEmpty) {
       if (password.text == rePassword.text) {
         return true;

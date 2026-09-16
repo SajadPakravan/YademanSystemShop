@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yad_sys/models/product_model.dart';
 import 'package:yad_sys/models/product_variable_model.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/widgets/cards/product_card_grid.dart';
 import 'package:yad_sys/widgets/loading.dart';
 import 'package:yad_sys/widgets/text_views/text_title_medium_view.dart';
@@ -32,7 +34,7 @@ class ShowAllView extends StatelessWidget {
       child: Scaffold(
         body: NestedScrollView(
           floatHeaderSlivers: true,
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [appBar()],
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [_appBar(context)],
           body: RefreshIndicator(
             onRefresh: () => onRefresh(),
             child: productsLst.isEmpty
@@ -46,12 +48,12 @@ class ShowAllView extends StatelessWidget {
                           visible: !(productCount < 10),
                           child: EasyButton(
                             type: EasyButtonType.text,
-                            idleStateWidget: const Icon(Icons.more_horiz, color: Colors.red, size: 40),
+                            idleStateWidget: Icon(Icons.more_horiz, color: AppColors.accent, size: context.responsive.icon(40)),
                             loadingStateWidget: const Loading(),
                             onPressed: onMoreBtn,
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: context.responsive.space(10)),
                       ],
                     ),
                   ),
@@ -61,14 +63,16 @@ class ShowAllView extends StatelessWidget {
     );
   }
 
-  SliverAppBar appBar() {
+  SliverAppBar _appBar(BuildContext context) {
+    final colors = context.appColors;
     return SliverAppBar(
       floating: true,
       snap: true,
-      backgroundColor: Colors.white,
+      backgroundColor: colors.surface,
+      surfaceTintColor: AppColors.transparent,
       title: TextTitleMediumView(Get.arguments['title']),
       centerTitle: true,
-      iconTheme: const IconThemeData(color: Colors.black54),
+      iconTheme: IconThemeData(color: colors.textSecondary),
     );
   }
 }

@@ -2,9 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/product_card_model.dart';
 import 'package:yad_sys/models/section_model.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
-import 'package:yad_sys/widgets/product/product_vertical_card_widget.dart';
 import 'package:yad_sys/widgets/cards/view_all_widget.dart';
+import 'package:yad_sys/widgets/product/product_vertical_card_widget.dart';
 
 class DiscountedProductsWidget extends StatefulWidget {
   const DiscountedProductsWidget({super.key, required this.section, required this.products});
@@ -17,12 +19,6 @@ class DiscountedProductsWidget extends StatefulWidget {
 }
 
 class _DiscountedProductsWidgetState extends State<DiscountedProductsWidget> {
-  static const double _cardHeight = 300;
-  static const double _verticalPadding = 20;
-  static const double _rowSpacing = 10;
-  static const double _mainAxisSpacing = 3;
-  static const double _horizontalPadding = 20;
-
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -34,38 +30,43 @@ class _DiscountedProductsWidgetState extends State<DiscountedProductsWidget> {
   @override
   Widget build(BuildContext context) {
     final rows = widget.section.layout.rows.clamp(1, 3).toInt();
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final cardWidth = (screenWidth * 0.35).clamp(150.0, 220.0).toDouble();
-    final contentHeight = (_cardHeight * rows) + (_rowSpacing * (rows - 1));
     final hasViewAll = widget.section.viewAll != null;
     final logoSpacerCount = rows;
     final itemCount = logoSpacerCount + widget.products.length + (hasViewAll ? 1 : 0);
 
-    if (widget.products.isEmpty && !hasViewAll) {
-      return const SizedBox.shrink();
-    }
+    if (widget.products.isEmpty && !hasViewAll) return const SizedBox.shrink();
+
+    final metrics = HorizontalGridMetrics.verticalProducts(
+      context,
+      rows: rows,
+      itemCount: itemCount,
+    );
 
     return Container(
       width: double.infinity,
-      height: contentHeight + (_verticalPadding * 2),
-      padding: const EdgeInsets.symmetric(vertical: _verticalPadding),
+      height: metrics.sectionHeight,
+      padding: EdgeInsets.symmetric(vertical: metrics.verticalPadding),
       clipBehavior: Clip.antiAlias,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(begin: Alignment.topRight, end: Alignment.bottomLeft, colors: [Color(0xff0868c7), Color(0xff034b91), Color(0xff022f5f)]),
+        gradient: LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          colors: <Color>[AppColors.promoBright, AppColors.primaryDark, AppColors.promoDeep],
+        ),
       ),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Positioned(
+          PositionedDirectional(
             top: 0,
             bottom: 0,
-            right: _horizontalPadding,
-            width: cardWidth,
+            start: metrics.horizontalPadding,
+            width: metrics.cardWidth,
             child: IgnorePointer(
               child: AnimatedBuilder(
                 animation: _scrollController,
                 builder: (context, child) {
-                  final progress = _logoCoverProgress(cardWidth: cardWidth);
+                  final progress = _logoCoverProgress(cardWidth: metrics.cardWidth, spacing: metrics.spacing);
                   return _AmazingLogo(progress: progress);
                 },
               ),
@@ -73,32 +74,33 @@ class _DiscountedProductsWidgetState extends State<DiscountedProductsWidget> {
           ),
           GridView.builder(
             controller: _scrollController,
-            padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
+            padding: EdgeInsets.symmetric(horizontal: metrics.horizontalPadding),
             scrollDirection: Axis.horizontal,
             itemCount: itemCount,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: rows,
-              mainAxisSpacing: _mainAxisSpacing,
-              crossAxisSpacing: _rowSpacing,
-              mainAxisExtent: cardWidth,
+              crossAxisCount: metrics.rows,
+              mainAxisSpacing: metrics.spacing,
+              crossAxisSpacing: metrics.spacing,
+              mainAxisExtent: metrics.cardWidth,
             ),
             itemBuilder: (context, index) {
-              if (index < logoSpacerCount) {
-                return const SizedBox.expand();
-              }
+              if (index < logoSpacerCount) return const SizedBox.expand();
 
               final contentIndex = index - logoSpacerCount;
-
               if (contentIndex < widget.products.length) {
-                return ProductVerticalCardWidget(product: widget.products[contentIndex], rows: rows, length: widget.products.length, index: contentIndex);
+                return ProductVerticalCardWidget(
+                  product: widget.products[contentIndex],
+                  rows: metrics.rows,
+                  length: widget.products.length,
+                  index: contentIndex,
+                );
               }
 
               final viewAll = widget.section.viewAll!;
-
               return ViewAllWidget(
                 title: viewAll.title,
                 onTap: () => SectionActionHandler.handle(context: context, action: viewAll.action),
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onBrand,
               );
             },
           ),
@@ -107,13 +109,10 @@ class _DiscountedProductsWidgetState extends State<DiscountedProductsWidget> {
     );
   }
 
-  double _logoCoverProgress({required double cardWidth}) {
-    if (!_scrollController.hasClients) {
-      return 0;
-    }
-
+  double _logoCoverProgress({required double cardWidth, required double spacing}) {
+    if (!_scrollController.hasClients) return 0;
     final position = _scrollController.position;
-    final coverDistance = cardWidth + _mainAxisSpacing;
+    final coverDistance = cardWidth + spacing;
     final traveledDistance = (position.pixels - position.minScrollExtent).abs();
     return (traveledDistance / coverDistance).clamp(0.0, 1.0).toDouble();
   }
@@ -126,6 +125,7 @@ class _AmazingLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.responsive;
     final normalizedProgress = progress.clamp(0.0, 1.0).toDouble();
     final scale = 1.0 - (0.14 * normalizedProgress);
     final opacity = 1.0 - (0.62 * normalizedProgress);
@@ -138,14 +138,20 @@ class _AmazingLogo extends StatelessWidget {
         child: ColorFiltered(
           colorFilter: ColorFilter.matrix(_saturationMatrix(saturation)),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 30),
+            padding: EdgeInsets.symmetric(vertical: r.space(26, min: 20, max: 34)),
             child: CachedNetworkImage(
               imageUrl: 'https://yademansystem.ir/wp-content/uploads/2023/02/amazings.png',
               fit: BoxFit.contain,
-              placeholder: (context, url) => const Center(
-                child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+              placeholder: (context, url) => Center(
+                child: SizedBox(
+                  width: r.icon(24),
+                  height: r.icon(24),
+                  child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBrand),
+                ),
               ),
-              errorWidget: (context, url, error) => const Center(child: Icon(Icons.bolt_rounded, color: Colors.white, size: 54)),
+              errorWidget: (context, url, error) => Center(
+                child: Icon(Icons.bolt_rounded, color: AppColors.onBrand, size: r.icon(54)),
+              ),
             ),
           ),
         ),
@@ -158,28 +164,11 @@ class _AmazingLogo extends StatelessWidget {
     const red = 0.2126;
     const green = 0.7152;
     const blue = 0.0722;
-
     return <double>[
-      red + ((1 - red) * s),
-      green - (green * s),
-      blue - (blue * s),
-      0,
-      0,
-      red - (red * s),
-      green + ((1 - green) * s),
-      blue - (blue * s),
-      0,
-      0,
-      red - (red * s),
-      green - (green * s),
-      blue + ((1 - blue) * s),
-      0,
-      0,
-      0,
-      0,
-      0,
-      1,
-      0,
+      red + ((1 - red) * s), green - (green * s), blue - (blue * s), 0, 0,
+      red - (red * s), green + ((1 - green) * s), blue - (blue * s), 0, 0,
+      red - (red * s), green - (green * s), blue + ((1 - blue) * s), 0, 0,
+      0, 0, 0, 1, 0,
     ];
   }
 }

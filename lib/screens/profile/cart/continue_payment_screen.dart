@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/tools/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
@@ -10,7 +12,6 @@ import 'package:yad_sys/models/customer_model.dart';
 import 'package:yad_sys/screens/main_screen.dart';
 import 'package:yad_sys/screens/profile/address/address_screen.dart';
 import 'package:yad_sys/screens/profile/orders/order_screen.dart';
-import 'package:yad_sys/themes/color_style.dart';
 import 'package:yad_sys/tools/app_cache.dart';
 import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/widgets/app_bar_view.dart';
@@ -46,7 +47,7 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
   int totalPrice = 0;
   List products = [];
 
-  getCustomer() async {
+  Future<void> getCustomer() async {
     setState(() => loading = true);
     dynamic jsonCustomer = await httpRequest.getCustomer(email: await cache.getString('email'));
     jsonCustomer.forEach((c) => setState(() => customer = CustomerModel.fromJson(c)));
@@ -59,7 +60,7 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
     setDetailPrice();
   }
 
-  increaseQuantity(int id) {
+  void increaseQuantity(int id) {
     final cart = widget.cartBox.values.firstWhere((element) => element.id == id);
     cart.quantity++;
     cart.save();
@@ -67,7 +68,7 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
     setDetailPrice();
   }
 
-  decreaseQuantity(int id) {
+  void decreaseQuantity(int id) {
     final cart = widget.cartBox.values.firstWhere((element) => element.id == id);
     if (cart.quantity > 1) {
       cart.quantity--;
@@ -77,7 +78,7 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
     setDetailPrice();
   }
 
-  setDetailPrice() async {
+  Future<void> setDetailPrice() async {
     totalCart = 0;
     shippingTotal = 0;
     setState(() => products.clear());
@@ -93,7 +94,7 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
     }
   }
 
-  shippingMethod() {
+  Future<void> shippingMethod() async {
     if (!addressAlert) {
       List<String> n = ['8511', '8513', '8514', '8515', '8516', '8517', '8518', '8519'];
       List<String> e = ['811', '813', '814', '815', '816', '817', '818', '819'];
@@ -123,7 +124,7 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
     }
   }
 
-  setShippingTotal(CartModel cart) {
+  void setShippingTotal(CartModel cart) {
     if (otherCity) {
       setState(() => selectMethod = 1);
       int shPrice = 0;
@@ -167,14 +168,14 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
     );
   }
 
-  addressView() {
+  Widget addressView() {
     return Container(
       margin: const EdgeInsets.all(10),
-      decoration: BoxDecoration(border: Border.all(), borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(color: context.appColors.surface, border: Border.all(color: context.appColors.border), borderRadius: BorderRadius.circular(context.responsive.radius(10))),
       child: ListTile(
         title: Padding(
           padding: const EdgeInsets.only(bottom: 10),
-          child: TextBodyMediumView('ارسال به', color: Colors.grey.shade700),
+          child: TextBodyMediumView('ارسال به', color: context.appColors.textSecondary),
         ),
         subtitle: addressAlert
             ? Column(
@@ -183,7 +184,7 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
                   Directionality(
                     textDirection: TextDirection.ltr,
                     child: TextButton.icon(
-                      label: const TextBodyMediumView('وارد کردن آدرس و مشخصات', color: Colors.indigo),
+                      label: const TextBodyMediumView('وارد کردن آدرس و مشخصات', color: AppColors.primary),
                       icon: const Icon(Icons.keyboard_arrow_left),
                       onPressed: () async {
                         await zoomToPage(const AddressScreen(), arguments: customer);
@@ -207,7 +208,7 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
                     child: Directionality(
                       textDirection: TextDirection.ltr,
                       child: TextButton.icon(
-                        label: const TextBodyMediumView('تغییر آدرس و مشخصات', color: Colors.indigo),
+                        label: const TextBodyMediumView('تغییر آدرس و مشخصات', color: AppColors.primary),
                         icon: const Icon(Icons.keyboard_arrow_left),
                         onPressed: () async {
                           await zoomToPage(const AddressScreen(), arguments: customer);
@@ -222,10 +223,10 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
     );
   }
 
-  cartView() {
+  Widget cartView() {
     return Container(
       margin: const EdgeInsets.all(10),
-      decoration: BoxDecoration(border: Border.all(), borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(color: context.appColors.surface, border: Border.all(color: context.appColors.border), borderRadius: BorderRadius.circular(context.responsive.radius(10))),
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         title: Padding(
@@ -236,7 +237,7 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
           ),
         ),
         subtitle: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.23,
+          height: context.responsive.percentHeight(0.23, min: 150, max: 230),
           child: ValueListenableBuilder(
             valueListenable: widget.cartBox.listenable(),
             builder: (context, Box<CartModel> box, _) {
@@ -256,14 +257,14 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.add_circle, color: Colors.indigo, size: 30),
+                                icon: const Icon(Icons.add_circle, color: AppColors.primary, size: 30),
                                 onPressed: () => increaseQuantity(cart.id),
                               ),
                               const SizedBox(width: 10),
                               TextBodyMediumView(cart.quantity.toString().toPersianDigit(), fontSize: 18),
                               const SizedBox(width: 10),
                               IconButton(
-                                icon: const Icon(Icons.remove_circle, color: Colors.indigo, size: 30),
+                                icon: const Icon(Icons.remove_circle, color: AppColors.primary, size: 30),
                                 onPressed: cart.quantity == 1 ? null : () => decreaseQuantity(cart.id),
                               ),
                             ],
@@ -276,9 +277,9 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
                           children: [
                             const SizedBox(width: 10),
                             Container(
-                              height: MediaQuery.of(context).size.height * 0.26,
+                              height: context.responsive.percentHeight(0.26, min: 165, max: 250),
                               width: 1,
-                              decoration: const BoxDecoration(border: Border(right: BorderSide(color: Colors.black38))),
+                              decoration: BoxDecoration(border: Border(right: BorderSide(color: context.appColors.divider))),
                             ),
                             const SizedBox(width: 10),
                           ],
@@ -295,10 +296,10 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
     );
   }
 
-  priceView() {
+  Widget priceView() {
     return Container(
       margin: const EdgeInsets.all(10),
-      decoration: BoxDecoration(border: Border.all(), borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(color: context.appColors.surface, border: Border.all(color: context.appColors.border), borderRadius: BorderRadius.circular(context.responsive.radius(10))),
       child: ListTile(
         title: const Padding(
           padding: EdgeInsets.only(bottom: 20),
@@ -318,13 +319,13 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
             ),
             const SizedBox(height: 20),
             Container(
-              decoration: const BoxDecoration(border: Border.symmetric(horizontal: BorderSide())),
+              decoration: BoxDecoration(border: Border.symmetric(horizontal: BorderSide(color: context.appColors.divider))),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Expanded(child: TextBodyMediumView('حمل و نقل')),
                   addressAlert
-                      ? const TextBodyMediumView('نامشخص', color: Colors.red)
+                      ? const TextBodyMediumView('نامشخص', color: AppColors.error)
                       : najafabad || esfahan
                           ? Expanded(
                               flex: 2,
@@ -394,7 +395,7 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
     );
   }
 
-  method({required int value, required String title, required String subTitle, required Function onSelect}) {
+  Widget method({required int value, required String title, required String subTitle, required Function onSelect}) {
     return InkWell(
       child: RadioListTile<int>(
         value: value,
@@ -416,11 +417,11 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
     );
   }
 
-  cartPrice() {
+  Widget cartPrice() {
     return IntrinsicHeight(
       child: Container(
         padding: const EdgeInsets.all(10),
-        decoration: const BoxDecoration(border: Border(top: BorderSide(color: Colors.black12, width: 3))),
+        decoration: BoxDecoration(color: context.appColors.surface, border: Border(top: BorderSide(color: context.appColors.divider, width: 2))),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -428,10 +429,10 @@ class _ContinuePaymentScreenState extends State<ContinuePaymentScreen> {
               child: EasyButton(
                 idleStateWidget: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: TextBodyLargeView('پرداخت و ثبت سفارش', color: Colors.white),
+                  child: TextBodyLargeView('پرداخت و ثبت سفارش', color: AppColors.onBrand),
                 ),
-                loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: Colors.white)),
-                buttonColor: ColorStyle.blueFav,
+                loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: AppColors.onBrand)),
+                buttonColor: AppColors.primary,
                 borderRadius: 10,
                 onPressed: () async {
                   if (selectMethod != 0) {

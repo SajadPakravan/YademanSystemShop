@@ -1,16 +1,16 @@
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/screens/profile/forget_password/forget_password_screen.dart';
-import 'package:yad_sys/themes/color_style.dart';
-import 'package:yad_sys/tools/app_texts.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/go_page.dart';
+import 'package:yad_sys/widgets/forms/app_text_field.dart';
 import 'package:yad_sys/widgets/loading.dart';
-import 'package:yad_sys/widgets/text_views/text_body_medium_view.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class SignInView extends StatelessWidget {
-  SignInView({
+  const SignInView({
     super.key,
-    required this.context,
     required this.emailCtrl,
     required this.passCtrl,
     required this.obscureText,
@@ -24,16 +24,12 @@ class SignInView extends StatelessWidget {
     required this.pageCtrl,
   });
 
-  final BuildContext context;
-  final AppTexts appTexts = AppTexts();
   final TextEditingController emailCtrl;
   final TextEditingController passCtrl;
   final bool obscureText;
   final bool showPass;
-  final TextInputType keyboardType = TextInputType.emailAddress;
-  final IconData icon = Icons.email_rounded;
-  final Function showPassFun;
-  final Function signInFun;
+  final void Function(bool?) showPassFun;
+  final Future<void> Function() signInFun;
   final bool emailErrVis;
   final String emailErrStr;
   final bool passErrVis;
@@ -42,69 +38,75 @@ class SignInView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    final r = context.responsive;
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Center(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: r.isTablet ? 520 : double.infinity),
             child: Column(
               children: [
-                textFormField(
+                AppTextField(
                   controller: emailCtrl,
                   hint: 'ایمیل',
-                  icon: Icons.email,
+                  icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
-                  errorVis: emailErrVis,
-                  errorStr: emailErrStr,
+                  textDirection: TextDirection.ltr,
+                  errorText: emailErrVis ? emailErrStr : null,
                 ),
-                const SizedBox(height: 20),
-                textFormField(
+                SizedBox(height: r.space(18)),
+                AppTextField(
                   controller: passCtrl,
                   hint: 'کلمه عبور',
-                  icon: Icons.lock,
+                  icon: Icons.lock_outline_rounded,
                   obscureText: obscureText,
                   keyboardType: TextInputType.visiblePassword,
-                  errorVis: passErrVis,
-                  errorStr: passErrStr,
+                  textDirection: TextDirection.ltr,
+                  errorText: passErrVis ? passErrStr : null,
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: r.space(14)),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    CheckboxMenuButton(
-                      value: showPass,
-                      onChanged: (v) => showPassFun(v),
-                      child: const TextBodyMediumView('نمایش کلمه عبور'),
+                    Expanded(
+                      child: CheckboxMenuButton(
+                        value: showPass,
+                        onChanged: showPassFun,
+                        child: const AppText.bodySmall('نمایش کلمه عبور'),
+                      ),
                     ),
-                    const SizedBox(width: 10),
                     InkWell(
-                      child: const TextBodyMediumView('فراموشی کلمه عبور', color: ColorStyle.blueFav),
+                      borderRadius: BorderRadius.circular(r.cardRadius),
                       onTap: () => zoomToPage(const ForgetPassword()),
+                      child: Padding(
+                        padding: EdgeInsets.all(r.space(8)),
+                        child: const AppText.bodySmall('فراموشی کلمه عبور', color: AppColors.primary, fontWeight: FontWeight.w700),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: r.space(16)),
                 EasyButton(
-                  idleStateWidget: const TextBodyMediumView('ورود', color: Colors.white),
-                  loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: Colors.white)),
-                  buttonColor: ColorStyle.blueFav,
-                  width: width,
-                  height: 50,
-                  borderRadius: width,
+                  idleStateWidget: const AppText.labelLarge('ورود', color: AppColors.onBrand, fontWeight: FontWeight.w700),
+                  loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: AppColors.onBrand, size: 24)),
+                  buttonColor: AppColors.primary,
+                  width: double.infinity,
+                  height: r.buttonHeight,
+                  borderRadius: r.radius(14),
                   onPressed: signInFun,
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: r.space(18)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const TextBodyMediumView('کاربر جدید هستید؟'),
-                    const SizedBox(width: 5),
+                    const AppText.bodyMedium('کاربر جدید هستید؟'),
+                    SizedBox(width: r.space(5)),
                     InkWell(
-                      child: const TextBodyMediumView('ثبت‌نام کنید', color: ColorStyle.blueFav),
-                      onTap: () => pageCtrl.animateToPage(1, duration: const Duration(milliseconds: 500), curve: Curves.linear),
+                      onTap: () => pageCtrl.animateToPage(1, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut),
+                      child: const AppText.bodyMedium('ثبت‌نام کنید', color: AppColors.primary, fontWeight: FontWeight.w700),
                     ),
                   ],
                 ),
@@ -113,49 +115,6 @@ class SignInView extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  textFormField({
-    required TextEditingController controller,
-    required String hint,
-    required IconData icon,
-    bool obscureText = false,
-    required TextInputType keyboardType,
-    TextInputAction textInputAction = TextInputAction.done,
-    required bool errorVis,
-    required String errorStr,
-  }) {
-    double width = MediaQuery.of(context).size.width;
-    return Column(
-      children: [
-        TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          style: Theme.of(context).textTheme.bodyMedium,
-          textInputAction: textInputAction,
-          textDirection: TextDirection.ltr,
-          decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-            hintText: hint,
-            hintStyle: Theme.of(context).textTheme.bodyMedium,
-            hintTextDirection: TextDirection.rtl,
-            prefixIcon: Icon(icon),
-            fillColor: const Color.fromRGBO(223, 228, 234, 1.0),
-            filled: true,
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(width)), borderSide: const BorderSide()),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(width)),
-              borderSide: const BorderSide(color: ColorStyle.blueFav, width: 2),
-            ),
-          ),
-        ),
-        Visibility(
-          visible: errorVis,
-          child: Padding(padding: const EdgeInsets.only(top: 10), child: TextBodyMediumView(errorStr, color: Colors.red)),
-        ),
-      ],
     );
   }
 }

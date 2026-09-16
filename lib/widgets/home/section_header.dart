@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:yad_sys/models/section_model.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class SectionHeader extends StatelessWidget {
   const SectionHeader({super.key, required this.section});
@@ -15,19 +17,13 @@ class SectionHeader extends StatelessWidget {
     final hasTitle = title.isNotEmpty;
     final hasSubtitle = subtitle.isNotEmpty;
     final hasViewAll = section.viewAll != null;
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final horizontalPadding = (screenWidth * 0.03).clamp(12.0, 20.0).toDouble();
-    final titleFontSize = (screenWidth * 0.035).clamp(16.0, 19.0).toDouble();
-    final subtitleFontSize = (screenWidth * 0.03).clamp(11.5, 13.0).toDouble();
-    final Color textColor = Colors.black87;
+    final r = context.responsive;
+    final colors = context.appColors;
 
-    if (!hasTitle && !hasViewAll) {
-      return const SizedBox.shrink();
-    }
+    if (!hasTitle && !hasViewAll) return const SizedBox.shrink();
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding, vertical: r.space(8)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -38,28 +34,33 @@ class SectionHeader extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: hasViewAll ? CrossAxisAlignment.start : CrossAxisAlignment.center,
                       children: [
-                        Text(
+                        AppText.titleMedium(
                           title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: textColor, fontSize: titleFontSize, fontWeight: FontWeight.bold, height: 1.25),
+                          fontWeight: FontWeight.w800,
+                          color: colors.textPrimary,
+                          height: 1.25,
                         ),
-                        const SizedBox(height: 3),
-                        Text(
+                        SizedBox(height: r.space(3)),
+                        AppText.bodySmall(
                           subtitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: textColor.withValues(alpha: 0.72), fontSize: subtitleFontSize, height: 1.25),
+                          color: colors.textSecondary,
+                          height: 1.3,
                         ),
                       ],
                     )
                   : Align(
-                      alignment: hasViewAll ? AlignmentDirectional.centerStart : AlignmentGeometry.center,
-                      child: Text(
+                      alignment: hasViewAll ? AlignmentDirectional.centerStart : Alignment.center,
+                      child: AppText.titleMedium(
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: textColor, fontSize: titleFontSize, fontWeight: FontWeight.bold, height: 1.25),
+                        fontWeight: FontWeight.w800,
+                        color: colors.textPrimary,
+                        height: 1.25,
                       ),
                     ),
             )
@@ -68,7 +69,6 @@ class SectionHeader extends StatelessWidget {
           if (hasViewAll)
             _ViewAllButton(
               title: section.viewAll!.title,
-              textColor: textColor,
               onTap: () => SectionActionHandler.handle(context: context, action: section.viewAll!.action),
             ),
         ],
@@ -78,31 +78,29 @@ class SectionHeader extends StatelessWidget {
 }
 
 class _ViewAllButton extends StatelessWidget {
-  const _ViewAllButton({required this.title, required this.textColor, required this.onTap});
+  const _ViewAllButton({required this.title, required this.onTap});
 
   final String title;
-  final Color textColor;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final r = context.responsive;
+
     return Material(
-      color: Colors.transparent,
+      color: AppColors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(r.radius(10)),
         child: Padding(
-          padding: const EdgeInsets.all(5),
+          padding: EdgeInsets.all(r.space(5)),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                title.trim(),
-                style: TextStyle(color: textColor, fontSize: 12, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(width: 7),
-              Icon(Icons.arrow_forward_ios_rounded, color: textColor, size: 22),
+              AppText.labelMedium(title.trim(), color: colors.textSecondary, fontWeight: FontWeight.w600),
+              SizedBox(width: r.space(6)),
+              Icon(Icons.arrow_forward_ios_rounded, color: colors.textSecondary, size: r.icon(18, min: 16, max: 21)),
             ],
           ),
         ),

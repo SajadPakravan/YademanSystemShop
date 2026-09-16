@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:yad_sys/models/customer_model.dart';
 import 'package:yad_sys/screens/profile/sign_in/sign_in_screen.dart';
 import 'package:yad_sys/screens/profile/sign_up/sign_up_screen.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/views/profile/logged/logged_view.dart';
 import 'package:yad_sys/widgets/loading.dart';
 
@@ -39,6 +41,9 @@ class ProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final r = context.responsive;
+
     return loading
         ? const Loading()
         : logged
@@ -56,9 +61,9 @@ class ProfileView extends StatelessWidget {
             : Scaffold(
                 appBar: AppBar(
                   centerTitle: true,
-                  backgroundColor: Colors.white,
-                  toolbarHeight: 100,
-                  title: const Icon(Icons.account_circle, color: Colors.grey, size: 100),
+                  backgroundColor: colors.surface,
+                  toolbarHeight: r.space(100, min: 88, max: 118),
+                  title: Icon(Icons.account_circle, color: colors.textMuted, size: r.icon(92, min: 78, max: 108)),
                 ),
                 body: PageView(
                   controller: pageCtrl,

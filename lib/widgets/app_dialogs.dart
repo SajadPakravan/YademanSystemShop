@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:yad_sys/themes/color_style.dart';
-import 'package:yad_sys/widgets/text_views/text_body_large_view.dart';
-import 'package:yad_sys/widgets/text_views/text_body_medium_view.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/widgets/buttons/app_button.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class AppDialogs {
-  editeValue({
+  const AppDialogs();
+
+  Future<T?> editeValue<T>({
     required BuildContext context,
     required String value,
     required String title,
@@ -12,89 +15,70 @@ class AppDialogs {
     required String hint,
     TextInputType textInputType = TextInputType.name,
     TextDirection textDirection = TextDirection.rtl,
-    required Function() onPressed,
+    required VoidCallback onPressed,
   }) {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
-    return showGeneralDialog(
+    final r = context.responsive;
+    final colors = context.appColors;
+
+    return showGeneralDialog<T>(
       context: context,
       barrierDismissible: false,
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (ctx, a1, a2) => throw UnimplementedError(),
-      transitionBuilder: (ctx, a1, a2, child) {
-        var curve = Curves.linear.transform(a1.value);
+      barrierColor: colors.overlay,
+      transitionDuration: const Duration(milliseconds: 250),
+      pageBuilder: (_, _, _) => const SizedBox.shrink(),
+      transitionBuilder: (dialogContext, animation, _, _) {
+        final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutBack);
         return Directionality(
           textDirection: TextDirection.rtl,
-          child: Transform.scale(
-            scale: curve,
+          child: ScaleTransition(
+            scale: curved,
             child: Dialog(
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              child: ListTile(
-                title: Container(
-                  width: width,
-                  height: height * 0.08,
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.all(10),
-                  decoration: const BoxDecoration(
-                    color: ColorStyle.blueFav,
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
-                  ),
-                  child: TextBodyLargeView(title, color: Colors.white),
-                ),
-                subtitle: Container(
-                  width: width,
-                  height: height * 0.3,
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.all(10),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
-                  ),
+              insetPadding: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: r.isTablet ? 520 : 430),
+                child: Padding(
+                  padding: EdgeInsets.all(r.space(18)),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 10),
+                      AppText.titleMedium(title, fontWeight: FontWeight.w800, textAlign: TextAlign.center),
+                      SizedBox(height: r.space(18)),
                       TextFormField(
                         controller: controller,
                         keyboardType: textInputType,
                         autofocus: true,
-                        style: Theme.of(context).textTheme.bodyMedium,
                         textDirection: textDirection,
-                        decoration: InputDecoration(
-                          hintText: hint,
-                          hintStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Colors.grey.shade600),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-                          fillColor: const Color.fromRGBO(223, 228, 234, 1.0),
-                          filled: true,
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide()),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: ColorStyle.blueFav),
-                          ),
-                        ),
+                        decoration: InputDecoration(hintText: hint),
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: r.space(20)),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          ElevatedButton(
-                            child: const TextBodyMediumView('ثبت', color: Colors.white),
-                            onPressed: () {
-                              controller.text.trim();
-                              onPressed();
-                              Navigator.pop(context);
-                            },
+                          Expanded(
+                            child: AppButton(
+                              label: 'ثبت',
+                              icon: Icons.check_rounded,
+                              onPressed: () {
+                                controller.text = controller.text.trim();
+                                onPressed();
+                                Navigator.of(dialogContext).pop();
+                              },
+                            ),
                           ),
-                          ElevatedButton(
-                            child: const TextBodyMediumView('بستن', color: Colors.white),
-                            onPressed: () {
-                              controller.text = value;
-                              Navigator.pop(context);
-                            },
+                          SizedBox(width: r.space(10)),
+                          Expanded(
+                            child: AppButton(
+                              label: 'بستن',
+                              type: AppButtonType.outlined,
+                              icon: Icons.close_rounded,
+                              onPressed: () {
+                                controller.text = value;
+                                Navigator.of(dialogContext).pop();
+                              },
+                            ),
                           ),
                         ],
-                      )
+                      ),
                     ],
                   ),
                 ),

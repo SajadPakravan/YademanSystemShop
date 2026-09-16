@@ -1,11 +1,19 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/post_model.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/app_function.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class PostHorizontalCardWidget extends StatelessWidget {
-  const PostHorizontalCardWidget({super.key, required this.post, required this.rows, required this.length, required this.index});
+  const PostHorizontalCardWidget({
+    super.key,
+    required this.post,
+    required this.rows,
+    required this.length,
+    required this.index,
+  });
 
   final PostModel post;
   final int rows;
@@ -14,21 +22,22 @@ class PostHorizontalCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final r = context.responsive;
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final cardWidth = constraints.maxWidth;
-        final cardHeight = constraints.maxHeight;
-        final padding = (cardWidth * 0.03).clamp(8.0, 13.0).toDouble();
-        final gap = (cardWidth * 0.028).clamp(7.0, 12.0).toDouble();
-        final titleFontSize = (cardWidth * 0.05).clamp(12.0, 15.0).toDouble();
-        final excerptFontSize = (cardWidth * 0.035).clamp(12.0, 15.0).toDouble();
+        final cardWidth = constraints.maxWidth.isFinite ? constraints.maxWidth : r.width;
+        final padding = (cardWidth * 0.03).clamp(r.space(8), r.space(13)).toDouble();
+        final gap = (cardWidth * 0.028).clamp(r.space(7), r.space(12)).toDouble();
 
         return InkWell(
+          borderRadius: _borderRadius,
           child: Container(
             padding: EdgeInsets.all(padding),
             decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.grey.shade300),
+              color: colors.surface,
+              border: Border.all(color: colors.border),
               borderRadius: _borderRadius,
             ),
             child: Column(
@@ -39,16 +48,22 @@ class PostHorizontalCardWidget extends StatelessWidget {
                     children: [
                       Expanded(
                         flex: 44,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: (cardHeight * 0.01).clamp(0.02, 5.0).toDouble()),
-                          child: CachedNetworkImage(
-                            width: double.infinity,
-                            height: double.infinity,
-                            imageUrl: post.image,
-                            fit: BoxFit.contain,
-                            placeholder: (context, url) =>
-                                const Center(child: SizedBox(width: 23, height: 23, child: CircularProgressIndicator(strokeWidth: 2))),
-                            errorWidget: (context, url, error) => const Center(child: Icon(Icons.broken_image_outlined, color: Colors.black26, size: 46)),
+                        child: CachedNetworkImage(
+                          imageUrl: post.image,
+                          fit: BoxFit.contain,
+                          placeholder: (context, url) => Center(
+                            child: SizedBox(
+                              width: r.icon(23),
+                              height: r.icon(23),
+                              child: const CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Center(
+                            child: Icon(
+                              Icons.broken_image_outlined,
+                              color: colors.textMuted,
+                              size: r.icon(46),
+                            ),
                           ),
                         ),
                       ),
@@ -59,20 +74,20 @@ class PostHorizontalCardWidget extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text(
+                            AppText.titleSmall(
                               post.title,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.start,
-                              style: TextStyle(fontSize: titleFontSize, height: 1.45, fontWeight: FontWeight.w600),
+                              fontWeight: FontWeight.w700,
+                              height: 1.5,
                             ),
-                            SizedBox(height: (cardHeight * 1).clamp(6.0, 20.0).toDouble()),
-                            Text(
+                            SizedBox(height: r.space(8)),
+                            AppText.bodySmall(
                               post.excerpt,
+                              color: colors.textSecondary,
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.start,
-                              style: TextStyle(fontSize: excerptFontSize, height: 1.45, fontWeight: FontWeight.w500),
+                              height: 1.6,
                             ),
                           ],
                         ),
@@ -80,34 +95,22 @@ class PostHorizontalCardWidget extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: (cardHeight * 1).clamp(6.0, 20.0).toDouble()),
+                SizedBox(height: r.space(10)),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SizedBox(
-                      height: 20,
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: post.categories.length,
-                        itemBuilder: (context, index) {
-                          final category = post.categories[index];
-                          return Text(
-                            category.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.start,
-                            style: TextStyle(fontSize: excerptFontSize, height: 1.45, fontWeight: FontWeight.w500),
-                          );
-                        },
+                    Expanded(
+                      child: AppText.labelSmall(
+                        post.categories.map((item) => item.name).join('، '),
+                        color: colors.textMuted,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Text(
+                    SizedBox(width: r.space(8)),
+                    AppText.labelSmall(
                       AppFunction.faDigit(post.date),
+                      color: colors.textMuted,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.start,
-                      style: TextStyle(fontSize: excerptFontSize, height: 1.45, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
@@ -120,32 +123,20 @@ class PostHorizontalCardWidget extends StatelessWidget {
   }
 
   BorderRadius get _borderRadius {
-    int i = index + 1;
+    final i = index + 1;
 
     if (rows > 1) {
       if (i <= rows) {
-        if (i == 1) {
-          return const BorderRadius.only(topRight: Radius.circular(12));
-        }
-        if (rows - i == 0) {
-          return const BorderRadius.only(bottomRight: Radius.circular(12));
-        }
+        if (i == 1) return const BorderRadius.only(topRight: Radius.circular(12));
+        if (rows - i == 0) return const BorderRadius.only(bottomRight: Radius.circular(12));
       }
-
       if (i >= length - (rows - 1)) {
-        if (i - (length - (rows - 1)) == 0) {
-          return const BorderRadius.only(topLeft: Radius.circular(12));
-        } else if (i == length) {
-          return const BorderRadius.only(bottomLeft: Radius.circular(12));
-        }
+        if (i - (length - (rows - 1)) == 0) return const BorderRadius.only(topLeft: Radius.circular(12));
+        if (i == length) return const BorderRadius.only(bottomLeft: Radius.circular(12));
       }
     } else {
-      if (i == 1) {
-        return const BorderRadius.only(topRight: Radius.circular(12), bottomRight: Radius.circular(12));
-      }
-      if (i == length) {
-        return const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12));
-      }
+      if (i == 1) return const BorderRadius.only(topRight: Radius.circular(12), bottomRight: Radius.circular(12));
+      if (i == length) return const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12));
     }
 
     return BorderRadius.zero;

@@ -8,8 +8,9 @@ import 'package:yad_sys/screens/profile/favorites/favorites_screen.dart';
 import 'package:yad_sys/screens/profile/orders/order_screen.dart';
 import 'package:yad_sys/screens/profile/personal_info/personal_info_screen.dart';
 import 'package:yad_sys/screens/web_screen.dart';
-import 'package:yad_sys/themes/color_style.dart';
 import 'package:yad_sys/tools/app_cache.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/widgets/text_views/text_body_large_view.dart';
 import 'package:yad_sys/widgets/text_views/text_body_medium_view.dart';
@@ -42,29 +43,37 @@ class LoggedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.responsive;
+
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(vertical: r.space(18)),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircleAvatar(radius: 150 / 2, backgroundImage: NetworkImage(customer.avatarUrl!)),
-                const SizedBox(height: 10),
+                CircleAvatar(
+                  radius: r.icon(74, min: 62, max: 88),
+                  backgroundImage: NetworkImage(customer.avatarUrl!),
+                ),
+                SizedBox(height: r.space(10)),
                 TextBodyLargeView('${customer.firstname} ${customer.lastname}'),
-                const SizedBox(height: 10),
+                SizedBox(height: r.space(8)),
                 TextBodyMediumView(customer.email!),
-                const SizedBox(height: 20),
-                option(
+                SizedBox(height: r.space(18)),
+                _option(
+                  context,
                   title: 'مشخصات فردی',
                   icon: Icons.person,
-                  subtitle: personalInfoAlert ? const TextBodySmallView('لطفا مشخصات فردی خود را تکمیل کنید', color: Colors.red) : null,
+                  subtitle: personalInfoAlert ? const TextBodySmallView('لطفا مشخصات فردی خود را تکمیل کنید', color: AppColors.error) : null,
                   onTap: () async {
                     await rightToPage(const PersonalInfoScreen(), arguments: customer);
                     if (await cache.getBool('profileChanged')) getCustomer();
                   },
                 ),
-                option(
+                _option(
+                  context,
                   title: 'تغییر رمز عبور',
                   icon: Icons.lock,
                   onTap: () async {
@@ -72,27 +81,29 @@ class LoggedView extends StatelessWidget {
                     if (await cache.getBool('profileChanged')) signOut();
                   },
                 ),
-                option(
+                _option(
+                  context,
                   title: 'آدرس‌',
                   icon: Icons.location_on,
-                  subtitle: addressAlert ? const TextBodySmallView('لطفا آدرس خود را وارد کنید', color: Colors.red) : null,
+                  subtitle: addressAlert ? const TextBodySmallView('لطفا آدرس خود را وارد کنید', color: AppColors.error) : null,
                   onTap: () => rightToPage(const AddressScreen(), arguments: customer),
                 ),
-                option(
+                _option(
+                  context,
                   title: 'سبد خرید',
                   icon: Icons.shopping_cart,
                   subtitle: cartAlert
                       ? Align(
                           alignment: Alignment.centerRight,
                           child: Container(
-                            width: 25,
-                            height: 25,
+                            width: r.icon(25),
+                            height: r.icon(25),
                             alignment: Alignment.center,
-                            margin: const EdgeInsets.only(top: 5),
-                            decoration: const BoxDecoration(shape: BoxShape.circle, color: ColorStyle.blueFav),
+                            margin: EdgeInsets.only(top: r.space(5)),
+                            decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primary),
                             child: TextBodyMediumView(
                               cartNumber.toString().toPersianDigit(),
-                              color: Colors.white,
+                              color: AppColors.onBrand,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -103,14 +114,15 @@ class LoggedView extends StatelessWidget {
                     checkCart();
                   },
                 ),
-                option(title: 'سفارشات', icon: Icons.shopping_bag, onTap: () => rightToPage(const OrderScreen())),
-                option(title: 'علاقه‌مندی‌ها', icon: Icons.favorite, onTap: () => rightToPage(const FavoritesScreen())),
-                option(
+                _option(context, title: 'سفارشات', icon: Icons.shopping_bag, onTap: () => rightToPage(const OrderScreen())),
+                _option(context, title: 'علاقه‌مندی‌ها', icon: Icons.favorite, onTap: () => rightToPage(const FavoritesScreen())),
+                _option(
+                  context,
                   title: 'تماس با پشتیبانی',
                   icon: Icons.headphones,
                   onTap: () => rightToPage(const WebScreen(title: 'تماس با پشتیبانی', url: 'https://yademansystem.ir/contact-us')),
                 ),
-                option(title: 'خروج از حساب کاربری', icon: Icons.logout, onTap: signOut),
+                _option(context, title: 'خروج از حساب کاربری', icon: Icons.logout, onTap: signOut),
               ],
             ),
           ),
@@ -119,18 +131,30 @@ class LoggedView extends StatelessWidget {
     );
   }
 
-  option({required String title, required IconData icon, Widget? subtitle, required void Function() onTap}) {
+  Widget _option(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    Widget? subtitle,
+    required void Function() onTap,
+  }) {
+    final colors = context.appColors;
+    final r = context.responsive;
+
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.05, vertical: 10),
-      elevation: 0,
-      color: Colors.indigo.shade50,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding, vertical: r.space(7)),
+      color: colors.surfaceVariant,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(r.radius(12)),
+        side: BorderSide(color: colors.border),
+      ),
       child: ListTile(
-        title: TextBodyMediumView(title),
-        leading: Icon(icon),
-        trailing: const Icon(Icons.arrow_forward_ios),
+        contentPadding: EdgeInsets.symmetric(horizontal: r.space(14), vertical: r.space(3)),
+        title: TextBodyMediumView(title, fontWeight: FontWeight.w600),
+        leading: Icon(icon, color: AppColors.primary),
+        trailing: Icon(Icons.arrow_forward_ios, size: r.icon(17), color: colors.textMuted),
         subtitle: subtitle,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.radius(12))),
         onTap: onTap,
       ),
     );

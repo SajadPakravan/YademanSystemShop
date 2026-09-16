@@ -4,8 +4,11 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/product_detail_model.dart';
+import 'package:yad_sys/models/review_card_model.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/widgets/app_bar_view.dart';
-import 'package:yad_sys/widgets/text_views/text_body_medium_view.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class ProductInfoScreen extends StatelessWidget {
   const ProductInfoScreen({super.key});
@@ -20,15 +23,15 @@ class ProductInfoScreen extends StatelessWidget {
     switch (content) {
       case 1:
         title = 'معرفی محصول';
-        body = _description();
+        body = _description(context);
         break;
       case 2:
         title = 'مشخصات محصول';
-        body = _attributes();
+        body = _attributes(context);
         break;
       case 3:
         title = 'دیدگاه‌ها';
-        body = _reviews();
+        body = _reviews(context);
         break;
       default:
         title = '';
@@ -37,48 +40,55 @@ class ProductInfoScreen extends StatelessWidget {
 
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: Scaffold(
-        appBar: AppBarView(title: title),
-        body: body,
-      ),
+      child: Scaffold(appBar: AppBarView(title: title), body: body),
     );
   }
 
-  Widget _description() {
+  Widget _description(BuildContext context) {
+    final r = context.responsive;
+    final baseStyle = Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
+
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: HtmlWidget(
-          Get.arguments['description'].toString().toPersianDigit(),
-          textStyle: ThemeData.light().textTheme.bodyMedium!.copyWith(height: 2, fontSize: 16),
+      padding: EdgeInsets.all(r.pageHorizontalPadding),
+      child: HtmlWidget(
+        Get.arguments['description'].toString().toPersianDigit(),
+        textStyle: baseStyle.copyWith(
+          color: context.appColors.textPrimary,
+          height: 2,
+          fontSize: r.font(baseStyle.fontSize ?? 14),
         ),
       ),
     );
   }
 
-  Widget _attributes() {
-    final List<ProductAttribute> attributes = List<ProductAttribute>.from(Get.arguments['attributes']);
+  Widget _attributes(BuildContext context) {
+    final r = context.responsive;
+    final colors = context.appColors;
+    final attributes = List<ProductAttribute>.from(Get.arguments['attributes']);
 
     return ListView.separated(
+      padding: EdgeInsets.symmetric(vertical: r.space(4)),
       itemCount: attributes.length,
-      separatorBuilder: (context, index) => const Divider(height: 1),
+      separatorBuilder: (_, _) => Divider(height: 1, color: colors.divider),
       itemBuilder: (context, index) {
         final attribute = attributes[index];
-
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+          padding: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding, vertical: r.space(16)),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: TextBodyMediumView(
+                child: AppText.bodyMedium(
                   attribute.name.replaceAll('-', ' '),
-                  color: Colors.black54,
+                  color: colors.textSecondary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+              SizedBox(width: r.space(12)),
               Expanded(
-                child: TextBodyMediumView(
+                child: AppText.bodyMedium(
                   attribute.options.join('، ').toPersianDigit(),
+                  color: colors.textPrimary,
                 ),
               ),
             ],
@@ -88,47 +98,57 @@ class ProductInfoScreen extends StatelessWidget {
     );
   }
 
-  Widget _reviews() {
-    final List<ProductDetailReview> reviews = List<ProductDetailReview>.from(Get.arguments['reviews']);
+  Widget _reviews(BuildContext context) {
+    final r = context.responsive;
+    final colors = context.appColors;
+    final groups = List<ProductDetailReview>.from(Get.arguments['reviews']);
+    final List<ReviewCardModel> reviews = groups.expand((group) => group.data).toList(growable: false);
+
+    if (reviews.isEmpty) {
+      return Center(
+        child: AppText.bodyMedium('هنوز دیدگاهی ثبت نشده است', color: colors.textSecondary),
+      );
+    }
 
     return ListView.separated(
       itemCount: reviews.length,
-      separatorBuilder: (context, index) => const Divider(height: 1),
+      separatorBuilder: (_, _) => Divider(height: 1, color: colors.divider),
       itemBuilder: (context, index) {
-        final r = reviews[index];
-        final review = r.data[index];
-        final firstLetter = review.author.trim().isEmpty ? '?' : review.author.trim().substring(0, 1);
+        final review = reviews[index];
+        final author = review.author.trim();
+        final firstLetter = author.isEmpty ? '?' : author.substring(0, 1);
 
         return Padding(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(r.pageHorizontalPadding),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CircleAvatar(
-                backgroundColor: const Color(0xffeef5fd),
-                foregroundColor: const Color(0xff0353a4),
-                child: Text(firstLetter),
+                radius: r.icon(20),
+                backgroundColor: colors.inquiryBackground,
+                foregroundColor: colors.inquiryForeground,
+                child: AppText.titleSmall(firstLetter, color: colors.inquiryForeground, fontWeight: FontWeight.w800),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: r.space(10)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(child: TextBodyMediumView(review.author, fontWeight: FontWeight.bold)),
-                        Text(review.date, style: const TextStyle(color: Colors.black45, fontSize: 11)),
+                        Expanded(child: AppText.bodyMedium(review.author, fontWeight: FontWeight.w800)),
+                        SizedBox(width: r.space(8)),
+                        AppText.labelSmall(review.date.toPersianDigit(), color: colors.textMuted),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    TextBodyMediumView(review.content),
-                    const SizedBox(height: 8),
+                    SizedBox(height: r.space(8)),
+                    AppText.bodyMedium(review.content, height: 1.8),
+                    SizedBox(height: r.space(8)),
                     RatingBarIndicator(
                       rating: review.rating.toDouble(),
                       itemCount: 5,
-                      itemSize: 18,
-                      itemBuilder: (context, _) => const Icon(Icons.star, color: Colors.amber),
+                      itemSize: r.icon(18),
+                      itemBuilder: (context, _) => const Icon(Icons.star, color: AppColors.star),
                     ),
                   ],
                 ),

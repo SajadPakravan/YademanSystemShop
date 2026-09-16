@@ -1,7 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/product_card_model.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/widgets/product/price_view_widget.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class ProductHorizontalCardWidget extends StatelessWidget {
   const ProductHorizontalCardWidget({super.key, required this.product, required this.rows, required this.length, required this.index});
@@ -13,116 +17,96 @@ class ProductHorizontalCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final cardWidth = constraints.maxWidth;
-        final cardHeight = constraints.maxHeight;
-        final padding = (cardWidth * 0.035).clamp(8.0, 13.0).toDouble();
-        final gap = (cardWidth * 0.028).clamp(7.0, 12.0).toDouble();
-        final titleFontSize = (cardWidth * 0.05).clamp(12.0, 15.0).toDouble();
-        final inquiryFontSize = (cardWidth * 0.042).clamp(10.5, 12.5).toDouble();
-        final inquiryVerticalPadding = (cardHeight * 0.05).clamp(7.0, 10.0).toDouble();
+    final colors = context.appColors;
+    final r = context.responsive;
 
-        return InkWell(
-          child: Container(
-            padding: EdgeInsets.all(padding),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: _borderRadius,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  flex: 44,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: (cardHeight * 0.025).clamp(2.0, 5.0).toDouble()),
-                    child: CachedNetworkImage(
-                      width: double.infinity,
-                      height: double.infinity,
-                      imageUrl: product.image,
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) => const Center(child: SizedBox(width: 23, height: 23, child: CircularProgressIndicator(strokeWidth: 2))),
-                      errorWidget: (context, url, error) => const Center(child: Icon(Icons.broken_image_outlined, color: Colors.black26, size: 46)),
+    return Material(
+      color: colors.surface,
+      borderRadius: _borderRadius,
+      child: InkWell(
+        borderRadius: _borderRadius,
+        onTap: () => toProduct(id: product.id),
+        child: Padding(
+          padding: EdgeInsets.all(r.space(10, min: 8, max: 13)),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 44,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: r.space(3, min: 2, max: 5)),
+                  child: CachedNetworkImage(
+                    width: double.infinity,
+                    height: double.infinity,
+                    imageUrl: product.image,
+                    fit: BoxFit.contain,
+                    placeholder: (context, url) => const Center(child: SizedBox(width: 23, height: 23, child: CircularProgressIndicator(strokeWidth: 2))),
+                    errorWidget: (context, url, error) => Center(child: Icon(Icons.broken_image_outlined, color: colors.textMuted, size: r.icon(44))),
+                  ),
+                ),
+              ),
+              SizedBox(width: r.space(9, min: 7, max: 12)),
+              Expanded(
+                flex: 56,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AppText.bodyMedium(
+                      _displayName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      fontWeight: FontWeight.w500,
+                      color: colors.textPrimary,
+                      height: 1.45,
                     ),
-                  ),
+                    SizedBox(height: r.space(8, min: 6, max: 10)),
+                    if (product.inquiry)
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(horizontal: r.space(8), vertical: r.space(8, min: 7, max: 10)),
+                        decoration: BoxDecoration(color: colors.inquiryBackground, borderRadius: BorderRadius.circular(r.radius(9))),
+                        child: AppText.labelSmall(
+                          'استعلام قیمت و موجودی',
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          color: colors.inquiryForeground,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    else
+                      PriceViewWidget(product: product),
+                  ],
                 ),
-                SizedBox(width: gap),
-                Expanded(
-                  flex: 56,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        _displayName,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.start,
-                        style: TextStyle(fontSize: titleFontSize, height: 1.45, fontWeight: FontWeight.w500),
-                      ),
-                      SizedBox(height: (cardHeight * 0.045).clamp(6.0, 10.0).toDouble()),
-                      if (product.inquiry)
-                        Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: inquiryVerticalPadding),
-                          decoration: BoxDecoration(color: const Color(0xffeef5fd), borderRadius: BorderRadius.circular(9)),
-                          child: Text(
-                            'استعلام قیمت و موجودی',
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: const Color(0xff0353a4), fontSize: inquiryFontSize, fontWeight: FontWeight.bold),
-                          ),
-                        )
-                      else
-                        PriceViewWidget(product: product),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   BorderRadius get _borderRadius {
-    int i = index + 1;
-
+    final i = index + 1;
     if (rows > 1) {
       if (i <= rows) {
-        if (i == 1) {
-          return const BorderRadius.only(topRight: Radius.circular(12));
-        }
-        if (rows - i == 0) {
-          return const BorderRadius.only(bottomRight: Radius.circular(12));
-        }
+        if (i == 1) return const BorderRadius.only(topRight: Radius.circular(12));
+        if (rows - i == 0) return const BorderRadius.only(bottomRight: Radius.circular(12));
       }
-
       if (i >= length - (rows - 1)) {
-        if (i - (length - (rows - 1)) == 0) {
-          return const BorderRadius.only(topLeft: Radius.circular(12));
-        } else if(i == length) {
-          return const BorderRadius.only(bottomLeft: Radius.circular(12));
-        }
+        if (i - (length - (rows - 1)) == 0) return const BorderRadius.only(topLeft: Radius.circular(12));
+        if (i == length) return const BorderRadius.only(bottomLeft: Radius.circular(12));
       }
     } else {
-      if (i == 1) {
-        return const BorderRadius.only(topRight: Radius.circular(12), bottomRight: Radius.circular(12));
-      }
-      if (i == length) {
-        return const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12));
-      }
+      if (i == 1) return const BorderRadius.only(topRight: Radius.circular(12), bottomRight: Radius.circular(12));
+      if (i == length) return const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12));
     }
-
     return BorderRadius.zero;
   }
 
   String get _displayName {
-    final variation = product.variationName?.trim() ?? '';
+    final variation = product.variationName.trim();
     return variation.isEmpty ? product.name : '${product.name} | $variation';
   }
 }

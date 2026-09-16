@@ -1,9 +1,10 @@
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/tools/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/customer_model.dart';
-import 'package:yad_sys/themes/color_style.dart';
 import 'package:yad_sys/tools/app_cache.dart';
 import 'package:yad_sys/widgets/app_bar_view.dart';
 import 'package:yad_sys/widgets/loading.dart';
@@ -25,7 +26,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   TextEditingController newPassword = TextEditingController();
   TextEditingController reNewPassword = TextEditingController();
 
-  profileChanged(bool value) async => await cache.setBool('profileChanged', value);
+  Future<void> profileChanged(bool value) async => await cache.setBool('profileChanged', value);
 
   @override
   void initState() {
@@ -36,7 +37,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    final r = context.responsive;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -51,13 +52,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   field(controller: newPassword, hint: 'رمز عبور جدید'),
                   field(controller: reNewPassword, hint: 'تکرار رمز عبور جدید', textInputAction: TextInputAction.done),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: width * 0.1, vertical: 20),
+                    padding: EdgeInsets.symmetric(horizontal: r.percentWidth(0.1, min: 24, max: 60), vertical: r.space(20)),
                     child: EasyButton(
-                      idleStateWidget: const TextBodyMediumView('ذخیره', color: Colors.white, fontWeight: FontWeight.bold),
-                      loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: Colors.white)),
-                      buttonColor: ColorStyle.blueFav,
+                      idleStateWidget: const TextBodyMediumView('ذخیره', color: AppColors.onBrand, fontWeight: FontWeight.bold),
+                      loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: AppColors.onBrand)),
+                      buttonColor: AppColors.primary,
                       borderRadius: 10,
-                      height: width * 0.13,
+                      height: r.buttonHeight,
                       onPressed: () async {
                         if (formValidation()) {
                           dynamic jsonUpdatePassword = await httpRequest.updatePassword(
@@ -88,7 +89,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
 
-  field({required TextEditingController controller, required String hint, TextInputAction textInputAction = TextInputAction.next}) {
+  Widget field({required TextEditingController controller, required String hint, TextInputAction textInputAction = TextInputAction.next}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: TextFormField(
@@ -99,21 +100,21 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         textInputAction: textInputAction,
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Colors.grey.shade600),
+          hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: context.appColors.textMuted),
           contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-          fillColor: const Color.fromRGBO(223, 228, 234, 1.0),
+          fillColor: context.appColors.surfaceVariant,
           filled: true,
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide()),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(context.responsive.radius(10)), borderSide: BorderSide(color: context.appColors.border)),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: ColorStyle.blueFav),
+            borderRadius: BorderRadius.circular(context.responsive.radius(10)),
+            borderSide: const BorderSide(color: AppColors.primary),
           ),
         ),
       ),
     );
   }
 
-  formValidation() {
+  bool formValidation() {
     if (currentPassword.text.isNotEmpty && newPassword.text.isNotEmpty && reNewPassword.text.isNotEmpty) {
       if (newPassword.text == reNewPassword.text) {
         return true;

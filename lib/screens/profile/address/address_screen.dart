@@ -1,10 +1,11 @@
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/tools/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/customer_model.dart';
-import 'package:yad_sys/themes/color_style.dart';
 import 'package:yad_sys/widgets/app_bar_view.dart';
 import 'package:yad_sys/widgets/app_dialogs.dart';
 import 'package:yad_sys/widgets/loading.dart';
@@ -74,7 +75,7 @@ class _AddressScreenState extends State<AddressScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    final r = context.responsive;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -169,12 +170,12 @@ class _AddressScreenState extends State<AddressScreen> {
                 onPressed: () => setState(() => postcode = postcodeField.text),
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: width * 0.1, vertical: 20),
+                padding: EdgeInsets.symmetric(horizontal: r.percentWidth(0.1, min: 24, max: 60), vertical: r.space(20)),
                 child: EasyButton(
-                  idleStateWidget: const TextBodyMediumView('ذخیره', color: Colors.white, fontWeight: FontWeight.bold),
-                  loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: Colors.white)),
-                  buttonColor: ColorStyle.blueFav,
-                  height: width * 0.13,
+                  idleStateWidget: const TextBodyMediumView('ذخیره', color: AppColors.onBrand, fontWeight: FontWeight.bold),
+                  loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: AppColors.onBrand)),
+                  buttonColor: AppColors.primary,
+                  height: r.buttonHeight,
                   borderRadius: 10,
                   onPressed: () async {
                     if (formValidation()) {
@@ -217,7 +218,7 @@ class _AddressScreenState extends State<AddressScreen> {
     );
   }
 
-  info({
+  Widget info({
     required String title,
     required String subtitle,
     required IconData icon,
@@ -230,12 +231,12 @@ class _AddressScreenState extends State<AddressScreen> {
     return Card(
       margin: const EdgeInsets.all(10),
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5), side: const BorderSide()),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(context.responsive.radius(8)), side: BorderSide(color: context.appColors.border)),
       child: ListTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(context.responsive.radius(8))),
         title: TextBodyMediumView(title),
         subtitle: Padding(padding: const EdgeInsets.only(top: 10), child: TextBodyLargeView(subtitle, fontWeight: FontWeight.bold)),
-        leading: Icon(icon, color: Colors.indigo),
+        leading: Icon(icon, color: AppColors.primary),
         trailing: const Icon(Icons.edit),
         onTap: () => appDialogs.editeValue(
           context: context,
@@ -251,7 +252,7 @@ class _AddressScreenState extends State<AddressScreen> {
     );
   }
 
-  formValidation() {
+  bool formValidation() {
     if (firstname.isNotEmpty &&
         lastname.isNotEmpty &&
         email.isNotEmpty &&
@@ -260,7 +261,10 @@ class _AddressScreenState extends State<AddressScreen> {
         city.isNotEmpty &&
         street.isNotEmpty &&
         numberAlley.isNotEmpty &&
-        postcode.isNotEmpty) return true;
+        postcode.isNotEmpty) {
+      return true;
+    }
+
     SnackBarView.show(context, 'لطفا همه موارد را وارد کنید');
     return false;
   }

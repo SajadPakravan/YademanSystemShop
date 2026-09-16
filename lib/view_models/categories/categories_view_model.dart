@@ -16,21 +16,21 @@ class CategoriesViewModel with ChangeNotifier {
   int dataNumber = 1;
   bool showContent = false;
 
-  getParentCategories() async {
+  Future<void> getParentCategories() async {
     dynamic jsonCategories = await httpRequest.getCategories(perPage: 12, include: "57,1818,1809,54,153,158,67,1601,1773,51,1816,151");
     jsonCategories.forEach((c) => parentCategoriesLst.add(CategoryModel.fromJson(c)));
     dataNumber++;
     loadContent();
   }
 
-  getSubCategories({required int parent, required List<CategoryModel> list}) async {
+  Future<void> getSubCategories({required int parent, required List<CategoryModel> list}) async {
     dynamic jsonCategories = await httpRequest.getCategories(parent: parent, perPage: 100);
     jsonCategories.forEach((c) => list.add(CategoryModel.fromJson(c)));
     dataNumber++;
     loadContent();
   }
 
-  loadContent() {
+  void loadContent() {
     switch (dataNumber) {
       case 1:
         {

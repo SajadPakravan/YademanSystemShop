@@ -3,12 +3,14 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/products_list_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
 import 'package:yad_sys/views/shop/filter/sheet_footer_view.dart';
 import 'package:yad_sys/views/shop/shop_view.dart';
 import 'package:yad_sys/widgets/bottom_sheet/filter_sheet_widget.dart';
 import 'package:yad_sys/widgets/cards/color_options_cards_widget.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class FullFilterDialog extends StatefulWidget {
   const FullFilterDialog({super.key, required this.viewModel});
@@ -58,17 +60,17 @@ class _FullFilterDialogState extends State<FullFilterDialog> {
       textDirection: TextDirection.rtl,
       child: SafeArea(
         child: Material(
-          color: const Color(0xfff8f8f8),
+          color: context.appColors.background,
           child: Column(
             children: [
               Container(
-                color: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                color: context.appColors.surface,
+                padding: EdgeInsets.symmetric(horizontal: context.responsive.space(8), vertical: context.responsive.space(8)),
                 child: Row(
                   children: [
-                    IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded), color: Colors.black54),
+                    IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded), color: context.appColors.textSecondary),
                     const Spacer(),
-                    const Text('فیلترها', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    const AppText.titleMedium('فیلترها', fontWeight: FontWeight.w800),
                     const Spacer(),
                     const SizedBox(width: 48),
                   ],
@@ -76,7 +78,7 @@ class _FullFilterDialogState extends State<FullFilterDialog> {
               ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
+                  padding: EdgeInsets.fromLTRB(context.responsive.pageHorizontalPadding, context.responsive.space(12), context.responsive.pageHorizontalPadding, context.responsive.space(20)),
                   children: [
                     _FullFilterSection(
                       title: 'مرتب‌سازی',
@@ -88,7 +90,7 @@ class _FullFilterDialogState extends State<FullFilterDialog> {
                           return RadioListTile<String>(
                             value: option.title,
                             groupValue: selected ? option.title : null,
-                            title: Text(option.title),
+                            title: AppText.bodyMedium(option.title),
                             onChanged: (_) {
                               draft.orderby = option.orderby;
                               draft.order = option.order;
@@ -128,7 +130,7 @@ class _FullFilterDialogState extends State<FullFilterDialog> {
                             controlAffinity: ListTileControlAffinity.leading,
                             contentPadding: EdgeInsets.only(right: row.depth * 18.0, left: 4),
                             dense: true,
-                            title: Text(row.category.name),
+                            title: AppText.bodyMedium(row.category.name),
                             onChanged: (value) {
                               if (value == true) {
                                 draft.categoryIds.add(row.category.id);
@@ -152,8 +154,8 @@ class _FullFilterDialogState extends State<FullFilterDialog> {
                             value: draft.brandIds.contains(brand.id),
                             controlAffinity: ListTileControlAffinity.leading,
                             dense: true,
-                            title: Text(brand.name),
-                            subtitle: brand.count > 0 ? Text('${AppFunction.faDigit(brand.count)} کالا') : null,
+                            title: AppText.bodyMedium(brand.name),
+                            subtitle: brand.count > 0 ? AppText.bodySmall('${AppFunction.faDigit(brand.count)} کالا', color: context.appColors.textMuted) : null,
                             onChanged: (value) {
                               if (value == true) {
                                 draft.brandIds.add(brand.id);
@@ -188,7 +190,7 @@ class _FullFilterDialogState extends State<FullFilterDialog> {
                               value: selected.contains(option.id),
                               controlAffinity: ListTileControlAffinity.leading,
                               dense: true,
-                              title: Text(option.name),
+                              title: AppText.bodyMedium(option.name),
                               onChanged: (_) {
                                 toggleId(selected, option.id);
                                 _changed();
@@ -238,17 +240,17 @@ class _FullFilterSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: EdgeInsets.only(bottom: context.responsive.space(10)),
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xffe8e8e8)),
+        borderRadius: BorderRadius.circular(context.responsive.radius(16)),
+        side: BorderSide(color: context.appColors.border),
       ),
       child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-        childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-        subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+        tilePadding: EdgeInsets.symmetric(horizontal: context.responsive.space(14), vertical: context.responsive.space(2)),
+        childrenPadding: EdgeInsets.fromLTRB(context.responsive.space(10), 0, context.responsive.space(10), context.responsive.space(10)),
+        title: AppText.bodyMedium(title, fontWeight: FontWeight.w700),
+        subtitle: AppText.bodySmall(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, color: context.appColors.textSecondary),
         children: [child],
       ),
     );
@@ -296,7 +298,7 @@ class _InlinePriceFilterState extends State<_InlinePriceFilter> {
   Widget build(BuildContext context) {
     final ceiling = math.max(widget.ceiling, widget.floor + 1).toDouble();
     return Padding(
-      padding: const EdgeInsets.only(top: 10),
+      padding: EdgeInsets.only(top: context.responsive.space(10)),
       child: Column(
         children: [
           Row(
@@ -304,7 +306,7 @@ class _InlinePriceFilterState extends State<_InlinePriceFilter> {
               Expanded(
                 child: PriceLabel(label: 'از', value: values.start.round()),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: context.responsive.space(10)),
               Expanded(
                 child: PriceLabel(label: 'تا', value: values.end.round()),
               ),
@@ -324,7 +326,7 @@ class _InlinePriceFilterState extends State<_InlinePriceFilter> {
             alignment: Alignment.centerLeft,
             child: TextButton(
               onPressed: widget.minValue == null && widget.maxValue == null ? null : () => widget.onChanged(null, null),
-              child: const Text('حذف محدوده قیمت'),
+              child: const AppText.labelMedium('حذف محدوده قیمت'),
             ),
           ),
         ],

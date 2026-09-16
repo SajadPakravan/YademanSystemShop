@@ -1,59 +1,57 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/product_card_model.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/widgets/product/price_view_widget.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class ShopProductCard extends StatelessWidget {
-  ShopProductCard({super.key, required this.product});
+  const ShopProductCard({super.key, required this.product});
 
   final ProductCardModel product;
-  final Color _accent = Color(0xffe6123f);
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
+    final r = context.responsive;
+    final colors = context.appColors;
     final displayName = product.discountPercent > 0 && product.variationName.isNotEmpty ? '${product.name} | ${product.variationName}' : product.name;
 
-    double cardSize() {
-      if(product.inquiry){
-        if (product.colors.isNotEmpty || product.averageRating != '0.0') return screenHeight * 0.21;
-      }
+    double cardHeight() {
+      if (product.inquiry && (product.colors.isNotEmpty || product.averageRating != '0.0')) return r.percentHeight(0.21, min: 170, max: 240);
       if (product.discountPercent > 0) {
-        if (product.colors.isEmpty && product.averageRating == '0.0') return screenHeight * 0.23;
-        return screenHeight * 0.25;
+        if (product.colors.isEmpty && product.averageRating == '0.0') return r.percentHeight(0.23, min: 180, max: 250);
+        return r.percentHeight(0.25, min: 195, max: 270);
       }
-      if (product.colors.isNotEmpty || product.averageRating != '0.0') return screenHeight * 0.2;
-      return screenHeight * 0.18;
+      if (product.colors.isNotEmpty || product.averageRating != '0.0') return r.percentHeight(0.20, min: 165, max: 230);
+      return r.percentHeight(0.18, min: 155, max: 215);
     }
 
     return Material(
-      color: Colors.white,
+      color: colors.surface,
       child: InkWell(
         onTap: () => toProduct(id: product.id),
         child: Container(
-          height: cardSize(),
-          padding: const EdgeInsets.all(12),
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: Color(0xffeeeeee))),
-          ),
+          height: cardHeight(),
+          padding: EdgeInsets.all(r.space(12)),
+          decoration: BoxDecoration(border: Border(bottom: BorderSide(color: colors.divider))),
           child: Row(
-            spacing: 10,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
-                width: 145,
+                width: r.percentWidth(0.33, min: 118, max: 160),
                 child: CachedNetworkImage(
                   imageUrl: product.image,
                   fit: BoxFit.contain,
                   placeholder: (_, _) => const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))),
-                  errorWidget: (_, _, _) => const Center(child: Icon(Icons.image_not_supported_outlined, size: 48, color: Colors.black26)),
+                  errorWidget: (_, _, _) => Center(child: Icon(Icons.image_not_supported_outlined, size: r.icon(46), color: colors.textMuted)),
                 ),
               ),
+              SizedBox(width: r.space(10)),
               Expanded(
                 child: Column(
-                  spacing: 10,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -61,49 +59,47 @@ class ShopProductCard extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerRight,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: const Color(0xfffff0f3), borderRadius: BorderRadius.circular(8)),
-                          child: Text(
-                            'فروش ویژه',
-                            style: TextStyle(color: _accent, fontSize: 11, fontWeight: FontWeight.w600),
-                          ),
+                          padding: EdgeInsets.symmetric(horizontal: r.space(8), vertical: r.space(4)),
+                          decoration: BoxDecoration(color: colors.chipActiveBackground, borderRadius: BorderRadius.circular(r.radius(8))),
+                          child: const AppText.labelSmall('فروش ویژه', color: AppColors.accent, fontWeight: FontWeight.w600),
                         ),
                       ),
-                    Text(
+                    AppText.bodyMedium(
                       displayName,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 14, height: 1.8, fontWeight: FontWeight.w500, color: Color(0xff333333)),
+                      fontWeight: FontWeight.w500,
+                      color: colors.textPrimary,
+                      height: 1.75,
                     ),
                     Row(
-                      spacing: 5,
                       children: [
-                        ratingBar(),
-                        Expanded(child: colorBar()),
+                        _ratingBar(context),
+                        SizedBox(width: r.space(5)),
+                        Expanded(child: _colorBar(context)),
                       ],
                     ),
                     if (product.stockQuantity > 0 && product.stockQuantity <= 3)
-                      Text(
+                      AppText.bodySmall(
                         '${AppFunction.faDigit(product.stockQuantity)} عدد در انبار باقی مانده',
-                        style: TextStyle(color: _accent, fontSize: 11.5, fontWeight: FontWeight.w600),
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.w600,
                       )
                     else if (product.stockQuantity > 0)
-                      const Text('موجود در انبار', style: TextStyle(color: Colors.black45, fontSize: 11.5)),
-                    if (product.inquiry) ...[
-                      SizedBox(height: 10),
+                      AppText.bodySmall('موجود در انبار', color: colors.textMuted),
+                    if (product.inquiry)
                       Container(
-                        padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
-                        decoration: BoxDecoration(color: const Color(0xffeef5fd), borderRadius: BorderRadius.circular(9)),
-                        child: const Text(
+                        padding: EdgeInsets.symmetric(vertical: r.space(9), horizontal: r.space(10)),
+                        decoration: BoxDecoration(color: colors.inquiryBackground, borderRadius: BorderRadius.circular(r.radius(9))),
+                        child: AppText.labelMedium(
                           'استعلام قیمت و موجودی',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Color(0xff0353a4), fontSize: 12, fontWeight: FontWeight.w700),
+                          color: colors.inquiryForeground,
+                          fontWeight: FontWeight.w700,
                         ),
-                      ),
-                    ] else ...[
-                      SizedBox(height: 10),
+                      )
+                    else
                       PriceViewWidget(product: product),
-                    ],
                   ],
                 ),
               ),
@@ -114,31 +110,34 @@ class ShopProductCard extends StatelessWidget {
     );
   }
 
-  Widget ratingBar() {
-    if (product.averageRating == '0.0') return SizedBox.shrink();
+  Widget _ratingBar(BuildContext context) {
+    if (product.averageRating == '0.0') return const SizedBox.shrink();
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.star_rounded, color: Colors.yellow.shade700),
-        Text(AppFunction.faDigit(product.averageRating), style: TextStyle(color: Color(0xff333333), fontSize: 14)),
+        Icon(Icons.star_rounded, color: AppColors.star, size: context.responsive.icon(20)),
+        AppText.bodySmall(AppFunction.faDigit(product.averageRating), color: context.appColors.textSecondary),
       ],
     );
   }
 
-  Widget colorBar() {
-    if (product.colors.isEmpty) return SizedBox.shrink();
+  Widget _colorBar(BuildContext context) {
+    if (product.colors.isEmpty) return const SizedBox.shrink();
     return SizedBox(
-      height: 20,
-      child: ListView.builder(
+      height: context.responsive.space(20),
+      child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: product.colors.length,
-        itemExtent: 25,
+        separatorBuilder: (_, _) => SizedBox(width: context.responsive.space(4)),
         itemBuilder: (context, index) {
           final color = product.colors[index];
           return Container(
+            width: context.responsive.space(18),
+            height: context.responsive.space(18),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: colorHex(color),
-              border: Border.all(color: Colors.grey.shade500),
+              color: _colorHex(color),
+              border: Border.all(color: context.appColors.border),
             ),
           );
         },
@@ -146,7 +145,7 @@ class ShopProductCard extends StatelessWidget {
     );
   }
 
-  Color colorHex(String color) {
+  Color _colorHex(String color) {
     final hex = color.replaceFirst('#', '');
     if (hex.length == 6) {
       final value = int.tryParse('FF$hex', radix: 16);
@@ -156,6 +155,6 @@ class ShopProductCard extends StatelessWidget {
       final value = int.tryParse(hex, radix: 16);
       if (value != null) return Color(value);
     }
-    return const Color(0xff90a4ae);
+    return AppColors.neutralOption;
   }
 }

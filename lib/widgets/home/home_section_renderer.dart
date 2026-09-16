@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/section_model.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/widgets/home/category_section.dart';
+import 'package:yad_sys/widgets/home/home_brand_section.dart';
 import 'package:yad_sys/widgets/home/home_posts_section.dart';
 import 'package:yad_sys/widgets/home/image_section.dart';
-import 'package:yad_sys/widgets/home/home_brand_section.dart';
-import 'package:yad_sys/widgets/home/category_section.dart';
 import 'package:yad_sys/widgets/product/products_section.dart';
 
 class HomeSectionRenderer extends StatelessWidget {
@@ -13,13 +15,16 @@ class HomeSectionRenderer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final r = context.responsive;
+
     return Padding(
-      padding: EdgeInsetsGeometry.only(bottom: 15),
+      padding: EdgeInsets.only(bottom: r.sectionVerticalGap),
       child: section.type != 'image'
           ? Container(
               decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                border: BoxBorder.symmetric(horizontal: BorderSide(color: Colors.grey.shade400)),
+                color: colors.surface,
+                border: Border.symmetric(horizontal: BorderSide(color: colors.divider)),
               ),
               child: content(),
             )
@@ -38,7 +43,7 @@ class HomeSectionRenderer extends StatelessWidget {
       case 'brand':
         return HomeBrandSection(section: section);
       default:
-        return HomePostsSection(section:section);
+        return HomePostsSection(section: section);
     }
   }
 }

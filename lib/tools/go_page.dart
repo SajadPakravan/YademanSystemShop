@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:yad_sys/models/product_model.dart';
 import 'package:yad_sys/screens/product/product_screen.dart';
 
 Future<dynamic>? rightToPage(dynamic page, {dynamic arguments}) {

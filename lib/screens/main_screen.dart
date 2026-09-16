@@ -4,6 +4,7 @@ import 'package:yad_sys/screens/categories/categories_screen.dart';
 import 'package:yad_sys/screens/home/home_screen.dart';
 import 'package:yad_sys/screens/profile/profile_screen.dart';
 import 'package:yad_sys/screens/shop/shop_screen.dart';
+import 'package:yad_sys/tools/app_colors.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key, this.pageIndex = 0});
@@ -21,18 +22,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        systemStatusBarContrastEnforced: false,
-        systemNavigationBarColor: Colors.white,
-        systemNavigationBarIconBrightness: Brightness.dark,
-        systemNavigationBarContrastEnforced: false,
-        systemNavigationBarDividerColor: Colors.black,
-      ),
-    );
 
     pageIndex = widget.pageIndex.clamp(0, 3);
     _pages = List<Widget?>.filled(4, null);
@@ -60,34 +50,48 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        body: Stack(
-          children: <Widget>[
-            for (var index = 0; index < _pages.length; index++)
-              if (_pages[index] != null)
-                Positioned.fill(
-                  child: Offstage(
-                    offstage: pageIndex != index,
-                    child: TickerMode(enabled: pageIndex == index, child: _pages[index]!),
+    final colors = context.appColors;
+    final dark = context.isDarkMode;
+    final overlay = SystemUiOverlayStyle(
+      statusBarColor: AppColors.transparent,
+      statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+      systemStatusBarContrastEnforced: false,
+      systemNavigationBarColor: colors.surface,
+      systemNavigationBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+      systemNavigationBarContrastEnforced: false,
+      systemNavigationBarDividerColor: colors.divider,
+    );
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlay,
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          body: Stack(
+            children: <Widget>[
+              for (var index = 0; index < _pages.length; index++)
+                if (_pages[index] != null)
+                  Positioned.fill(
+                    child: Offstage(
+                      offstage: pageIndex != index,
+                      child: TickerMode(enabled: pageIndex == index, child: _pages[index]!),
+                    ),
                   ),
-                ),
-          ],
-        ),
-        bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: Colors.black12, width: 3)),
-          ),
-          child: BottomNavigationBar(
-            currentIndex: pageIndex,
-            onTap: _openPage,
-            items: <BottomNavigationBarItem>[
-              BottomNavigationBarItem(icon: Icon(pageIndex == 0 ? Icons.home : Icons.home_outlined), label: 'خانه'),
-              BottomNavigationBarItem(icon: Icon(pageIndex == 1 ? Icons.store : Icons.store_outlined), label: 'فروشگاه'),
-              BottomNavigationBarItem(icon: Icon(pageIndex == 2 ? Icons.category : Icons.category_outlined), label: 'دسته‌بندی‌ها'),
-              BottomNavigationBarItem(icon: Icon(pageIndex == 3 ? Icons.person : Icons.person_outlined), label: 'حساب من'),
             ],
+          ),
+          bottomNavigationBar: DecoratedBox(
+            decoration: BoxDecoration(border: Border(top: BorderSide(color: colors.divider))),
+            child: BottomNavigationBar(
+              currentIndex: pageIndex,
+              onTap: _openPage,
+              items: <BottomNavigationBarItem>[
+                BottomNavigationBarItem(icon: Icon(pageIndex == 0 ? Icons.home : Icons.home_outlined), label: 'خانه'),
+                BottomNavigationBarItem(icon: Icon(pageIndex == 1 ? Icons.store : Icons.store_outlined), label: 'فروشگاه'),
+                BottomNavigationBarItem(icon: Icon(pageIndex == 2 ? Icons.category : Icons.category_outlined), label: 'دسته‌بندی‌ها'),
+                BottomNavigationBarItem(icon: Icon(pageIndex == 3 ? Icons.person : Icons.person_outlined), label: 'حساب من'),
+              ],
+            ),
           ),
         ),
       ),

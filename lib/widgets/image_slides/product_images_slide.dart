@@ -1,9 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:yad_sys/connections/http_request.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 
-// ignore: must_be_immutable
+// Legacy widget kept for compatibility. New product pages use ProductSlide.
 class ProductImagesSlide extends StatelessWidget {
   ProductImagesSlide({
     super.key,
@@ -12,25 +13,24 @@ class ProductImagesSlide extends StatelessWidget {
     required this.json,
   });
 
-  CarouselSliderController slideCtrl = CarouselSliderController();
-  Function moveSlide;
-  int currentSlide = 0;
-  double circleSlideWidth = 0;
-  double circleSlideHeight = 0;
-  Color circleSlideColor = Colors.black;
-  List<Widget> itemSlider = [];
-  List<String> imageList = [];
-  HttpRequest httpRequest = HttpRequest();
-  dynamic json;
+  final CarouselSliderController slideCtrl = CarouselSliderController();
+  final Function moveSlide;
+  final int currentSlide;
+  final dynamic json;
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-
-    getProductImages();
+    final r = context.responsive;
+    final colors = context.appColors;
+    final imageList = (json['images'] as List)
+        .map((item) => item['src'].toString())
+        .toList(growable: false);
+    final itemSlider = imageList
+        .map((item) => CachedNetworkImage(imageUrl: item, fit: BoxFit.contain))
+        .toList(growable: false);
 
     return Container(
-      color: Colors.blue,
+      color: colors.surface,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -38,66 +38,42 @@ class ProductImagesSlide extends StatelessWidget {
             items: itemSlider,
             carouselController: slideCtrl,
             options: CarouselOptions(
-              height: MediaQuery.of(context).size.height * 0.5,
+              height: r.percentHeight(0.5, min: 260, max: 520),
               viewportFraction: 1,
               enableInfiniteScroll: false,
-              onPageChanged: (index, reason) {
-                moveSlide(index);
-              },
+              onPageChanged: (index, reason) => moveSlide(index),
             ),
           ),
-          Container(
-            alignment: Alignment.center,
-            height: width * 0.2,
+          SizedBox(
+            height: r.percentWidth(0.2, min: 72, max: 112),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: imageList.asMap().entries.map((entry) {
-                  circleSlideStyle(width: width, entry: entry);
+                  final selected = currentSlide == entry.key;
+                  final size = selected
+                      ? r.percentWidth(0.18, min: 62, max: 96)
+                      : r.percentWidth(0.11, min: 44, max: 68);
                   return InkWell(
+                    onTap: () => slideCtrl.animateToPage(entry.key),
                     child: Container(
-                      margin: EdgeInsets.all(width * 0.01),
+                      width: size,
+                      height: size,
+                      margin: EdgeInsets.all(r.space(4)),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: selected ? AppColors.primary : colors.border),
+                        borderRadius: BorderRadius.circular(r.radius(8)),
+                      ),
                       child: CachedNetworkImage(imageUrl: entry.value, fit: BoxFit.contain),
                     ),
-                    onTap: () {
-                      slideCtrl.animateToPage(1);
-                    }
                   );
-                }).toList(),
+                }).toList(growable: false),
               ),
             ),
           ),
         ],
       ),
     );
-  }
-
-  circleSlideStyle({required double width, required MapEntry entry}) {
-    if (currentSlide == entry.key) {
-      circleSlideWidth = width * 0.2;
-      circleSlideHeight = width * 0.2;
-      circleSlideColor = Colors.black54;
-    } else {
-      circleSlideWidth = width * 0.1;
-      circleSlideHeight = width * 0.1;
-      circleSlideColor = Colors.black38;
-    }
-  }
-
-  getProductImages() async {
-    List jsonProductImages = [];
-    jsonProductImages = json['images'];
-    imageList.clear();
-    itemSlider.clear();
-
-    for (var i = 0; i < jsonProductImages.length; i++) {
-      imageList.add(jsonProductImages[i]['src']);
-    }
-    itemSlider = imageList
-        .map(
-          (item) => CachedNetworkImage(imageUrl: item, fit: BoxFit.contain),
-        )
-        .toList();
   }
 }

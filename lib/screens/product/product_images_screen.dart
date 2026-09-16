@@ -2,7 +2,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:yad_sys/connections/http_request.dart';
+import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 
 class ProductImagesScreen extends StatefulWidget {
   const ProductImagesScreen({super.key});
@@ -12,22 +13,15 @@ class ProductImagesScreen extends StatefulWidget {
 }
 
 class _ProductImagesScreenState extends State<ProductImagesScreen> {
-  HttpRequest httpRequest = HttpRequest();
-  CarouselSliderController slideCtrl = CarouselSliderController();
+  final CarouselSliderController slideCtrl = CarouselSliderController();
   int currentSlide = 0;
   bool getCurrentSlide = true;
-  double slideWidth = 0;
-  double slideHeight = 0;
-  Color slideColor = Colors.black;
   List<Widget> itemSlider = [];
   List<String> imageList = [];
   bool imageItemVis = true;
 
-  getProductImages() async {
-    setState(() {
-      imageList = Get.arguments["images"];
-    });
-
+  void getProductImages() {
+    imageList = List<String>.from(Get.arguments['images']);
     itemSlider = imageList
         .map(
           (item) => InteractiveViewer(
@@ -38,10 +32,8 @@ class _ProductImagesScreenState extends State<ProductImagesScreen> {
             child: Image.network(
               item,
               fit: BoxFit.contain,
-              frameBuilder: (BuildContext context, Widget child, int? frame, bool? wasSynchronouslyLoaded) {
-                if (wasSynchronouslyLoaded!) {
-                  return child;
-                }
+              frameBuilder: (BuildContext context, Widget child, int? frame, bool wasSynchronouslyLoaded) {
+                if (wasSynchronouslyLoaded) return child;
                 return AnimatedOpacity(
                   opacity: frame == null ? 0 : 1,
                   duration: const Duration(seconds: 1),
@@ -50,19 +42,11 @@ class _ProductImagesScreenState extends State<ProductImagesScreen> {
                 );
               },
             ),
-            onInteractionStart: (scaleStartDetails) {
-              setState(() {
-                imageItemVis = false;
-              });
-            },
-            onInteractionEnd: (scaleEndDetails) {
-              setState(() {
-                imageItemVis = true;
-              });
-            },
+            onInteractionStart: (_) => setState(() => imageItemVis = false),
+            onInteractionEnd: (_) => setState(() => imageItemVis = true),
           ),
         )
-        .toList();
+        .toList(growable: false);
   }
 
   @override
@@ -70,22 +54,20 @@ class _ProductImagesScreenState extends State<ProductImagesScreen> {
     super.initState();
     getProductImages();
     if (getCurrentSlide) {
-      setState(() {
-        currentSlide = Get.arguments["imageIndex"];
-        if (kDebugMode) {
-          print("imageIndex >>>> $currentSlide");
-        }
-        getCurrentSlide = false;
-      });
+      currentSlide = Get.arguments['imageIndex'];
+      if (kDebugMode) print('imageIndex >>>> $currentSlide');
+      getCurrentSlide = false;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
+    final colors = context.appColors;
+    final r = context.responsive;
+
     return Scaffold(
-      appBar: appBar(),
+      backgroundColor: colors.background,
+      appBar: AppBar(backgroundColor: colors.surface),
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [
@@ -94,60 +76,51 @@ class _ProductImagesScreenState extends State<ProductImagesScreen> {
             carouselController: slideCtrl,
             disableGesture: true,
             options: CarouselOptions(
-              height: height,
+              height: r.height,
               viewportFraction: 1,
               initialPage: currentSlide,
               scrollPhysics: const NeverScrollableScrollPhysics(),
               padEnds: false,
-              onPageChanged: (index, reason) {
-                setState(() {
-                  currentSlide = index;
-                });
-              },
+              onPageChanged: (index, reason) => setState(() => currentSlide = index),
             ),
           ),
           Visibility(
             visible: imageItemVis,
             child: Container(
+              color: colors.surface.withValues(alpha: 0.94),
               alignment: Alignment.center,
-              height: width * 0.25,
+              height: r.percentWidth(0.25, min: 88, max: 130),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: imageList.asMap().entries.map((entry) {
-                    circleSlideStyle(width: width, entry: entry);
+                    final selected = currentSlide == entry.key;
+                    final imageSize = selected
+                        ? r.percentWidth(0.20, min: 68, max: 105)
+                        : r.percentWidth(0.10, min: 46, max: 70);
                     return InkWell(
+                      onTap: () => slideCtrl.animateToPage(entry.key, duration: const Duration(milliseconds: 500)),
+                      child: Padding(
+                        padding: EdgeInsets.all(r.space(4)),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            SizedBox(width: imageSize, height: imageSize, child: Image.network(entry.value, fit: BoxFit.contain)),
+                            SizedBox(height: r.space(3)),
                             Container(
-                              margin: EdgeInsets.all(width * 0.01),
-                              width: slideWidth,
-                              height: slideHeight,
-                              child: Image.network(entry.value, fit: BoxFit.contain),
-                            ),
-                            Container(
-                              width: width * 0.15,
+                              width: r.percentWidth(0.15, min: 54, max: 82),
+                              height: 2,
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                  width: 2,
-                                  color: slideColor,
-                                ),
-                                borderRadius: BorderRadius.circular(width),
+                                color: selected ? AppColors.accent : AppColors.transparent,
+                                borderRadius: BorderRadius.circular(r.radius(8)),
                               ),
                             ),
                           ],
                         ),
-                        onTap: () {
-                          slideCtrl.animateToPage(
-                            entry.key,
-                            duration: const Duration(
-                              milliseconds: 500,
-                            ),
-                          );
-                        });
-                  }).toList(),
+                      ),
+                    );
+                  }).toList(growable: false),
                 ),
               ),
             ),
@@ -155,25 +128,5 @@ class _ProductImagesScreenState extends State<ProductImagesScreen> {
         ],
       ),
     );
-  }
-
-  appBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      iconTheme: const IconThemeData(color: Colors.black54),
-    );
-  }
-
-  circleSlideStyle({required double width, required MapEntry entry}) {
-    if (currentSlide == entry.key) {
-      slideWidth = width * 0.2;
-      slideHeight = width * 0.2;
-      slideColor = Colors.red;
-    } else {
-      slideWidth = width * 0.1;
-      slideHeight = width * 0.1;
-      slideColor = Colors.transparent;
-    }
   }
 }

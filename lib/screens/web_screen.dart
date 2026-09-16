@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/widgets/app_bar_view.dart';
 
 class WebScreen extends StatefulWidget {
@@ -13,14 +14,14 @@ class WebScreen extends StatefulWidget {
 }
 
 class _WebScreenState extends State<WebScreen> {
-  WebViewController controller = WebViewController();
+  late final WebViewController controller;
 
   @override
   void initState() {
     super.initState();
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.white)
+      ..setBackgroundColor(AppColors.lightSurface)
       ..loadRequest(Uri.parse(widget.url));
   }
 

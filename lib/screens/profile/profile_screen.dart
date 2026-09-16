@@ -26,12 +26,12 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   bool cartAlert = false;
   int cartNumber = 0;
 
-  signOut() async {
+  Future<void> signOut() async {
     await cache.clearCache();
     checkLogged();
   }
 
-  checkLogged() async {
+  Future<void> checkLogged() async {
     setState(() => loading = true);
     String email = await cache.getString('email') ?? '';
     if (email.isNotEmpty) {
@@ -45,7 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     }
   }
 
-  getCustomer() async {
+  Future<void> getCustomer() async {
     setState(() => loading = true);
     dynamic jsonCustomer = await httpRequest.getCustomer(email: await cache.getString('email'));
     jsonCustomer.forEach((c) => setState(() => customer = CustomerModel.fromJson(c)));
@@ -66,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     });
   }
 
-  checkCart() {
+  void checkCart() {
     setState(() => cartAlert = false);
     if (cartBox.isNotEmpty) {
       setState(() {

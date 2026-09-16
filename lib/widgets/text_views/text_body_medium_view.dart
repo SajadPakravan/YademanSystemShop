@@ -1,16 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class TextBodyMediumView extends StatelessWidget {
-  const TextBodyMediumView(
-    this.data, {
-    super.key,
-    this.maxLines,
-    this.textAlign,
-    this.color,
-    this.fontSize,
-    this.fontWeight,
-    this.height,
-  });
+  const TextBodyMediumView(this.data, {super.key, this.maxLines, this.textAlign, this.color, this.fontSize, this.fontWeight, this.height, this.overflow});
 
   final String data;
   final int? maxLines;
@@ -19,14 +11,17 @@ class TextBodyMediumView extends StatelessWidget {
   final double? fontSize;
   final FontWeight? fontWeight;
   final double? height;
+  final TextOverflow? overflow;
 
   @override
-  Widget build(BuildContext context) {
-    return Text(
-      data,
-      maxLines: maxLines,
-      textAlign: textAlign,
-      style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: color, fontSize: fontSize, fontWeight: fontWeight, height: height),
-    );
-  }
+  Widget build(BuildContext context) => AppText.bodyMedium(
+        data,
+        maxLines: maxLines,
+        textAlign: textAlign,
+        color: color,
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        height: height,
+        overflow: overflow,
+      );
 }

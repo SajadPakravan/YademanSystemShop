@@ -2,8 +2,10 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class SheetFooterView extends StatelessWidget {
   const SheetFooterView({super.key, required this.viewModel, required this.deleteEnabled, required this.onDelete, required this.onApply, this.deleteLabel = 'حذف فیلتر'});
@@ -16,27 +18,27 @@ class SheetFooterView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final r = context.responsive;
+
     return Container(
-      padding: EdgeInsets.fromLTRB(12, 10, 12, math.max(10, MediaQuery.paddingOf(context).bottom + 4)),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xffeeeeee))),
-      ),
+      padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(10), r.pageHorizontalPadding, math.max(r.space(10), r.padding.bottom + 4)),
+      decoration: BoxDecoration(color: colors.surface, border: Border(top: BorderSide(color: colors.divider))),
       child: Row(
         children: [
           Expanded(
             child: OutlinedButton(
               onPressed: deleteEnabled ? onDelete : null,
               style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-                side: BorderSide(color: deleteEnabled ? AppColors.accent : Colors.black12),
+                minimumSize: Size.fromHeight(r.buttonHeight),
+                side: BorderSide(color: deleteEnabled ? AppColors.accent : colors.border),
                 foregroundColor: AppColors.accent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.cardRadius)),
               ),
-              child: Text(deleteLabel),
+              child: AppText.labelLarge(deleteLabel, color: deleteEnabled ? AppColors.accent : colors.textMuted),
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: r.space(10)),
           Expanded(
             child: AnimatedBuilder(
               animation: viewModel,
@@ -45,16 +47,12 @@ class SheetFooterView extends StatelessWidget {
                   ignoring: !viewModel.canApplyPreview,
                   child: FilledButton(
                     onPressed: onApply,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(52),
-                      backgroundColor: AppColors.accent,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
+                    style: FilledButton.styleFrom(minimumSize: Size.fromHeight(r.buttonHeight), backgroundColor: AppColors.accent),
                     child: viewModel.isPreviewLoading
-                        ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        ? SizedBox(width: r.icon(22), height: r.icon(22), child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBrand))
                         : viewModel.previewErrorMessage != null
-                        ? const Text('خطا در محاسبه محصولات')
-                        : Text('مشاهده ${AppFunction.faDigit(viewModel.previewCount)} محصول'),
+                            ? const AppText.labelLarge('خطا در محاسبه محصولات', color: AppColors.onBrand)
+                            : AppText.labelLarge('مشاهده ${AppFunction.faDigit(viewModel.previewCount)} محصول', color: AppColors.onBrand),
                   ),
                 );
               },
