@@ -99,6 +99,7 @@ class ProductView extends StatelessWidget {
 
   SliverAppBar _appBar(BuildContext context) {
     final colors = context.appColors;
+
     return SliverAppBar(
       floating: true,
       snap: true,
