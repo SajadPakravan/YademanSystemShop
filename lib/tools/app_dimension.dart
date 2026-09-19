@@ -5,9 +5,7 @@ import 'package:flutter/material.dart';
 /// تمام محاسبات ریسپانسیو پروژه از این کلاس عبور می‌کنند.
 /// هدف این است که فرمول‌های MediaQuery/Clamp در ویجت‌های مختلف تکرار نشوند.
 class AppDimension {
-  AppDimension._(this.context)
-      : size = MediaQuery.sizeOf(context),
-        padding = MediaQuery.paddingOf(context);
+  AppDimension._(this.context) : size = MediaQuery.sizeOf(context), padding = MediaQuery.paddingOf(context);
 
   final BuildContext context;
   final Size size;
@@ -16,11 +14,15 @@ class AppDimension {
   static AppDimension of(BuildContext context) => AppDimension._(context);
 
   double get width => size.width;
+
   double get height => size.height;
+
   double get shortestSide => math.min(width, height);
 
   bool get isCompact => width < 360 || height < 680;
+
   bool get isLargePhone => width >= 430;
+
   bool get isTablet => shortestSide >= 600;
 
   /// ضریب کنترل‌شده بر اساس عرض طراحی مرجع 390px.
@@ -37,6 +39,7 @@ class AppDimension {
   }
 
   double icon(double base, {double? min, double? max}) => font(base, min: min, max: max);
+
   double radius(double base) => space(base, min: base * 0.9, max: base * 1.2);
 
   double percentWidth(double fraction, {double? min, double? max}) {
@@ -52,19 +55,18 @@ class AppDimension {
   }
 
   double get pageHorizontalPadding => percentWidth(0.035, min: 12, max: isTablet ? 28 : 20);
+
   double get sectionVerticalGap => space(16, min: 12, max: 22);
+
   double get controlHeight => space(44, min: 42, max: 52);
+
   double get buttonHeight => space(52, min: 48, max: 58);
+
   double get chipHeight => space(40, min: 38, max: 46);
+
   double get cardRadius => radius(12);
 
-  double gridItemWidth({
-    required int columns,
-    double horizontalPadding = 20,
-    double spacing = 10,
-    double min = 72,
-    double max = 180,
-  }) {
+  double gridItemWidth({required int columns, double horizontalPadding = 20, double spacing = 10, double min = 72, double max = 180}) {
     final safeColumns = math.max(1, columns);
     final available = width - horizontalPadding - ((safeColumns - 1) * spacing);
     return (available / safeColumns).clamp(min, max).toDouble();

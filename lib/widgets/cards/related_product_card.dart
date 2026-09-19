@@ -24,18 +24,13 @@ class RelatedProductCard extends StatelessWidget {
 
     if (products.isEmpty && viewAll == null) return const SizedBox.shrink();
 
-    final metrics = HorizontalGridMetrics.verticalProducts(
-      context,
-      rows: rows,
-      itemCount: products.length,
-    );
+    final metrics = HorizontalGridMetrics.verticalProducts(context, rows: rows, itemCount: products.length);
 
     return SizedBox(
       width: double.infinity,
       height: metrics.sectionHeight,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -44,10 +39,7 @@ class RelatedProductCard extends StatelessWidget {
                 width: metrics.gridWidth,
                 height: metrics.sectionHeight,
                 child: GridView.builder(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: metrics.horizontalPadding,
-                    vertical: metrics.verticalPadding,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: metrics.horizontalPadding, vertical: metrics.verticalPadding),
                   physics: const NeverScrollableScrollPhysics(),
                   primary: false,
                   scrollDirection: Axis.horizontal,
@@ -58,15 +50,11 @@ class RelatedProductCard extends StatelessWidget {
                     crossAxisSpacing: metrics.spacing,
                     mainAxisExtent: metrics.cardWidth,
                   ),
-                  itemBuilder: (context, index) => ProductVerticalCardWidget(
-                    product: products[index],
-                    rows: metrics.rows,
-                    length: products.length,
-                    index: index,
-                  ),
+                  itemBuilder: (context, index) =>
+                      ProductVerticalCardWidget(product: products[index], rows: metrics.rows, length: products.length, index: index),
                 ),
               ),
-            if (viewAll != null && products.length > 10)
+            if (viewAll != null && products.length > 10) ...[
               Padding(
                 padding: EdgeInsets.symmetric(vertical: metrics.verticalPadding),
                 child: SizedBox(
@@ -78,7 +66,8 @@ class RelatedProductCard extends StatelessWidget {
                   ),
                 ),
               ),
-            SizedBox(width: metrics.horizontalPadding),
+              SizedBox(width: metrics.horizontalPadding),
+            ],
           ],
         ),
       ),

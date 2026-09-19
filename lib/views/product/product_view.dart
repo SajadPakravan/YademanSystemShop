@@ -1,8 +1,8 @@
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/product_detail_model.dart';
 import 'package:yad_sys/screens/product/product_info_screen.dart';
@@ -83,7 +83,7 @@ class ProductView extends StatelessWidget {
           _productDetails(product, context),
           SizedBox(height: r.space(18)),
           _reviewForm(context),
-          if (product.relatedProducts.isNotEmpty) ...[SizedBox(height: r.space(20)), _relatedProducts(context)],
+          if (product.relatedProducts[0].data.isNotEmpty) ...[SizedBox(height: r.space(20)), _relatedProducts(context)],
           SizedBox(height: r.space(20)),
         ],
       ),
@@ -156,12 +156,13 @@ class ProductView extends StatelessWidget {
       ),
       padding: EdgeInsets.only(bottom: r.space(10)),
       child: Column(
+        spacing: r.space(8),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           brandCategory(product, context),
-          SizedBox(height: r.space(8)),
           AppText.bodyLarge(product.name, maxLines: 3, overflow: TextOverflow.ellipsis, fontWeight: FontWeight.bold, color: colors.textPrimary),
-          if (reviews.isNotEmpty) ...[SizedBox(height: r.space(8)), ratingReview(product, context)],
+          if (reviews.isNotEmpty) ratingReview(product, context),
+          if (product.variations.isNotEmpty) variationsView(product.variations, context),
         ],
       ),
     );
@@ -185,9 +186,12 @@ class ProductView extends StatelessWidget {
           ClipRect(
             child: SizedBox(
               height: r.font(baseStyle.fontSize ?? 14) * 1.5 * 3,
-              child: HtmlWidget(
-                product.description.toString().toPersianDigit(),
-                textStyle: baseStyle.copyWith(color: context.appColors.textPrimary, height: 1.5, fontSize: r.font(baseStyle.fontSize ?? 14)),
+              child: Text(
+                product.description.replaceAll(RegExp(r'<[^>]*>'), '').toPersianDigit(),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                softWrap: true,
+                style: baseStyle.copyWith(color: context.appColors.textPrimary, height: 1.5, fontSize: r.font(baseStyle.fontSize ?? 14)),
               ),
             ),
           ),
@@ -228,7 +232,7 @@ class ProductView extends StatelessWidget {
                     Expanded(
                       child: Container(
                         padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(color: AppThemeColorsContext(context).isDarkMode ? Colors.grey.shade800 : Colors.grey.shade400),
+                        decoration: BoxDecoration(color: AppThemeColorsContext(context).isDarkMode ? Colors.grey.shade700 : Colors.grey.shade400),
                         child: AppText.bodyMedium(attribute.name.replaceAll('-', ' '), color: colors.textPrimary),
                       ),
                     ),
@@ -253,7 +257,7 @@ class ProductView extends StatelessWidget {
     final r = context.responsive;
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: r.width * 0.25),
+      padding: EdgeInsets.symmetric(horizontal: r.width * 0.24),
       child: InkWell(
         onTap: () {},
         child: Container(
@@ -263,7 +267,7 @@ class ProductView extends StatelessWidget {
             borderRadius: BorderRadius.circular(r.width),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             spacing: r.space(5),
             children: [
               TextBodyMediumView(title),
@@ -507,5 +511,56 @@ class ProductView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  variationsView(List<ProductVariation> variations, BuildContext context) {
+    for (ProductVariation variation in variations) {
+      return SizedBox(
+        height: 50,
+        child: ListView.builder(
+          itemCount: variation.options.length,
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (context, index) {
+            final option = variation.options[index];
+            return Container(
+              margin: EdgeInsets.symmetric(horizontal: 5),
+              padding: EdgeInsets.symmetric(horizontal: 5),
+              decoration: BoxDecoration(
+                color: AppThemeColorsContext(context).isDarkMode ? Colors.grey.shade300 : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Row(
+                spacing: 5,
+                children: [
+                  AppText.bodySmall(option.name),
+                  if (option.color.isNotEmpty)
+                    Container(
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: _colorForOption(option)),
+                      width: 25,
+                      height: 25,
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    }
+  }
+
+  Color _colorForOption(ProductVariationOption option) {
+    final raw = option.color.trim();
+    if (raw.isNotEmpty) {
+      final hex = raw.replaceFirst('#', '');
+      if (hex.length == 6) {
+        final value = int.tryParse('FF$hex', radix: 16);
+        if (value != null) return Color(value);
+      }
+      if (hex.length == 8) {
+        final value = int.tryParse(hex, radix: 16);
+        if (value != null) return Color(value);
+      }
+    }
+    return AppColors.neutralOption;
   }
 }
