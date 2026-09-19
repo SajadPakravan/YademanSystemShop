@@ -20,6 +20,7 @@ class ProductViewModel with ChangeNotifier {
   final Box<FavoriteModel> _favoritesBox = Hive.box<FavoriteModel>('favoritesBox');
 
   ProductDetailModel? _response;
+  final Map<int, int> _selectedVariationOptionIds = <int, int>{};
 
   ProductDetail? get product => _response?.data;
 
@@ -39,6 +40,33 @@ class ProductViewModel with ChangeNotifier {
   String _name = '';
   String _email = '';
 
+  List<String> get galleryImages {
+    final value = product;
+    if (value == null) return const <String>[];
+
+    final images = <String>[];
+
+    void addImage(String? image) {
+      final normalized = image?.trim() ?? '';
+      if (normalized.isNotEmpty && !images.contains(normalized)) {
+        images.add(normalized);
+      }
+    }
+
+    for (final image in value.gallery) {
+      addImage(image);
+    }
+    addImage(value.image);
+
+    for (final variation in value.variations) {
+      for (final option in variation.options) {
+        addImage(option.productImage);
+      }
+    }
+
+    return List<String>.unmodifiable(images);
+  }
+
   Future<void> loadProduct({bool forceRefresh = false}) async {
     errorMessage = '';
 
@@ -46,6 +74,7 @@ class ProductViewModel with ChangeNotifier {
       final cached = _cache.get(id);
       if (cached != null) {
         _response = cached;
+        _initializeProductUiState();
         isLoading = false;
         notifyListeners();
         await _refreshLocalState();
@@ -67,6 +96,7 @@ class ProductViewModel with ChangeNotifier {
 
       _response = result;
       _cache.save(result);
+      _initializeProductUiState();
       await _refreshLocalState();
     } catch (e, stackTrace) {
       debugPrint('PRODUCT DETAIL ERROR >>> $e');
@@ -78,6 +108,90 @@ class ProductViewModel with ChangeNotifier {
     } finally {
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  void _initializeProductUiState() {
+    final value = product;
+    _selectedVariationOptionIds.clear();
+    slideIndex = 0;
+
+    if (value == null) return;
+
+    for (final variation in value.variations) {
+      if (variation.options.isEmpty) continue;
+
+      ProductVariationOption? selected;
+
+      final defaultVariationId = value.defaultVariation;
+      if (defaultVariationId != null) {
+        for (final option in variation.options) {
+          if (option.id == defaultVariationId) {
+            selected = option;
+            break;
+          }
+        }
+      }
+
+      if (selected == null && value.variationName.trim().isNotEmpty) {
+        final currentName = value.variationName.trim();
+        for (final option in variation.options) {
+          if (option.name.trim() == currentName) {
+            selected = option;
+            break;
+          }
+        }
+      }
+
+      selected ??= variation.options.first;
+      _selectedVariationOptionIds[variation.id] = selected.id;
+    }
+
+    _syncSlideWithSelectedVariation();
+  }
+
+  ProductVariationOption? selectedOptionFor(ProductVariation variation) {
+    final selectedId = _selectedVariationOptionIds[variation.id];
+    if (selectedId == null) return null;
+
+    for (final option in variation.options) {
+      if (option.id == selectedId) return option;
+    }
+    return null;
+  }
+
+  bool isVariationOptionSelected(ProductVariation variation, ProductVariationOption option) {
+    return _selectedVariationOptionIds[variation.id] == option.id;
+  }
+
+  void selectVariationOption(ProductVariation variation, ProductVariationOption option) {
+    if (_selectedVariationOptionIds[variation.id] == option.id) return;
+
+    _selectedVariationOptionIds[variation.id] = option.id;
+    _syncSlideWithImage(option.productImage);
+    notifyListeners();
+  }
+
+  void _syncSlideWithSelectedVariation() {
+    final value = product;
+    if (value == null) return;
+
+    for (final variation in value.variations) {
+      final selected = selectedOptionFor(variation);
+      if (selected != null && selected.productImage.trim().isNotEmpty) {
+        _syncSlideWithImage(selected.productImage);
+        return;
+      }
+    }
+  }
+
+  void _syncSlideWithImage(String image) {
+    final normalized = image.trim();
+    if (normalized.isEmpty) return;
+
+    final index = galleryImages.indexOf(normalized);
+    if (index >= 0) {
+      slideIndex = index;
     }
   }
 
@@ -131,13 +245,16 @@ class ProductViewModel with ChangeNotifier {
   }
 
   Future<void> onTapProductImage(int imageIndex) async {
+    final images = galleryImages;
+    if (images.isEmpty) return;
+
     await Get.to(
       const ProductImagesScreen(),
       transition: Transition.size,
       duration: const Duration(milliseconds: 350),
       arguments: <String, dynamic>{
         'imageIndex': imageIndex,
-        'images': product!.gallery,
+        'images': images,
       },
     );
   }
@@ -157,7 +274,16 @@ class ProductViewModel with ChangeNotifier {
     }
 
     if (!existCart) {
-      await _cartBox.add(CartModel(id: value.id, name: value.name, image: value.image, price: value.price, quantity: 1, shippingClass: value.shippingClass));
+      await _cartBox.add(
+        CartModel(
+          id: value.id,
+          name: value.name,
+          image: value.image,
+          price: value.price,
+          quantity: 1,
+          shippingClass: value.shippingClass,
+        ),
+      );
     }
 
     _checkCart();
@@ -203,10 +329,6 @@ class ProductViewModel with ChangeNotifier {
     _checkFavorites();
     notifyListeners();
   }
-
-  // void openRelatedProduct(.relatedProducts item) {
-  //   toProduct(id: item.id);
-  // }
 
   void onRatingUpdate(double value) {
     rating = value.toInt();
