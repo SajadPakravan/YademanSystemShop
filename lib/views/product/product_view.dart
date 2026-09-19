@@ -162,12 +162,12 @@ class ProductView extends StatelessWidget {
       padding: EdgeInsets.all(r.space(10)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: r.space(12),
         children: [
           brandCategory(product, context),
-          SizedBox(height: r.space(9)),
           AppText.bodyLarge(product.name, maxLines: 3, overflow: TextOverflow.ellipsis, fontWeight: FontWeight.w800, height: 1.65, color: colors.textPrimary),
-          if (product.reviewCount > 0 || reviews.isNotEmpty) ...[SizedBox(height: r.space(10)), ratingReview(product, reviews, context)],
-          if (product.variations.isNotEmpty) ...[SizedBox(height: r.space(18)), variationsView(product.variations, context)],
+          if (product.reviewCount > 0 || reviews.isNotEmpty) ratingReview(product, reviews, context),
+          if (product.variations.isNotEmpty) variationsView(product.variations, context),
         ],
       ),
     );
@@ -181,25 +181,29 @@ class ProductView extends StatelessWidget {
 
     return _sectionContainer(
       context: context,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppText.titleSmall('معرفی کالا', fontWeight: FontWeight.w800),
-          SizedBox(height: r.space(10)),
-          Text(
-            plainDescription.toPersianDigit(),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            softWrap: true,
-            style: baseStyle.copyWith(color: colors.textPrimary, height: 1.75, fontSize: r.font(baseStyle.fontSize ?? 14)),
-          ),
-          SizedBox(height: r.space(12)),
-          moreDetailBtn(
-            context,
-            'مشاهده ادامه معرفی',
-            onTap: () => ProductDetailsBottomSheet.show(context: context, description: product.description, attributes: visibleAttributes, initialTabIndex: 0),
-          ),
-        ],
+      child: Padding(
+        padding: EdgeInsets.all(r.space(10)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppText.titleSmall('معرفی کالا', fontWeight: FontWeight.w800),
+            SizedBox(height: r.space(10)),
+            Text(
+              plainDescription.toPersianDigit(),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              softWrap: true,
+              style: baseStyle.copyWith(color: colors.textPrimary, height: 1.75, fontSize: r.font(baseStyle.fontSize ?? 14)),
+            ),
+            SizedBox(height: r.space(12)),
+            moreDetailBtn(
+              context,
+              'مشاهده ادامه معرفی',
+              onTap: () =>
+                  ProductDetailsBottomSheet.show(context: context, description: product.description, attributes: visibleAttributes, initialTabIndex: 0),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -355,20 +359,14 @@ class ProductView extends StatelessWidget {
     final r = context.responsive;
     final reviewCount = product.reviewCount > 0 ? product.reviewCount : reviews.length;
 
-    return Wrap(
-      spacing: r.space(8),
-      runSpacing: r.space(8),
-      crossAxisAlignment: WrapCrossAlignment.center,
+    return Row(spacing: r.space(10), children: [ratingChip(product), _smallInfoChip(context, '${reviewCount.toString().toPersianDigit()} دیدگاه')]);
+  }
+
+  Widget ratingChip(ProductDetail product) {
+    return Row(
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.star_rounded, color: AppColors.star),
-            SizedBox(width: r.space(3)),
-            TextBodySmallView(product.averageRating.toPersianDigit(), fontWeight: FontWeight.bold),
-          ],
-        ),
-        _smallInfoChip(context, '${reviewCount.toString().toPersianDigit()} دیدگاه'),
+        const Icon(Icons.star_rounded, color: AppColors.star),
+        TextBodySmallView(product.averageRating.toPersianDigit(), fontWeight: FontWeight.bold),
       ],
     );
   }
@@ -379,8 +377,7 @@ class ProductView extends StatelessWidget {
     return InkWell(
       onTap: () {},
       child: Container(
-        width: r.width * 0.2,
-        padding: EdgeInsets.symmetric(horizontal: r.space(10), vertical: r.space(6)),
+        padding: EdgeInsets.symmetric(horizontal: r.space(10), vertical: r.space(5)),
         decoration: BoxDecoration(
           color: colors.chipBackground,
           borderRadius: BorderRadius.circular(r.radius(24)),
