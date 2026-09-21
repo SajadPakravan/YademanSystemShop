@@ -19,6 +19,7 @@ class PriceViewWidget extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         if (product.discountPercent > 0)
           Row(

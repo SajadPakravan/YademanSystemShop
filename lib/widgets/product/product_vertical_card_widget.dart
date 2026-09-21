@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/product_card_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
@@ -34,46 +37,77 @@ class ProductVerticalCardWidget extends StatelessWidget {
             border: Border.all(color: colors.border),
             borderRadius: _borderRadius,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ClipRRect(
-                    borderRadius: context.isDarkMode ? BorderRadiusGeometry.all(Radius.circular(5)) : BorderRadius.zero,
-                    clipBehavior: Clip.antiAlias,
-                    child: CachedNetworkImage(
-                      imageUrl: product.image,
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                      errorWidget: (context, url, error) => Center(
-                        child: Icon(Icons.broken_image_outlined, color: colors.textMuted, size: r.icon(52)),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final maxHeight = constraints.maxHeight;
+              final maxWidth = constraints.maxWidth;
+              final imageHeight = math.min(maxHeight.isFinite ? maxHeight * 0.6 : maxWidth * 1, maxWidth * 1).clamp(100.0, 150.0).toDouble();
+              final titleHeight = r.space(42, min: 40, max: 46);
+
+              return Stack(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: r.space(15),
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(r.radius(8)),
+                        clipBehavior: Clip.antiAlias,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: imageHeight,
+                          child: CachedNetworkImage(
+                            imageUrl: product.image,
+                            width: double.infinity,
+                            fit: BoxFit.contain,
+                            placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                            errorWidget: (context, url, error) => Center(
+                              child: Icon(Icons.broken_image_outlined, color: colors.textMuted, size: r.icon(52)),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: titleHeight,
+                        child: Align(
+                          alignment: AlignmentDirectional.topStart,
+                          child: AppText.bodySmall(
+                            _displayName,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            fontSize: 13,
+                            height: 1.45,
+                            color: colors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Align(
+                          alignment: AlignmentDirectional.bottomCenter,
+                          child: product.inquiry
+                              ? Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.symmetric(horizontal: r.space(8), vertical: r.space(8)),
+                                  decoration: BoxDecoration(color: colors.inquiryBackground, borderRadius: BorderRadius.circular(r.radius(8))),
+                                  child: AppText.labelSmall(
+                                    'استعلام',
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    color: colors.inquiryForeground,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : PriceViewWidget(product: product),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-              SizedBox(height: r.space(8)),
-              AppText.bodySmall(_displayName, maxLines: 2, overflow: TextOverflow.ellipsis, fontSize: 13, height: 1.45, color: colors.textPrimary),
-              SizedBox(height: r.space(8)),
-              if (product.inquiry)
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(horizontal: r.space(8), vertical: r.space(8)),
-                  decoration: BoxDecoration(color: colors.inquiryBackground, borderRadius: BorderRadius.circular(r.radius(8))),
-                  child: AppText.labelSmall(
-                    'استعلام قیمت و موجودی',
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    color: colors.inquiryForeground,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )
-              else
-                PriceViewWidget(product: product),
-            ],
+                  if (product.averageRating != '0.0') Positioned(top: imageHeight - 10, child: rating(context)),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -104,5 +138,23 @@ class ProductVerticalCardWidget extends StatelessWidget {
   String get _displayName {
     final variation = product.variationName.trim();
     return variation.isEmpty ? product.name : '${product.name} | $variation';
+  }
+
+  Widget rating(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      decoration: BoxDecoration(
+        border: Border.all(color: context.appColors.border),
+        borderRadius: BorderRadius.all(Radius.circular(100)),
+        color: context.appColors.surface,
+      ),
+      child: Row(
+        spacing: 5,
+        children: [
+          Icon(Icons.star_rounded, color: AppColors.star, size: context.responsive.icon(15)),
+          AppText.labelSmall(product.averageRating.toPersianDigit(), height: 1),
+        ],
+      ),
+    );
   }
 }
