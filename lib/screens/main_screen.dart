@@ -5,6 +5,7 @@ import 'package:yad_sys/screens/home/home_screen.dart';
 import 'package:yad_sys/screens/profile/profile_screen.dart';
 import 'package:yad_sys/screens/shop/shop_screen.dart';
 import 'package:yad_sys/tools/app_colors.dart';
+import 'package:yad_sys/tools/main_navigation_controller.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key, this.pageIndex = 0});
@@ -27,6 +28,7 @@ class _MainScreenState extends State<MainScreen> {
     pageIndex = widget.pageIndex.clamp(0, 3);
     _pages = List<Widget?>.filled(4, null);
     _pages[pageIndex] = _createPage(pageIndex);
+    MainNavigationController.instance.attach(_openPage);
   }
 
   Widget _createPage(int index) {
@@ -46,6 +48,13 @@ class _MainScreenState extends State<MainScreen> {
       _pages[index] ??= _createPage(index);
       pageIndex = index;
     });
+  }
+
+
+  @override
+  void dispose() {
+    MainNavigationController.instance.detach();
+    super.dispose();
   }
 
   @override

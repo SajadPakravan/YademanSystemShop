@@ -28,9 +28,12 @@ class _ProductScreenState extends State<ProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _viewModel,
-      builder: (context, child) => ProductView(viewModel: _viewModel),
+    return WillPopScope(
+      onWillPop: _viewModel.handleBack,
+      child: AnimatedBuilder(
+        animation: _viewModel,
+        builder: (context, child) => ProductView(viewModel: _viewModel),
+      ),
     );
   }
 }

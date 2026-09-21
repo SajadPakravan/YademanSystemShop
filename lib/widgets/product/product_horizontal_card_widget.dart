@@ -26,26 +26,24 @@ class ProductHorizontalCardWidget extends StatelessWidget {
       child: InkWell(
         borderRadius: _borderRadius,
         onTap: () => toProduct(id: product.id),
-        child: Padding(
+        child: Container(
           padding: EdgeInsets.all(r.space(10, min: 8, max: 13)),
+          decoration: BoxDecoration(border:Border.all(color: context.appColors.divider),borderRadius: _borderRadius),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
                 flex: 44,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: r.space(3, min: 2, max: 5)),
-                  child: CachedNetworkImage(
-                    width: double.infinity,
-                    height: double.infinity,
-                    imageUrl: product.image,
-                    fit: BoxFit.contain,
-                    placeholder: (context, url) => const Center(child: SizedBox(width: 23, height: 23, child: CircularProgressIndicator(strokeWidth: 2))),
-                    errorWidget: (context, url, error) => Center(child: Icon(Icons.broken_image_outlined, color: colors.textMuted, size: r.icon(44))),
-                  ),
+                child: CachedNetworkImage(
+                  width: double.infinity,
+                  height: double.infinity,
+                  imageUrl: product.image,
+                  fit: BoxFit.contain,
+                  placeholder: (context, url) => const Center(child: SizedBox(width: 23, height: 23, child: CircularProgressIndicator(strokeWidth: 2))),
+                  errorWidget: (context, url, error) => Center(child: Icon(Icons.broken_image_outlined, color: colors.textMuted, size: r.icon(44))),
                 ),
               ),
-              SizedBox(width: r.space(9, min: 7, max: 12)),
+              SizedBox(width: r.space(5, min: 5, max: 10)),
               Expanded(
                 flex: 56,
                 child: Column(

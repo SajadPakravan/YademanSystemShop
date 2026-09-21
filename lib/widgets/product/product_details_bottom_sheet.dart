@@ -7,34 +7,19 @@ import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class ProductDetailsBottomSheet extends StatefulWidget {
-  const ProductDetailsBottomSheet({
-    super.key,
-    required this.description,
-    required this.attributes,
-    required this.initialTabIndex,
-  });
+  const ProductDetailsBottomSheet({super.key, required this.description, required this.attributes, required this.initialTabIndex});
 
   final String description;
   final List<ProductAttribute> attributes;
   final int initialTabIndex;
 
-  static Future<void> show({
-    required BuildContext context,
-    required String description,
-    required List<ProductAttribute> attributes,
-    int initialTabIndex = 0,
-  }) {
+  static Future<void> show({required BuildContext context, required String description, required List<ProductAttribute> attributes, int initialTabIndex = 0}) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: context.appColors.overlay,
-      builder: (_) => ProductDetailsBottomSheet(
-        description: description,
-        attributes: attributes,
-        initialTabIndex: initialTabIndex,
-      ),
+      builder: (_) => ProductDetailsBottomSheet(description: description, attributes: attributes, initialTabIndex: initialTabIndex),
     );
   }
 
@@ -59,9 +44,7 @@ class _ProductDetailsBottomSheetState extends State<ProductDetailsBottomSheet> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: DraggableScrollableSheet(
-        initialChildSize: 0.60,
-        minChildSize: 0.50,
-        maxChildSize: 0.96,
+        initialChildSize: 0.6,
         expand: false,
         builder: (context, scrollController) {
           return Material(
@@ -74,26 +57,14 @@ class _ProductDetailsBottomSheetState extends State<ProductDetailsBottomSheet> {
                 Container(
                   width: r.percentWidth(0.12, min: 42, max: 62),
                   height: r.space(4, min: 4, max: 5),
-                  decoration: BoxDecoration(
-                    color: colors.border,
-                    borderRadius: BorderRadius.circular(r.radius(20)),
-                  ),
+                  decoration: BoxDecoration(color: colors.border, borderRadius: BorderRadius.circular(r.radius(20))),
                 ),
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(
-                    r.pageHorizontalPadding,
-                    r.space(10),
-                    r.pageHorizontalPadding,
-                    r.space(6),
-                  ),
+                  padding: EdgeInsetsDirectional.fromSTEB(r.pageHorizontalPadding, r.space(10), r.pageHorizontalPadding, r.space(6)),
                   child: Row(
                     children: [
                       Expanded(
-                        child: AppText.titleMedium(
-                          'مشخصات و بررسی کالا',
-                          fontWeight: FontWeight.w800,
-                          color: colors.textPrimary,
-                        ),
+                        child: AppText.titleMedium('مشخصات و بررسی کالا', fontWeight: FontWeight.w800, color: colors.textPrimary),
                       ),
                       IconButton(
                         tooltip: 'بستن',
@@ -105,11 +76,7 @@ class _ProductDetailsBottomSheetState extends State<ProductDetailsBottomSheet> {
                 ),
                 _tabs(context),
                 Divider(height: 1, color: colors.divider),
-                Expanded(
-                  child: _activeTab == 0
-                      ? _description(context, scrollController)
-                      : _attributes(context, scrollController),
-                ),
+                Expanded(child: _activeTab == 0 ? _description(context, scrollController) : _attributes(context, scrollController)),
               ],
             ),
           );
@@ -153,7 +120,7 @@ class _ProductDetailsBottomSheetState extends State<ProductDetailsBottomSheet> {
 
     return Row(
       children: [
-        tab(index: 0, title: 'معرفی کالا'),
+        if (widget.description.trim().isNotEmpty) tab(index: 0, title: 'معرفی کالا'),
         tab(index: 1, title: 'جدول مشخصات'),
       ],
     );
@@ -168,28 +135,17 @@ class _ProductDetailsBottomSheetState extends State<ProductDetailsBottomSheet> {
       return ListView(
         controller: controller,
         padding: EdgeInsets.all(r.pageHorizontalPadding),
-        children: [
-          AppText.bodyMedium('برای این کالا معرفی ثبت نشده است.', color: colors.textSecondary),
-        ],
+        children: [AppText.bodyMedium('برای این کالا معرفی ثبت نشده است.', color: colors.textSecondary)],
       );
     }
 
     return ListView(
       controller: controller,
-      padding: EdgeInsets.fromLTRB(
-        r.pageHorizontalPadding,
-        r.space(18),
-        r.pageHorizontalPadding,
-        r.space(30),
-      ),
+      padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(18), r.pageHorizontalPadding, r.space(30)),
       children: [
         HtmlWidget(
           widget.description.toPersianDigit(),
-          textStyle: baseStyle.copyWith(
-            color: colors.textPrimary,
-            height: 1.9,
-            fontSize: r.font(baseStyle.fontSize ?? 14),
-          ),
+          textStyle: baseStyle.copyWith(color: colors.textPrimary, height: 1.9, fontSize: r.font(baseStyle.fontSize ?? 14)),
         ),
       ],
     );
@@ -203,20 +159,13 @@ class _ProductDetailsBottomSheetState extends State<ProductDetailsBottomSheet> {
       return ListView(
         controller: controller,
         padding: EdgeInsets.all(r.pageHorizontalPadding),
-        children: [
-          AppText.bodyMedium('مشخصاتی برای این کالا ثبت نشده است.', color: colors.textSecondary),
-        ],
+        children: [AppText.bodyMedium('مشخصاتی برای این کالا ثبت نشده است.', color: colors.textSecondary)],
       );
     }
 
     return ListView.separated(
       controller: controller,
-      padding: EdgeInsets.fromLTRB(
-        r.pageHorizontalPadding,
-        r.space(16),
-        r.pageHorizontalPadding,
-        r.space(30),
-      ),
+      padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(16), r.pageHorizontalPadding, r.space(30)),
       itemCount: widget.attributes.length,
       separatorBuilder: (_, _) => Divider(height: 1, color: colors.divider),
       itemBuilder: (context, index) {
@@ -231,12 +180,7 @@ class _ProductDetailsBottomSheetState extends State<ProductDetailsBottomSheet> {
                   alignment: AlignmentDirectional.centerStart,
                   padding: EdgeInsets.symmetric(horizontal: r.space(10), vertical: r.space(13)),
                   color: colors.surfaceVariant,
-                  child: AppText.bodyMedium(
-                    attribute.name.replaceAll('-', ' '),
-                    color: colors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                    height: 1.6,
-                  ),
+                  child: AppText.bodyMedium(attribute.name.replaceAll('-', ' '), color: colors.textSecondary, fontWeight: FontWeight.w600, height: 1.6),
                 ),
               ),
               Expanded(
@@ -244,11 +188,7 @@ class _ProductDetailsBottomSheetState extends State<ProductDetailsBottomSheet> {
                 child: Container(
                   alignment: AlignmentDirectional.centerStart,
                   padding: EdgeInsets.symmetric(horizontal: r.space(10), vertical: r.space(13)),
-                  child: AppText.bodyMedium(
-                    attribute.options.join('، ').toPersianDigit(),
-                    color: colors.textPrimary,
-                    height: 1.6,
-                  ),
+                  child: AppText.bodyMedium(attribute.options.join('، ').toPersianDigit(), color: colors.textPrimary, height: 1.6),
                 ),
               ),
             ],

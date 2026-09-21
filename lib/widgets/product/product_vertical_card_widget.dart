@@ -8,12 +8,13 @@ import 'package:yad_sys/widgets/product/price_view_widget.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class ProductVerticalCardWidget extends StatelessWidget {
-  const ProductVerticalCardWidget({super.key, required this.product, this.rows = 1, required this.length, required this.index});
+  const ProductVerticalCardWidget({super.key, required this.product, this.rows = 1, required this.length, required this.index, this.onTap});
 
   final ProductCardModel product;
   final int rows;
   final int length;
   final int index;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class ProductVerticalCardWidget extends StatelessWidget {
       borderRadius: _borderRadius,
       child: InkWell(
         borderRadius: _borderRadius,
-        onTap: () => toProduct(id: product.id),
+        onTap: onTap ?? () => toProduct(id: product.id),
         child: Container(
           padding: EdgeInsets.all(r.space(10)),
           decoration: BoxDecoration(
@@ -39,23 +40,22 @@ class ProductVerticalCardWidget extends StatelessWidget {
               Expanded(
                 child: SizedBox(
                   width: double.infinity,
-                  child: CachedNetworkImage(
-                    imageUrl: product.image,
-                    fit: BoxFit.contain,
-                    placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                    errorWidget: (context, url, error) => Center(child: Icon(Icons.broken_image_outlined, color: colors.textMuted, size: r.icon(52))),
+                  child: ClipRRect(
+                    borderRadius: context.isDarkMode ? BorderRadiusGeometry.all(Radius.circular(5)) : BorderRadius.zero,
+                    clipBehavior: Clip.antiAlias,
+                    child: CachedNetworkImage(
+                      imageUrl: product.image,
+                      fit: BoxFit.contain,
+                      placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                      errorWidget: (context, url, error) => Center(
+                        child: Icon(Icons.broken_image_outlined, color: colors.textMuted, size: r.icon(52)),
+                      ),
+                    ),
                   ),
                 ),
               ),
               SizedBox(height: r.space(8)),
-              AppText.bodySmall(
-                _displayName,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                fontSize: 13,
-                height: 1.45,
-                color: colors.textPrimary,
-              ),
+              AppText.bodySmall(_displayName, maxLines: 2, overflow: TextOverflow.ellipsis, fontSize: 13, height: 1.45, color: colors.textPrimary),
               SizedBox(height: r.space(8)),
               if (product.inquiry)
                 Container(
@@ -82,6 +82,9 @@ class ProductVerticalCardWidget extends StatelessWidget {
 
   BorderRadius get _borderRadius {
     final i = index + 1;
+    if (length == 1) {
+      return const BorderRadius.all(Radius.circular(12));
+    }
     if (rows > 1) {
       if (i <= rows) {
         if (i == 1) return const BorderRadius.only(topRight: Radius.circular(12));

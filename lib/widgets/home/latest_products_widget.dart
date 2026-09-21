@@ -16,11 +16,7 @@ class LatestProductsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (products.isEmpty) return const SizedBox.shrink();
 
-    final metrics = HorizontalGridMetrics.horizontalProducts(
-      context,
-      rows: section.layout.rows,
-      itemCount: products.length,
-    );
+    final metrics = HorizontalGridMetrics.horizontalProducts(context, rows: section.layout.rows, itemCount: products.length);
     final viewAll = section.viewAll;
 
     return SizedBox(
@@ -46,12 +42,8 @@ class LatestProductsWidget extends StatelessWidget {
                   crossAxisSpacing: metrics.spacing,
                   mainAxisExtent: metrics.cardWidth,
                 ),
-                itemBuilder: (context, index) => ProductHorizontalCardWidget(
-                  product: products[index],
-                  rows: metrics.rows,
-                  length: products.length,
-                  index: index,
-                ),
+                itemBuilder: (context, index) =>
+                    ProductHorizontalCardWidget(product: products[index], rows: metrics.rows, length: products.length, index: index),
               ),
             ),
             if (viewAll != null) ...[
@@ -60,7 +52,7 @@ class LatestProductsWidget extends StatelessWidget {
                 height: metrics.contentHeight,
                 child: ViewAllWidget(
                   title: viewAll.title,
-                  onTap: () => SectionActionHandler.handle(context: context, action: viewAll.action),
+                  onTap: () => SectionActionHandler.openProductListInShop(context: context, action: viewAll.action),
                 ),
               ),
               SizedBox(width: metrics.horizontalPadding),

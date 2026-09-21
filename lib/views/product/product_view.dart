@@ -77,6 +77,7 @@ class ProductView extends StatelessWidget {
     final hasRelatedProducts = product.relatedProducts.any((item) => item.data.isNotEmpty);
 
     return SingleChildScrollView(
+      key: ValueKey<int>(viewModel.currentProductId),
       child: Column(
         children: [
           ProductSlide(
@@ -662,7 +663,12 @@ class ProductView extends StatelessWidget {
           child: const TextBodyMediumView('محصولات مرتبط', fontWeight: FontWeight.bold),
         ),
         SizedBox(height: r.space(8)),
-        RelatedProductCard(list: viewModel.product!.relatedProducts),
+        RelatedProductCard(
+          list: viewModel.product!.relatedProducts,
+          onProductTap: (productId) {
+            viewModel.openRelatedProduct(productId);
+          },
+        ),
       ],
     );
   }

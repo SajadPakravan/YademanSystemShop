@@ -36,11 +36,7 @@ class _DiscountedProductsWidgetState extends State<DiscountedProductsWidget> {
 
     if (widget.products.isEmpty && !hasViewAll) return const SizedBox.shrink();
 
-    final metrics = HorizontalGridMetrics.verticalProducts(
-      context,
-      rows: rows,
-      itemCount: itemCount,
-    );
+    final metrics = HorizontalGridMetrics.verticalProducts(context, rows: rows, itemCount: itemCount);
 
     return Container(
       width: double.infinity,
@@ -99,7 +95,10 @@ class _DiscountedProductsWidgetState extends State<DiscountedProductsWidget> {
               final viewAll = widget.section.viewAll!;
               return ViewAllWidget(
                 title: viewAll.title,
-                onTap: () => SectionActionHandler.handle(context: context, action: viewAll.action),
+                onTap: () {
+                  print("Action OnSale >>>> ${viewAll.action.onSale}");
+                  SectionActionHandler.openProductListInShop(context: context, action: viewAll.action);
+                },
                 foregroundColor: AppColors.onBrand,
               );
             },
@@ -142,16 +141,18 @@ class _AmazingLogo extends StatelessWidget {
             child: CachedNetworkImage(
               imageUrl: 'https://yademansystem.ir/wp-content/uploads/2023/02/amazings.png',
               fit: BoxFit.contain,
-              placeholder: (context, url) => Center(
-                child: SizedBox(
-                  width: r.icon(24),
-                  height: r.icon(24),
-                  child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBrand),
-                ),
-              ),
-              errorWidget: (context, url, error) => Center(
-                child: Icon(Icons.bolt_rounded, color: AppColors.onBrand, size: r.icon(54)),
-              ),
+              placeholder: (context, url) =>
+                  Center(
+                    child: SizedBox(
+                      width: r.icon(24),
+                      height: r.icon(24),
+                      child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBrand),
+                    ),
+                  ),
+              errorWidget: (context, url, error) =>
+                  Center(
+                    child: Icon(Icons.bolt_rounded, color: AppColors.onBrand, size: r.icon(54)),
+                  ),
             ),
           ),
         ),
@@ -165,10 +166,26 @@ class _AmazingLogo extends StatelessWidget {
     const green = 0.7152;
     const blue = 0.0722;
     return <double>[
-      red + ((1 - red) * s), green - (green * s), blue - (blue * s), 0, 0,
-      red - (red * s), green + ((1 - green) * s), blue - (blue * s), 0, 0,
-      red - (red * s), green - (green * s), blue + ((1 - blue) * s), 0, 0,
-      0, 0, 0, 1, 0,
+      red + ((1 - red) * s),
+      green - (green * s),
+      blue - (blue * s),
+      0,
+      0,
+      red - (red * s),
+      green + ((1 - green) * s),
+      blue - (blue * s),
+      0,
+      0,
+      red - (red * s),
+      green - (green * s),
+      blue + ((1 - blue) * s),
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
     ];
   }
 }

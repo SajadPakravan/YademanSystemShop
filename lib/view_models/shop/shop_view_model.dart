@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/product_card_model.dart';
 import 'package:yad_sys/models/products_list_model.dart';
+import 'package:yad_sys/models/section_item_action_model.dart';
 
 class ShopSortOption {
   const ShopSortOption({required this.title, required this.orderby, required this.order, this.onSale});
@@ -225,6 +226,36 @@ class ShopViewModel with ChangeNotifier {
     final draft = ShopFilterState()..brandIds.add(brandId);
     await applyFilters(draft);
     return errorMessage == null;
+  }
+
+  Future<void> applySectionAction(SectionItemActionModel action) async {
+    cancelPreview(notify: false);
+
+    final draft = ShopFilterState(
+      orderby: action.orderby.trim().isEmpty ? 'date' : action.orderby,
+      order: action.order.trim().isEmpty ? 'desc' : action.order,
+      onSale: action.onSale == true ? true : null,
+    );
+
+    switch (action.type) {
+      case 'category':
+        final id = action.destinationId;
+        if (id != null) draft.categoryIds.add(id);
+        break;
+      case 'brand':
+        final id = action.destinationId;
+        if (id != null) draft.brandIds.add(id);
+        break;
+      case 'all':
+        break;
+      default:
+        break;
+    }
+
+    productsLst.clear();
+    appliedFilters.clearAll();
+    notifyListeners();
+    await applyFilters(draft);
   }
 
   Future<void> loadMore() async {

@@ -11,9 +11,15 @@ import 'package:yad_sys/tools/product_detail_cache.dart';
 import 'package:yad_sys/widgets/snack_bar_view.dart';
 
 class ProductViewModel with ChangeNotifier {
-  ProductViewModel({required this.id});
+  ProductViewModel({required int id}) : _currentProductId = id;
 
-  final int id;
+  int _currentProductId;
+  final List<int> _productHistory = <int>[];
+  int _loadRequestSerial = 0;
+
+  int get id => _currentProductId;
+  int get currentProductId => _currentProductId;
+  bool get hasProductHistory => _productHistory.isNotEmpty;
   final HttpRequest _httpRequest = HttpRequest();
   final ProductDetailCache _cache = ProductDetailCache.instance;
   final Box<CartModel> _cartBox = Hive.box<CartModel>('cartBox');
@@ -68,17 +74,24 @@ class ProductViewModel with ChangeNotifier {
   }
 
   Future<void> loadProduct({bool forceRefresh = false}) async {
+    final targetId = _currentProductId;
+    final requestSerial = ++_loadRequestSerial;
     errorMessage = '';
 
     if (!forceRefresh) {
-      final cached = _cache.get(id);
+      final cached = _cache.get(targetId);
       if (cached != null) {
+        if (requestSerial != _loadRequestSerial || targetId != _currentProductId) return;
+
         _response = cached;
         _initializeProductUiState();
         isLoading = false;
         notifyListeners();
+
         await _refreshLocalState();
-        notifyListeners();
+        if (requestSerial == _loadRequestSerial && targetId == _currentProductId) {
+          notifyListeners();
+        }
         return;
       }
     }
@@ -87,18 +100,22 @@ class ProductViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      final dynamic json = await _httpRequest.getProduct(id: id);
-
+      final dynamic json = await _httpRequest.getProduct(id: targetId);
       final result = ProductDetailModel.fromJson(Map<String, dynamic>.from(json));
+
       if (!result.success) {
         throw const FormatException('جزئیتات محصول با موفقیت دریافت نشد');
       }
+
+      if (requestSerial != _loadRequestSerial || targetId != _currentProductId) return;
 
       _response = result;
       _cache.save(result);
       _initializeProductUiState();
       await _refreshLocalState();
     } catch (e, stackTrace) {
+      if (requestSerial != _loadRequestSerial || targetId != _currentProductId) return;
+
       debugPrint('PRODUCT DETAIL ERROR >>> $e');
       debugPrintStack(
         label: 'PRODUCT DETAIL STACK TRACE',
@@ -106,9 +123,40 @@ class ProductViewModel with ChangeNotifier {
       );
       errorMessage = 'دریافت جزئیات محصول انجام نشد. اتصال اینترنت را بررسی کنید.';
     } finally {
-      isLoading = false;
-      notifyListeners();
+      if (requestSerial == _loadRequestSerial && targetId == _currentProductId) {
+        isLoading = false;
+        notifyListeners();
+      }
     }
+  }
+
+  Future<void> openRelatedProduct(int productId) async {
+    if (productId == _currentProductId) return;
+
+    _productHistory.add(_currentProductId);
+    await _switchProduct(productId);
+  }
+
+  Future<bool> handleBack() async {
+    if (_productHistory.isEmpty) return true;
+
+    final previousProductId = _productHistory.removeLast();
+    await _switchProduct(previousProductId);
+    return false;
+  }
+
+  Future<void> _switchProduct(int productId) async {
+    _currentProductId = productId;
+    _response = null;
+    errorMessage = '';
+    isLoading = true;
+    slideIndex = 0;
+    reviewController.clear();
+    rating = 0;
+    _selectedVariationOptionIds.clear();
+    notifyListeners();
+
+    await loadProduct();
   }
 
   void _initializeProductUiState() {

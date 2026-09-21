@@ -154,10 +154,10 @@ class HorizontalGridMetrics {
     final safeRows = rows.clamp(1, 3).toInt();
     final horizontalPadding = r.percentWidth(0.025, min: 8, max: 12);
     final verticalPadding = r.percentWidth(0.025, min: 8, max: 12);
-    final spacing = r.percentWidth(0.005, min: 3, max: 12);
+    final spacing = r.percentWidth(0.005, min: 5, max: 12);
     final cardHeight = (cardWidth * cardHeightFactor).clamp(cardHeightMin, cardHeightMax).toDouble();
     final contentHeight = (cardHeight * safeRows) + (spacing * (safeRows - 1));
-    final sectionHeight = contentHeight + (verticalPadding * 2);
+    final sectionHeight = contentHeight + (verticalPadding * 5);
     final columnCount = (itemCount / safeRows).ceil();
     final gridWidth = (horizontalPadding * 2) + (columnCount * cardWidth) + (math.max(0, columnCount - 1) * spacing);
     final viewAllWidth = r.percentWidth(0.28, min: 105, max: r.isTablet ? 180 : 150);

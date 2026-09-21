@@ -69,7 +69,13 @@ class SectionHeader extends StatelessWidget {
           if (hasViewAll)
             _ViewAllButton(
               title: section.viewAll!.title,
-              onTap: () => SectionActionHandler.handle(context: context, action: section.viewAll!.action),
+              onTap: () {
+                if (section.type == 'products') {
+                  SectionActionHandler.openProductListInShop(context: context, action: section.viewAll!.action);
+                } else {
+                  SectionActionHandler.handle(context: context, action: section.viewAll!.action);
+                }
+              },
             ),
         ],
       ),

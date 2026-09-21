@@ -59,7 +59,7 @@ class ProductCarouselWidget extends StatelessWidget {
                   height: metrics.contentHeight,
                   child: ViewAllWidget(
                     title: viewAll.title,
-                    onTap: () => SectionActionHandler.handle(context: context, action: viewAll.action),
+                    onTap: () => SectionActionHandler.openProductListInShop(context: context, action: viewAll.action),
                   ),
                 ),
               ),
