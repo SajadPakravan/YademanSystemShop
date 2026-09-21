@@ -24,7 +24,6 @@ class LatestProductsWidget extends StatelessWidget {
       height: metrics.sectionHeight,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
         child: Row(
           children: [
             SizedBox(

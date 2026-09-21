@@ -24,7 +24,6 @@ class ProductCarouselWidget extends StatelessWidget {
       height: metrics.sectionHeight,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

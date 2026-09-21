@@ -100,6 +100,7 @@ class ProductView extends StatelessWidget {
 
   SliverAppBar _appBar(BuildContext context) {
     final colors = context.appColors;
+    final r = context.responsive;
 
     return SliverAppBar(
       floating: true,
@@ -131,6 +132,34 @@ class ProductView extends StatelessWidget {
           ],
         ),
       ),
+      bottom: viewModel.product != null && viewModel.product!.categories.length > 1
+          ? PreferredSize(
+              preferredSize: Size.fromHeight(30),
+              child: SizedBox(
+                height: 30,
+                child: ListView.builder(
+                  itemCount: viewModel.product!.categories.length - 1,
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(horizontal: r.space(10)),
+                  itemBuilder: (context, index) {
+                    final category = viewModel.product!.categories[index];
+
+                    return Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        AppText.bodySmall(category.name),
+                        SizedBox(width: r.space(6)),
+                        if (index != viewModel.product!.categories.length - 2) ...[
+                          Icon(Icons.arrow_forward_ios_rounded, size: r.icon(9), color: colors.textMuted),
+                          SizedBox(width: r.space(6)),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -351,7 +380,7 @@ class ProductView extends StatelessWidget {
           TextBodySmallView(brand, fontWeight: FontWeight.bold, color: colors.textSecondary),
           Icon(Icons.arrow_forward_ios_rounded, size: r.icon(9), color: colors.textMuted),
         ],
-        if (categories.isNotEmpty) TextBodySmallView(categories.join('، '), fontWeight: FontWeight.bold, color: colors.textSecondary),
+        if (categories.isNotEmpty) TextBodySmallView(categories[categories.length - 1], fontWeight: FontWeight.bold, color: colors.textSecondary),
       ],
     );
   }
