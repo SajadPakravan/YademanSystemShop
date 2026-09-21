@@ -27,7 +27,7 @@ class LatestProductsWidget extends StatelessWidget {
         child: Row(
           children: [
             SizedBox(
-              width: metrics.gridWidth,
+              width: metrics.gridWidth * 1.2,
               height: metrics.sectionHeight,
               child: GridView.builder(
                 padding: EdgeInsets.symmetric(horizontal: metrics.horizontalPadding, vertical: metrics.verticalPadding),
@@ -39,7 +39,7 @@ class LatestProductsWidget extends StatelessWidget {
                   crossAxisCount: metrics.rows,
                   mainAxisSpacing: metrics.spacing,
                   crossAxisSpacing: metrics.spacing,
-                  mainAxisExtent: metrics.cardWidth,
+                  mainAxisExtent: metrics.cardWidth * 1.2,
                 ),
                 itemBuilder: (context, index) =>
                     ProductHorizontalCardWidget(product: products[index], rows: metrics.rows, length: products.length, index: index),

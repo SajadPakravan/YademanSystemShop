@@ -31,24 +31,29 @@ class ProductHorizontalCardWidget extends StatelessWidget {
           decoration: BoxDecoration(border:Border.all(color: context.appColors.divider),borderRadius: _borderRadius),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: r.space(10),
             children: [
               Expanded(
-                flex: 44,
-                child: CachedNetworkImage(
-                  width: double.infinity,
-                  height: double.infinity,
-                  imageUrl: product.image,
-                  fit: BoxFit.contain,
-                  placeholder: (context, url) => const Center(child: SizedBox(width: 23, height: 23, child: CircularProgressIndicator(strokeWidth: 2))),
-                  errorWidget: (context, url, error) => Center(child: Icon(Icons.broken_image_outlined, color: colors.textMuted, size: r.icon(44))),
+                flex: 39,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(r.radius(8)),
+                  clipBehavior: Clip.antiAlias,
+                  child: CachedNetworkImage(
+                    width: double.infinity,
+                    height: double.infinity,
+                    imageUrl: product.image,
+                    fit: BoxFit.contain,
+                    placeholder: (context, url) => const Center(child: SizedBox(width: 23, height: 23, child: CircularProgressIndicator(strokeWidth: 2))),
+                    errorWidget: (context, url, error) => Center(child: Icon(Icons.broken_image_outlined, color: colors.textMuted, size: r.icon(44))),
+                  ),
                 ),
               ),
-              SizedBox(width: r.space(5, min: 5, max: 10)),
               Expanded(
-                flex: 56,
+                flex: 68,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: r.space(10),
                   children: [
                     AppText.bodyMedium(
                       _displayName,
@@ -58,7 +63,6 @@ class ProductHorizontalCardWidget extends StatelessWidget {
                       color: colors.textPrimary,
                       height: 1.45,
                     ),
-                    SizedBox(height: r.space(8, min: 6, max: 10)),
                     if (product.inquiry)
                       Container(
                         width: double.infinity,

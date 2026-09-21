@@ -81,14 +81,10 @@ class HomeView extends StatelessWidget {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: ListView.builder(
-        padding: EdgeInsets.only(bottom: r.space(20), top: r.space(10)),
-        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-        itemCount: sections.length,
-        itemBuilder: (context, index) => HomeSectionRenderer(section: sections[index]),
-      ),
+    return ListView.builder(
+      padding: EdgeInsets.only(bottom: r.space(20), top: r.space(10)),
+      itemCount: sections.length,
+      itemBuilder: (context, index) => HomeSectionRenderer(section: sections[index]),
     );
   }
 }
