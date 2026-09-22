@@ -8,6 +8,7 @@ class AppButton extends StatelessWidget {
   const AppButton({
     super.key,
     required this.label,
+    this.labelColor,
     required this.onPressed,
     this.type = AppButtonType.filled,
     this.icon,
@@ -19,6 +20,7 @@ class AppButton extends StatelessWidget {
   });
 
   final String label;
+  final Color? labelColor;
   final VoidCallback? onPressed;
   final AppButtonType type;
   final IconData? icon;
@@ -32,20 +34,15 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final action = enabled && !loading ? onPressed : null;
     final content = loading
-        ? SizedBox(
-            width: context.responsive.icon(20),
-            height: context.responsive.icon(20),
-            child: const CircularProgressIndicator(strokeWidth: 2),
-          )
+        ? SizedBox(width: context.responsive.icon(20), height: context.responsive.icon(20), child: const CircularProgressIndicator(strokeWidth: 2))
         : Row(
             mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              if (icon != null) ...<Widget>[
-                Icon(icon, size: context.responsive.icon(19)),
-                SizedBox(width: context.responsive.space(7)),
-              ],
-              Flexible(child: AppText.labelLarge(label, maxLines: 1, overflow: TextOverflow.ellipsis)),
+              if (icon != null) ...<Widget>[Icon(icon, size: context.responsive.icon(19)), SizedBox(width: context.responsive.space(7))],
+              Flexible(
+                child: AppText.labelLarge(label, maxLines: 1, overflow: TextOverflow.ellipsis, color: labelColor),
+              ),
             ],
           );
 

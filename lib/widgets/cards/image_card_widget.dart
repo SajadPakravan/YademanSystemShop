@@ -96,7 +96,7 @@ class _ImageCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(r.radius(14)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => SectionActionHandler.handle(context: context, action: item.action),
+        // onTap: () => SectionActionHandler.handle(context: context, action: item.action),
         child: imageUrl.isEmpty
             ? const _ImageErrorPlaceholder()
             : CachedNetworkImage(

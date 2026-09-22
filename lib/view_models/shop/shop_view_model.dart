@@ -239,12 +239,12 @@ class ShopViewModel with ChangeNotifier {
 
     switch (action.type) {
       case 'category':
-        final id = action.destinationId;
-        if (id != null) draft.categoryIds.add(id);
+        final id = action.categoryId;
+        if (id.isNotEmpty) draft.categoryIds.addAll(id);
         break;
       case 'brand':
-        final id = action.destinationId;
-        if (id != null) draft.brandIds.add(id);
+        final id = action.brandId;
+        if (id.isNotEmpty) draft.brandIds.addAll(id);
         break;
       case 'all':
         break;

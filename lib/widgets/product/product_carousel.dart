@@ -4,10 +4,10 @@ import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
 import 'package:yad_sys/widgets/cards/view_all_widget.dart';
-import 'package:yad_sys/widgets/product/product_vertical_card_widget.dart';
+import 'package:yad_sys/widgets/product/product_vertical_card.dart';
 
-class ProductCarouselWidget extends StatelessWidget {
-  const ProductCarouselWidget({super.key, required this.section, required this.products});
+class ProductCarousel extends StatelessWidget {
+  const ProductCarousel({super.key, required this.section, required this.products});
 
   final SectionModel section;
   final List<ProductCardModel> products;
@@ -42,7 +42,7 @@ class ProductCarouselWidget extends StatelessWidget {
                   crossAxisSpacing: metrics.spacing,
                   mainAxisExtent: metrics.cardWidth,
                 ),
-                itemBuilder: (context, index) => ProductVerticalCardWidget(
+                itemBuilder: (context, index) => ProductVerticalCard(
                   product: products[index],
                   rows: metrics.rows,
                   length: products.length,
@@ -58,7 +58,7 @@ class ProductCarouselWidget extends StatelessWidget {
                   height: metrics.contentHeight,
                   child: ViewAllWidget(
                     title: viewAll.title,
-                    onTap: () => SectionActionHandler.openProductListInShop(context: context, action: viewAll.action),
+                    onTap: () => SectionActionHandler.openShop(context: context, action: viewAll.action),
                   ),
                 ),
               ),

@@ -6,7 +6,7 @@ import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
 import 'package:yad_sys/widgets/cards/view_all_widget.dart';
-import 'package:yad_sys/widgets/product/product_vertical_card_widget.dart';
+import 'package:yad_sys/widgets/product/product_vertical_card.dart';
 
 class DiscountedProductsWidget extends StatefulWidget {
   const DiscountedProductsWidget({super.key, required this.section, required this.products});
@@ -84,21 +84,13 @@ class _DiscountedProductsWidgetState extends State<DiscountedProductsWidget> {
 
               final contentIndex = index - logoSpacerCount;
               if (contentIndex < widget.products.length) {
-                return ProductVerticalCardWidget(
-                  product: widget.products[contentIndex],
-                  rows: metrics.rows,
-                  length: widget.products.length,
-                  index: contentIndex,
-                );
+                return ProductVerticalCard(product: widget.products[contentIndex], rows: metrics.rows, length: widget.products.length, index: contentIndex);
               }
 
               final viewAll = widget.section.viewAll!;
               return ViewAllWidget(
                 title: viewAll.title,
-                onTap: () {
-                  print("Action OnSale >>>> ${viewAll.action.onSale}");
-                  SectionActionHandler.openProductListInShop(context: context, action: viewAll.action);
-                },
+                onTap: () => SectionActionHandler.openShop(context: context, action: viewAll.action),
                 foregroundColor: AppColors.onBrand,
               );
             },
@@ -141,18 +133,16 @@ class _AmazingLogo extends StatelessWidget {
             child: CachedNetworkImage(
               imageUrl: 'https://yademansystem.ir/wp-content/uploads/2023/02/amazings.png',
               fit: BoxFit.contain,
-              placeholder: (context, url) =>
-                  Center(
-                    child: SizedBox(
-                      width: r.icon(24),
-                      height: r.icon(24),
-                      child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBrand),
-                    ),
-                  ),
-              errorWidget: (context, url, error) =>
-                  Center(
-                    child: Icon(Icons.bolt_rounded, color: AppColors.onBrand, size: r.icon(54)),
-                  ),
+              placeholder: (context, url) => Center(
+                child: SizedBox(
+                  width: r.icon(24),
+                  height: r.icon(24),
+                  child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBrand),
+                ),
+              ),
+              errorWidget: (context, url, error) => Center(
+                child: Icon(Icons.bolt_rounded, color: AppColors.onBrand, size: r.icon(54)),
+              ),
             ),
           ),
         ),

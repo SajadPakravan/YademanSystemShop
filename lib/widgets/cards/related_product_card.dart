@@ -4,7 +4,7 @@ import 'package:yad_sys/models/product_detail_model.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
 import 'package:yad_sys/widgets/cards/view_all_widget.dart';
-import 'package:yad_sys/widgets/product/product_vertical_card_widget.dart';
+import 'package:yad_sys/widgets/product/product_vertical_card.dart';
 
 class RelatedProductCard extends StatelessWidget {
   const RelatedProductCard({super.key, required this.list, this.onProductTap});
@@ -52,7 +52,7 @@ class RelatedProductCard extends StatelessWidget {
                     mainAxisExtent: metrics.cardWidth,
                   ),
                   itemBuilder: (context, index) =>
-                      ProductVerticalCardWidget(
+                      ProductVerticalCard(
                         product: products[index],
                         rows: metrics.rows,
                         length: products.length,
@@ -69,7 +69,7 @@ class RelatedProductCard extends StatelessWidget {
                   height: metrics.contentHeight,
                   child: ViewAllWidget(
                     title: viewAll.title,
-                    onTap: () => SectionActionHandler.openProductListInShop(context: context, action: viewAll!.action),
+                    onTap: () => SectionActionHandler.openShop(context: context, action: viewAll!.action),
                   ),
                 ),
               ),

@@ -68,7 +68,7 @@ class _MenuCard extends StatelessWidget {
       color: AppColors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(r.cardRadius),
-        onTap: () => SectionActionHandler.handle(context: context, action: item.action),
+        // onTap: () => SectionActionHandler.handle(context: context, action: item.action),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: r.space(3)),
           child: Column(

@@ -97,7 +97,7 @@ class _BannerCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(r.cardRadius),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => SectionActionHandler.handle(context: context, action: imageItem.action),
+          // onTap: () => SectionActionHandler.handle(context: context, action: imageItem.action),
           child: CachedNetworkImage(
             imageUrl: imageItem.image,
             fit: BoxFit.cover,

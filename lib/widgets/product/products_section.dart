@@ -3,7 +3,7 @@ import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/widgets/home/discounted_products_widget.dart';
 import 'package:yad_sys/widgets/home/latest_products_widget.dart';
 import 'package:yad_sys/widgets/home/section_header.dart';
-import 'package:yad_sys/widgets/product/product_carousel_widget.dart';
+import 'package:yad_sys/widgets/product/product_carousel.dart';
 
 class ProductsSection extends StatelessWidget {
   const ProductsSection({super.key, required this.section});
@@ -24,7 +24,7 @@ class ProductsSection extends StatelessWidget {
       return Column(
         children: [
           SectionHeader(section: section),
-          if (isLatest) LatestProductsWidget(section: section, products: products) else ProductCarouselWidget(section: section, products: products),
+          if (isLatest) LatestProductsWidget(section: section, products: products) else ProductCarousel(section: section, products: products),
         ],
       );
     }

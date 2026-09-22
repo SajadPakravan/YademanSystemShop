@@ -12,27 +12,27 @@ import 'package:yad_sys/widgets/snack_bar_view.dart';
 class SectionActionHandler {
   const SectionActionHandler._();
 
-  static Future<void> handle({required BuildContext context, required SectionItemActionModel action}) async {
-    switch (action.type) {
-      case 'product':
-        toProduct(id: action.destinationId);
-        return;
+  // static Future<void> handle({required BuildContext context, required SectionItemActionModel action}) async {
+  //   switch (action.type) {
+  //     case 'product':
+  //       toProduct(id: action.);
+  //       return;
+  //
+  //     case 'category':
+  //       rightToPage(const ShowAllScreen(), arguments: <String, dynamic>{'title': action.title, 'category': action.destinationId, 'onSale': action.onSale});
+  //       return;
+  //
+  //     case 'brand':
+  //       rightToPage(const ShowAllScreen(), arguments: <String, dynamic>{'title': action.title, 'brand': action.destinationId, 'onSale': action.onSale});
+  //       return;
+  //
+  //     case 'url':
+  //       _openUrl(context, action.url, action.title);
+  //       return;
+  //   }
+  // }
 
-      case 'category':
-        rightToPage(const ShowAllScreen(), arguments: <String, dynamic>{'title': action.title, 'category': action.destinationId, 'onSale': action.onSale});
-        return;
-
-      case 'brand':
-        rightToPage(const ShowAllScreen(), arguments: <String, dynamic>{'title': action.title, 'brand': action.destinationId, 'onSale': action.onSale});
-        return;
-
-      case 'url':
-        _openUrl(context, action.url, action.title);
-        return;
-    }
-  }
-
-  static Future<void> openProductListInShop({required BuildContext context, required SectionItemActionModel action}) async {
+  static Future<void> openShop({required BuildContext context, required SectionItemActionModel action}) async {
     final shopViewModel = context.read<ShopViewModel>();
 
     MainNavigationController.instance.openShop();

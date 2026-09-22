@@ -8,12 +8,14 @@ import 'package:yad_sys/models/product_detail_model.dart';
 import 'package:yad_sys/models/review_card_model.dart';
 import 'package:yad_sys/screens/product/product_info_screen.dart';
 import 'package:yad_sys/screens/profile/cart/cart_screen.dart';
+import 'package:yad_sys/screens/search/search_screen.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/view_models/product/product_view_model.dart';
 import 'package:yad_sys/widgets/buttons/app_button.dart';
 import 'package:yad_sys/widgets/cards/related_product_card.dart';
+import 'package:yad_sys/widgets/dialogs/product_consulta.dart';
 import 'package:yad_sys/widgets/image_slides/product_slide.dart';
 import 'package:yad_sys/widgets/loading.dart';
 import 'package:yad_sys/widgets/product/product_details_bottom_sheet.dart';
@@ -115,7 +117,14 @@ class ProductView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(Icons.shopping_cart),
+              icon: Icon(Icons.search, color: colors.textPrimary),
+              onPressed: () => Get.to(const SearchScreen(), transition: Transition.upToDown, duration: const Duration(milliseconds: 500)),
+            ),
+            IconButton(
+              icon: Icon(
+                viewModel.existCart ? Icons.shopping_cart : Icons.shopping_cart_outlined,
+                color: viewModel.existCart ? Colors.green : colors.textPrimary,
+              ),
               onPressed: () async {
                 if (viewModel.authError) {
                   SnackBarView.show(context, 'برای نمایش سبد خرید لطفا وارد حساب کاربری شوید');
@@ -128,6 +137,10 @@ class ProductView extends StatelessWidget {
             IconButton(
               icon: Icon(viewModel.isFavorite ? Icons.favorite : Icons.favorite_border, color: viewModel.isFavorite ? colors.favorite : colors.textPrimary),
               onPressed: () => viewModel.addRemoveFavorite(context),
+            ),
+            IconButton(
+              icon: Icon(Icons.more_vert, color: colors.textPrimary),
+              onPressed: () {},
             ),
           ],
         ),
@@ -147,7 +160,7 @@ class ProductView extends StatelessWidget {
                     return Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        AppText.bodySmall(category.name),
+                        AppText.bodySmall(category.name, decoration: TextDecoration.underline, height: 1),
                         SizedBox(width: r.space(6)),
                         if (index != viewModel.product!.categories.length - 2) ...[
                           Icon(Icons.arrow_forward_ios_rounded, size: r.icon(9), color: colors.textMuted),
@@ -286,28 +299,33 @@ class ProductView extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: r.space(10)),
               itemBuilder: (context, index) {
                 final attribute = previewAttributes[index];
-                return Container(
-                  width: cardWidth,
-                  padding: EdgeInsets.all(r.space(10)),
-                  decoration: BoxDecoration(
-                    color: colors.surfaceVariant,
-                    border: Border.all(color: colors.border),
-                    borderRadius: BorderRadius.circular(r.cardRadius),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    spacing: r.space(5),
-                    children: [
-                      AppText.labelSmall(attribute.name.replaceAll('-', ' '), color: colors.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      AppText.bodyMedium(
-                        attribute.options.join('، ').toPersianDigit(),
-                        color: colors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+
+                return InkWell(
+                  onTap: () =>
+                      ProductDetailsBottomSheet.show(context: context, description: product.description, attributes: visibleAttributes, initialTabIndex: 1),
+                  child: Container(
+                    width: cardWidth,
+                    padding: EdgeInsets.all(r.space(10)),
+                    decoration: BoxDecoration(
+                      color: colors.surfaceVariant,
+                      border: Border.all(color: colors.border),
+                      borderRadius: BorderRadius.circular(r.cardRadius),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      spacing: r.space(5),
+                      children: [
+                        AppText.labelSmall(attribute.name.replaceAll('-', ' '), color: colors.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        AppText.bodyMedium(
+                          attribute.options.join('، ').toPersianDigit(),
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -377,10 +395,17 @@ class ProductView extends StatelessWidget {
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         if (brand.isNotEmpty) ...[
-          TextBodySmallView(brand, fontWeight: FontWeight.bold, color: colors.textSecondary),
+          AppText.bodySmall(brand, fontWeight: FontWeight.bold, color: colors.textSecondary, height: 1, decoration: TextDecoration.underline),
           Icon(Icons.arrow_forward_ios_rounded, size: r.icon(9), color: colors.textMuted),
         ],
-        if (categories.isNotEmpty) TextBodySmallView(categories[categories.length - 1], fontWeight: FontWeight.bold, color: colors.textSecondary),
+        if (categories.isNotEmpty)
+          AppText.bodySmall(
+            categories[categories.length - 1],
+            fontWeight: FontWeight.bold,
+            color: colors.textSecondary,
+            height: 1,
+            decoration: TextDecoration.underline,
+          ),
       ],
     );
   }
@@ -438,7 +463,7 @@ class ProductView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppText.titleSmall(selected == null ? variation.name : '${variation.name}: ${selected.name}', fontWeight: FontWeight.w800),
+                  AppText.bodyMedium(selected == null ? variation.name : '${variation.name}: ${selected.name}', fontWeight: FontWeight.w800),
                   SizedBox(height: r.space(10)),
                   SizedBox(
                     height: r.chipHeight + r.space(8),
@@ -750,7 +775,7 @@ class ProductView extends StatelessWidget {
                               child: const AppText.labelLarge('افزودن به سبد خرید', color: AppColors.onBrand),
                             )
                           : ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () => ProductConsulta.show(context: context, name: product.name, image: product.image),
                               child: const AppText.labelLarge('استعلام قیمت و موجودی', color: AppColors.onBrand),
                             ),
                     ),

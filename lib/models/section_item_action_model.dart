@@ -2,7 +2,9 @@ class SectionItemActionModel {
   const SectionItemActionModel({
     required this.title,
     required this.type,
-    required this.destinationId,
+    required this.productId,
+    required this.categoryId,
+    required this.brandId,
     required this.onSale,
     required this.url,
     required this.orderby,
@@ -11,7 +13,9 @@ class SectionItemActionModel {
 
   final String title;
   final String? type;
-  final int? destinationId;
+  final int? productId;
+  final List<int> categoryId;
+  final List<int> brandId;
   final bool? onSale;
   final String? url;
   final String orderby;
@@ -21,7 +25,9 @@ class SectionItemActionModel {
     return SectionItemActionModel(
       title: json['title'],
       type: json['type'],
-      destinationId: json['destination_id'],
+      productId: json['product_id'],
+      categoryId: List<int>.from(json['category_id']),
+      brandId: List<int>.from(json['brand_id']),
       onSale: json['on_sale'],
       url: json['url'],
       orderby: json['orderby'],

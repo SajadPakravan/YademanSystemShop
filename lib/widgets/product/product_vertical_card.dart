@@ -7,11 +7,12 @@ import 'package:yad_sys/models/product_card_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/go_page.dart';
+import 'package:yad_sys/widgets/dialogs/product_consulta.dart';
 import 'package:yad_sys/widgets/product/price_view_widget.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
-class ProductVerticalCardWidget extends StatelessWidget {
-  const ProductVerticalCardWidget({super.key, required this.product, this.rows = 1, required this.length, required this.index, this.onTap});
+class ProductVerticalCard extends StatelessWidget {
+  const ProductVerticalCard({super.key, required this.product, this.rows = 1, required this.length, required this.index, this.onTap});
 
   final ProductCardModel product;
   final int rows;
@@ -86,17 +87,20 @@ class ProductVerticalCardWidget extends StatelessWidget {
                         child: Align(
                           alignment: AlignmentDirectional.bottomCenter,
                           child: product.inquiry
-                              ? Container(
-                                  width: double.infinity,
-                                  padding: EdgeInsets.symmetric(horizontal: r.space(8), vertical: r.space(8)),
-                                  decoration: BoxDecoration(color: colors.inquiryBackground, borderRadius: BorderRadius.circular(r.radius(8))),
-                                  child: AppText.labelSmall(
-                                    'استعلام',
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    color: colors.inquiryForeground,
-                                    fontWeight: FontWeight.bold,
+                              ? InkWell(
+                                  onTap: () => ProductConsulta.show(context: context, name: _displayName, image: product.image),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.symmetric(horizontal: r.space(8), vertical: r.space(8)),
+                                    decoration: BoxDecoration(color: colors.inquiryBackground, borderRadius: BorderRadius.circular(r.radius(8))),
+                                    child: AppText.labelSmall(
+                                      'استعلام',
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      color: colors.inquiryForeground,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 )
                               : PriceViewWidget(product: product),

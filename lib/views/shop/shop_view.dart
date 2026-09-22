@@ -9,7 +9,7 @@ import 'package:yad_sys/widgets/bottom_sheet/filter_sheet_widget.dart';
 import 'package:yad_sys/widgets/buttons/all_filters_chip_button_widget.dart';
 import 'package:yad_sys/widgets/buttons/app_button.dart';
 import 'package:yad_sys/widgets/buttons/filter_chip_button_widget.dart';
-import 'package:yad_sys/widgets/product/product_horizontal_card_widget2.dart';
+import 'package:yad_sys/widgets/product/shop_product_card.dart';
 import 'package:yad_sys/widgets/search.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 

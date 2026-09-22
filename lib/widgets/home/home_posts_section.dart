@@ -52,10 +52,7 @@ class HomePostsSection extends StatelessWidget {
                   SizedBox(
                     width: metrics.viewAllWidth,
                     height: metrics.contentHeight,
-                    child: ViewAllWidget(
-                      title: viewAll.title,
-                      onTap: () => SectionActionHandler.handle(context: context, action: viewAll.action),
-                    ),
+                    child: ViewAllWidget(title: viewAll.title, onTap: () {}),
                   ),
                   SizedBox(width: metrics.horizontalPadding),
                 ],

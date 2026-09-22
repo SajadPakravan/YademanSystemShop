@@ -5,6 +5,7 @@ import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/tools/go_page.dart';
+import 'package:yad_sys/widgets/dialogs/product_consulta.dart';
 import 'package:yad_sys/widgets/product/price_view_widget.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
@@ -36,7 +37,9 @@ class ShopProductCard extends StatelessWidget {
         child: Container(
           height: cardHeight(),
           padding: EdgeInsets.all(r.space(12)),
-          decoration: BoxDecoration(border: Border(bottom: BorderSide(color: colors.divider))),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: colors.divider)),
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -46,7 +49,9 @@ class ShopProductCard extends StatelessWidget {
                   imageUrl: product.image,
                   fit: BoxFit.contain,
                   placeholder: (_, _) => const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))),
-                  errorWidget: (_, _, _) => Center(child: Icon(Icons.image_not_supported_outlined, size: r.icon(46), color: colors.textMuted)),
+                  errorWidget: (_, _, _) => Center(
+                    child: Icon(Icons.image_not_supported_outlined, size: r.icon(46), color: colors.textMuted),
+                  ),
                 ),
               ),
               SizedBox(width: r.space(10)),
@@ -88,14 +93,17 @@ class ShopProductCard extends StatelessWidget {
                     else if (product.stockQuantity > 0)
                       AppText.bodySmall('موجود در انبار', color: colors.textMuted),
                     if (product.inquiry)
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: r.space(9), horizontal: r.space(10)),
-                        decoration: BoxDecoration(color: colors.inquiryBackground, borderRadius: BorderRadius.circular(r.radius(9))),
-                        child: AppText.labelMedium(
-                          'استعلام قیمت و موجودی',
-                          textAlign: TextAlign.center,
-                          color: colors.inquiryForeground,
-                          fontWeight: FontWeight.w700,
+                      InkWell(
+                        onTap: () => ProductConsulta.show(context: context, name: displayName, image: product.image),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: r.space(9), horizontal: r.space(10)),
+                          decoration: BoxDecoration(color: colors.inquiryBackground, borderRadius: BorderRadius.circular(r.radius(9))),
+                          child: AppText.labelMedium(
+                            'استعلام قیمت و موجودی',
+                            textAlign: TextAlign.center,
+                            color: colors.inquiryForeground,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       )
                     else

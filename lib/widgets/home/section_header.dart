@@ -43,13 +43,7 @@ class SectionHeader extends StatelessWidget {
                           height: 1.25,
                         ),
                         SizedBox(height: r.space(3)),
-                        AppText.bodySmall(
-                          subtitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          color: colors.textSecondary,
-                          height: 1.3,
-                        ),
+                        AppText.bodySmall(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, color: colors.textSecondary, height: 1.3),
                       ],
                     )
                   : Align(
@@ -69,13 +63,7 @@ class SectionHeader extends StatelessWidget {
           if (hasViewAll)
             _ViewAllButton(
               title: section.viewAll!.title,
-              onTap: () {
-                if (section.type == 'products') {
-                  SectionActionHandler.openProductListInShop(context: context, action: section.viewAll!.action);
-                } else {
-                  SectionActionHandler.handle(context: context, action: section.viewAll!.action);
-                }
-              },
+              onTap: () => SectionActionHandler.openShop(context: context, action: section.viewAll!.action),
             ),
         ],
       ),
