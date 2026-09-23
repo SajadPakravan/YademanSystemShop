@@ -4,11 +4,12 @@ import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
-import 'package:yad_sys/views/shop/filter/full_filter_dialog_view.dart';
+import 'package:yad_sys/views/shop/filter/full_filter_dialog.dart';
 import 'package:yad_sys/widgets/bottom_sheet/filter_sheet_widget.dart';
-import 'package:yad_sys/widgets/buttons/all_filters_chip_button_widget.dart';
+import 'package:yad_sys/widgets/buttons/btn_filters.dart';
 import 'package:yad_sys/widgets/buttons/app_button.dart';
 import 'package:yad_sys/widgets/buttons/filter_chip_button_widget.dart';
+import 'package:yad_sys/widgets/product/product_vertical_card.dart';
 import 'package:yad_sys/widgets/product/shop_product_card.dart';
 import 'package:yad_sys/widgets/search.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
@@ -26,6 +27,7 @@ class _ShopViewState extends State<ShopView> {
   final ScrollController _scrollController = ScrollController();
 
   ShopViewModel get vm => widget.viewModel;
+  bool isGridView = false;
 
   @override
   void initState() {
@@ -64,10 +66,9 @@ class _ShopViewState extends State<ShopView> {
               titleSpacing: r.space(10),
               collapsedHeight: r.space(80, min: 74, max: 88),
               title: const Search(),
-              bottom: PreferredSize(
-                preferredSize: Size.fromHeight(r.space(80, min: 74, max: 90)),
-                child: _buildFiltersArea(context),
-              ),
+              bottom: vm.productsLst.isNotEmpty
+                  ? PreferredSize(preferredSize: Size.fromHeight(r.space(80, min: 74, max: 90)), child: filtersArea(context))
+                  : null,
             ),
           ],
           body: RefreshIndicator(
@@ -79,17 +80,33 @@ class _ShopViewState extends State<ShopView> {
                 if (vm.isInitialLoading && vm.productsLst.isEmpty)
                   const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
                 else if (vm.errorMessage != null && vm.productsLst.isEmpty)
-                  SliverFillRemaining(hasScrollBody: false, child: _ErrorState(message: vm.errorMessage!, onRetry: vm.retry))
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _ErrorState(message: vm.errorMessage!, onRetry: vm.retry),
+                  )
                 else if (vm.productsLst.isEmpty)
                   const SliverFillRemaining(hasScrollBody: false, child: _EmptyState())
                 else ...[
-                  SliverToBoxAdapter(child: _buildResultHeader(context)),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => ShopProductCard(product: vm.productsLst[index]),
-                      childCount: vm.productsLst.length,
-                    ),
-                  ),
+                  SliverToBoxAdapter(child: productsListHeader(context)),
+                  isGridView
+                      ? SliverGrid.builder(
+                          key: const ValueKey("grid"),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: r.space(5),
+                            mainAxisSpacing: r.space(5),
+                            childAspectRatio: 0.6,
+                          ),
+                          itemCount: vm.productsLst.length,
+                          itemBuilder: (context, index) => ProductVerticalCard(product: vm.productsLst[index], length: vm.productsLst.length, index: index),
+                        )
+                      : SliverList(
+                          key: const ValueKey("list"),
+                          delegate: SliverChildBuilderDelegate(
+                            childCount: vm.productsLst.length,
+                            (context, index) => ShopProductCard(product: vm.productsLst[index]),
+                          ),
+                        ),
                   SliverToBoxAdapter(
                     child: AnimatedSize(
                       duration: const Duration(milliseconds: 200),
@@ -110,7 +127,7 @@ class _ShopViewState extends State<ShopView> {
     );
   }
 
-  Widget _buildFiltersArea(BuildContext context) {
+  Widget filtersArea(BuildContext context) {
     if (vm.filters.categories.isEmpty) return const SizedBox.shrink();
     final state = vm.appliedFilters;
     final colors = context.appColors;
@@ -123,20 +140,17 @@ class _ShopViewState extends State<ShopView> {
         padding: EdgeInsets.only(bottom: r.space(5)),
         child: Row(
           children: [
-            AllFiltersChipButtonWidget(
+            BtnFilters(
               title: 'فیلتر',
               badgeCount: state.activeFilterGroupsCount,
               icon: Icons.tune_rounded,
-              onTap: () => _openFullFilter(context),
+              onTap: () {
+                final dialog = AllFilter(viewModel: vm);
+                dialog.show(context);
+              },
             ),
             Expanded(
-              child: Column(
-                children: [
-                  _buildPrimaryFilters(context),
-                  SizedBox(height: r.space(5)),
-                  _buildAttributeFilters(context),
-                ],
-              ),
+              child: Column(spacing: r.space(5), children: [primaryFilters(context), attributeFilters(context)]),
             ),
           ],
         ),
@@ -144,7 +158,7 @@ class _ShopViewState extends State<ShopView> {
     );
   }
 
-  Widget _buildPrimaryFilters(BuildContext context) {
+  Widget primaryFilters(BuildContext context) {
     final state = vm.appliedFilters;
     final r = context.responsive;
 
@@ -154,7 +168,12 @@ class _ShopViewState extends State<ShopView> {
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: r.space(10)),
         children: [
-          FilterChipButtonWidget(title: vm.sortChipTitle(state), active: state.hasNonDefaultSort, icon: Icons.sort_rounded, onTap: () => sortSheet(context, vm)),
+          FilterChipButtonWidget(
+            title: vm.sortChipTitle(state),
+            active: state.hasNonDefaultSort,
+            icon: Icons.sort_rounded,
+            onTap: () => sortSheet(context, vm),
+          ),
           FilterChipButtonWidget(
             title: vm.categoryChipTitle(state),
             active: state.categoryIds.isNotEmpty,
@@ -173,7 +192,7 @@ class _ShopViewState extends State<ShopView> {
     );
   }
 
-  Widget _buildAttributeFilters(BuildContext context) {
+  Widget attributeFilters(BuildContext context) {
     final state = vm.appliedFilters;
     final r = context.responsive;
 
@@ -199,7 +218,7 @@ class _ShopViewState extends State<ShopView> {
     );
   }
 
-  Widget _buildResultHeader(BuildContext context) {
+  Widget productsListHeader(BuildContext context) {
     final colors = context.appColors;
     final r = context.responsive;
 
@@ -207,35 +226,24 @@ class _ShopViewState extends State<ShopView> {
       color: colors.surface,
       padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(18), r.pageHorizontalPadding, r.space(12)),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          AppText.titleSmall('${AppFunction.faDigit(vm.productCount)} کالا', fontWeight: FontWeight.w700, color: colors.textPrimary),
-          if (vm.isRefreshing) ...[
-            SizedBox(width: r.space(10)),
-            SizedBox(width: r.icon(16), height: r.icon(16), child: const CircularProgressIndicator(strokeWidth: 2)),
-          ],
+          Row(
+            spacing: r.space(10),
+            children: [
+              AppText.titleSmall('${AppFunction.faDigit(vm.productCount)} کالا', fontWeight: FontWeight.w700, color: colors.textPrimary),
+              if (vm.isRefreshing)
+                SizedBox(
+                  width: r.space(20),
+                  height: r.space(20),
+                  child: const CircularProgressIndicator(strokeWidth: 2.5),
+                ),
+            ],
+          ),
+          IconButton(onPressed: () => setState(() => isGridView = !isGridView), icon: Icon(isGridView ? Icons.format_list_bulleted : Icons.grid_view)),
         ],
       ),
     );
-  }
-
-  Future<void> _openFullFilter(BuildContext context) async {
-    vm.beginPreview();
-    await showGeneralDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      barrierLabel: 'فیلترها',
-      barrierColor: context.appColors.overlay,
-      transitionDuration: const Duration(milliseconds: 330),
-      pageBuilder: (context, animation, secondaryAnimation) => FullFilterDialog(viewModel: vm),
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
-        return FadeTransition(
-          opacity: curved,
-          child: SlideTransition(position: Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(curved), child: child),
-        );
-      },
-    );
-    vm.cancelPreview();
   }
 }
 
@@ -261,7 +269,9 @@ class PriceLabel extends StatelessWidget {
         children: [
           AppText.bodySmall(label, color: colors.textMuted),
           const Spacer(),
-          Flexible(child: AppText.bodySmall('${AppFunction.faPrice(value)} تومان', overflow: TextOverflow.ellipsis, fontWeight: FontWeight.w700)),
+          Flexible(
+            child: AppText.bodySmall('${AppFunction.faPrice(value)} تومان', overflow: TextOverflow.ellipsis, fontWeight: FontWeight.w700),
+          ),
         ],
       ),
     );
@@ -289,7 +299,10 @@ class _ErrorState extends StatelessWidget {
             SizedBox(height: r.space(14)),
             AppText.bodyMedium(message, textAlign: TextAlign.center, height: 1.6, color: colors.textSecondary),
             SizedBox(height: r.space(16)),
-            SizedBox(width: r.percentWidth(0.45, min: 150, max: 220), child: AppButton(label: 'تلاش دوباره', onPressed: onRetry)),
+            SizedBox(
+              width: r.percentWidth(0.45, min: 150, max: 220),
+              child: AppButton(label: 'تلاش دوباره', onPressed: onRetry),
+            ),
           ],
         ),
       ),

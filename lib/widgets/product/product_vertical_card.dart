@@ -108,7 +108,13 @@ class ProductVerticalCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (product.averageRating != '0.0') Positioned(top: imageHeight - 10, child: rating(context)),
+                  Positioned(
+                    top: imageHeight - 10,
+                    child: Row(
+                      spacing: r.space(5),
+                      children: [if (product.averageRating != '0.0') rating(context), if (product.colors.isNotEmpty) attributeColor(context)],
+                    ),
+                  ),
                 ],
               );
             },
@@ -145,19 +151,58 @@ class ProductVerticalCard extends StatelessWidget {
   }
 
   Widget rating(BuildContext context) {
+    final r = context.responsive;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: r.space(5), vertical: r.space(2)),
       decoration: BoxDecoration(
         border: Border.all(color: context.appColors.border),
         borderRadius: BorderRadius.all(Radius.circular(100)),
         color: context.appColors.surface,
       ),
-      child: Row(
-        spacing: 5,
-        children: [
-          Icon(Icons.star_rounded, color: AppColors.star, size: context.responsive.icon(15)),
-          AppText.labelSmall(product.averageRating.toPersianDigit(), height: 1),
-        ],
+      child: SizedBox(
+        height: r.space(12),
+        child: Row(
+          spacing: 3,
+          children: [
+            Icon(Icons.star_rounded, color: AppColors.star, size: r.space(12)),
+            AppText.labelSmall(product.averageRating.toPersianDigit(), height: 1),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget attributeColor(BuildContext context) {
+    final r = context.responsive;
+    final productColors = product.colors.take(4).toList();
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: r.space(5), vertical: r.space(2)),
+      decoration: BoxDecoration(
+        border: Border.all(color: context.appColors.border),
+        borderRadius: BorderRadius.circular(100),
+        color: context.appColors.surface,
+      ),
+      child: SizedBox(
+        width: r.space(productColors.length * 9),
+        height: r.space(12),
+        child: Stack(
+          children: [
+            for (int i = 0; i < productColors.length; i++)
+              Positioned(
+                right: i * r.space(8),
+                child: Container(
+                  width: r.space(12),
+                  height: r.space(12),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.hex(productColors[i]),
+                    border: Border.all(color: context.appColors.border),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

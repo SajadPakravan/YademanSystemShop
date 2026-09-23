@@ -12,16 +12,39 @@ import 'package:yad_sys/widgets/bottom_sheet/filter_sheet_widget.dart';
 import 'package:yad_sys/widgets/cards/color_options_cards_widget.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
-class FullFilterDialog extends StatefulWidget {
-  const FullFilterDialog({super.key, required this.viewModel});
+class AllFilter extends StatefulWidget {
+  const AllFilter({super.key, required this.viewModel});
 
   final ShopViewModel viewModel;
 
   @override
-  State<FullFilterDialog> createState() => _FullFilterDialogState();
+  State<AllFilter> createState() => _AllFilterState();
+
+  Future<void> show(BuildContext context) async {
+    viewModel.beginPreview();
+    await showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'فیلترها',
+      barrierColor: context.appColors.overlay,
+      transitionDuration: const Duration(milliseconds: 330),
+      pageBuilder: (context, animation, secondaryAnimation) => AllFilter(viewModel: viewModel),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+    viewModel.cancelPreview();
+  }
 }
 
-class _FullFilterDialogState extends State<FullFilterDialog> {
+class _AllFilterState extends State<AllFilter> {
   late ShopFilterState draft;
 
   ShopViewModel get vm => widget.viewModel;
@@ -78,7 +101,12 @@ class _FullFilterDialogState extends State<FullFilterDialog> {
               ),
               Expanded(
                 child: ListView(
-                  padding: EdgeInsets.fromLTRB(context.responsive.pageHorizontalPadding, context.responsive.space(12), context.responsive.pageHorizontalPadding, context.responsive.space(20)),
+                  padding: EdgeInsets.fromLTRB(
+                    context.responsive.pageHorizontalPadding,
+                    context.responsive.space(12),
+                    context.responsive.pageHorizontalPadding,
+                    context.responsive.space(20),
+                  ),
                   children: [
                     _FullFilterSection(
                       title: 'مرتب‌سازی',
@@ -86,19 +114,19 @@ class _FullFilterDialogState extends State<FullFilterDialog> {
                       child: Column(
                         children: ShopSortOption.values
                             .map((option) {
-                          final selected = ShopSortOption.resolve(orderby: draft.orderby, order: draft.order, onSale: draft.onSale).title == option.title;
-                          return RadioListTile<String>(
-                            value: option.title,
-                            groupValue: selected ? option.title : null,
-                            title: AppText.bodyMedium(option.title),
-                            onChanged: (_) {
-                              draft.orderby = option.orderby;
-                              draft.order = option.order;
-                              draft.onSale = option.onSale;
-                              _changed();
-                            },
-                          );
-                        })
+                              final selected = ShopSortOption.resolve(orderby: draft.orderby, order: draft.order, onSale: draft.onSale).title == option.title;
+                              return RadioListTile<String>(
+                                value: option.title,
+                                groupValue: selected ? option.title : null,
+                                title: AppText.bodyMedium(option.title),
+                                onChanged: (_) {
+                                  draft.orderby = option.orderby;
+                                  draft.order = option.order;
+                                  draft.onSale = option.onSale;
+                                  _changed();
+                                },
+                              );
+                            })
                             .toList(growable: false),
                       ),
                     ),
@@ -125,22 +153,22 @@ class _FullFilterDialogState extends State<FullFilterDialog> {
                       child: Column(
                         children: categories
                             .map((row) {
-                          return CheckboxListTile(
-                            value: draft.categoryIds.contains(row.category.id),
-                            controlAffinity: ListTileControlAffinity.leading,
-                            contentPadding: EdgeInsets.only(right: row.depth * 18.0, left: 4),
-                            dense: true,
-                            title: AppText.bodyMedium(row.category.name),
-                            onChanged: (value) {
-                              if (value == true) {
-                                draft.categoryIds.add(row.category.id);
-                              } else {
-                                draft.categoryIds.remove(row.category.id);
-                              }
-                              _changed();
-                            },
-                          );
-                        })
+                              return CheckboxListTile(
+                                value: draft.categoryIds.contains(row.category.id),
+                                controlAffinity: ListTileControlAffinity.leading,
+                                contentPadding: EdgeInsets.only(right: row.depth * 18.0, left: 4),
+                                dense: true,
+                                title: AppText.bodyMedium(row.category.name),
+                                onChanged: (value) {
+                                  if (value == true) {
+                                    draft.categoryIds.add(row.category.id);
+                                  } else {
+                                    draft.categoryIds.remove(row.category.id);
+                                  }
+                                  _changed();
+                                },
+                              );
+                            })
                             .toList(growable: false),
                       ),
                     ),
@@ -150,22 +178,24 @@ class _FullFilterDialogState extends State<FullFilterDialog> {
                       child: Column(
                         children: vm.filters.brands
                             .map((brand) {
-                          return CheckboxListTile(
-                            value: draft.brandIds.contains(brand.id),
-                            controlAffinity: ListTileControlAffinity.leading,
-                            dense: true,
-                            title: AppText.bodyMedium(brand.name),
-                            subtitle: brand.count > 0 ? AppText.bodySmall('${AppFunction.faDigit(brand.count)} کالا', color: context.appColors.textMuted) : null,
-                            onChanged: (value) {
-                              if (value == true) {
-                                draft.brandIds.add(brand.id);
-                              } else {
-                                draft.brandIds.remove(brand.id);
-                              }
-                              _changed();
-                            },
-                          );
-                        })
+                              return CheckboxListTile(
+                                value: draft.brandIds.contains(brand.id),
+                                controlAffinity: ListTileControlAffinity.leading,
+                                dense: true,
+                                title: AppText.bodyMedium(brand.name),
+                                subtitle: brand.count > 0
+                                    ? AppText.bodySmall('${AppFunction.faDigit(brand.count)} کالا', color: context.appColors.textMuted)
+                                    : null,
+                                onChanged: (value) {
+                                  if (value == true) {
+                                    draft.brandIds.add(brand.id);
+                                  } else {
+                                    draft.brandIds.remove(brand.id);
+                                  }
+                                  _changed();
+                                },
+                              );
+                            })
                             .toList(growable: false),
                       ),
                     ),
@@ -176,29 +206,29 @@ class _FullFilterDialogState extends State<FullFilterDialog> {
                         subtitle: selected.isEmpty ? 'همه' : '${AppFunction.faDigit(selected.length)} مورد انتخاب شده',
                         child: isColorAttribute(attribute)
                             ? ColorOptionsCardsWidget(
-                          options: attribute.options,
-                          selectedIds: selected,
-                          onToggle: (option) {
-                            toggleId(selected, option.id);
-                            _changed();
-                          },
-                        )
+                                options: attribute.options,
+                                selectedIds: selected,
+                                onToggle: (option) {
+                                  toggleId(selected, option.id);
+                                  _changed();
+                                },
+                              )
                             : Column(
-                          children: attribute.options
-                              .map((option) {
-                            return CheckboxListTile(
-                              value: selected.contains(option.id),
-                              controlAffinity: ListTileControlAffinity.leading,
-                              dense: true,
-                              title: AppText.bodyMedium(option.name),
-                              onChanged: (_) {
-                                toggleId(selected, option.id);
-                                _changed();
-                              },
-                            );
-                          })
-                              .toList(growable: false),
-                        ),
+                                children: attribute.options
+                                    .map((option) {
+                                      return CheckboxListTile(
+                                        value: selected.contains(option.id),
+                                        controlAffinity: ListTileControlAffinity.leading,
+                                        dense: true,
+                                        title: AppText.bodyMedium(option.name),
+                                        onChanged: (_) {
+                                          toggleId(selected, option.id);
+                                          _changed();
+                                        },
+                                      );
+                                    })
+                                    .toList(growable: false),
+                              ),
                       );
                     }),
                   ],

@@ -47,7 +47,7 @@ class _SearchViewState extends State<SearchView> {
       child: Scaffold(
         body: SafeArea(
           child: Column(
-            children: <Widget>[
+            children: [
               _SearchHeader(
                 controller: _controller,
                 focusNode: _focusNode,
@@ -77,7 +77,10 @@ class _SearchViewState extends State<SearchView> {
                           recentSearches: vm.recentSearches,
                           onClearRecent: vm.clearRecentSearches,
                           onRecentTap: (value) {
-                            _controller.value = TextEditingValue(text: value, selection: TextSelection.collapsed(offset: value.length));
+                            _controller.value = TextEditingValue(
+                              text: value,
+                              selection: TextSelection.collapsed(offset: value.length),
+                            );
                             vm.useRecent(value);
                             _focusNode.requestFocus();
                           },
@@ -140,8 +143,11 @@ class _SearchHeader extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.all(r.space(10)),
       child: Row(
-        children: <Widget>[
-          IconButton(onPressed: onBack, icon: Icon(Icons.arrow_forward_rounded, size: r.icon(28), color: colors.textPrimary)),
+        children: [
+          IconButton(
+            onPressed: onBack,
+            icon: Icon(Icons.arrow_back_rounded, size: r.icon(28), color: colors.textPrimary),
+          ),
           SizedBox(width: r.space(4)),
           Expanded(
             child: ValueListenableBuilder<TextEditingValue>(
@@ -156,12 +162,29 @@ class _SearchHeader extends StatelessWidget {
                   onSubmitted: (_) => onSubmit(),
                   decoration: InputDecoration(
                     hintText: 'جستجو در همه کالاها',
-                    prefixIcon: IconButton(onPressed: loading ? null : onSubmit, icon: Icon(Icons.search_rounded, color: colors.textSecondary)),
-                    suffixIcon: value.text.isEmpty ? null : IconButton(onPressed: onClear, icon: Icon(Icons.close_rounded, color: colors.textPrimary)),
+                    prefixIcon: IconButton(
+                      onPressed: loading ? null : onSubmit,
+                      icon: Icon(Icons.search_rounded, color: colors.textSecondary),
+                    ),
+                    suffixIcon: value.text.isEmpty
+                        ? null
+                        : IconButton(
+                            onPressed: onClear,
+                            icon: Icon(Icons.close_rounded, color: colors.textPrimary),
+                          ),
                     contentPadding: EdgeInsets.symmetric(horizontal: r.space(14), vertical: r.space(12)),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(r.radius(28)), borderSide: BorderSide(color: colors.border)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(r.radius(28)), borderSide: BorderSide(color: colors.border)),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(r.radius(28)), borderSide: const BorderSide(color: AppColors.primary, width: 1.3)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(r.radius(28)),
+                      borderSide: BorderSide(color: colors.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(r.radius(28)),
+                      borderSide: BorderSide(color: colors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(r.radius(28)),
+                      borderSide: const BorderSide(color: AppColors.primary, width: 1.3),
+                    ),
                   ),
                 );
               },
@@ -188,12 +211,15 @@ class _SearchIdle extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(18), r.pageHorizontalPadding, r.space(30)),
       children: <Widget>[
-        if (recentSearches.isNotEmpty) ...<Widget>[
+        if (recentSearches.isNotEmpty) ...[
           Row(
             children: <Widget>[
               const AppText.titleSmall('جستجوهای اخیر', fontWeight: FontWeight.w700),
               const Spacer(),
-              TextButton(onPressed: onClearRecent, child: AppText.labelMedium('پاک کردن', color: colors.textSecondary)),
+              TextButton(
+                onPressed: onClearRecent,
+                child: AppText.labelMedium('پاک کردن', color: colors.textSecondary),
+              ),
             ],
           ),
           SizedBox(height: r.space(8)),
@@ -233,7 +259,7 @@ class _SearchResults extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.only(bottom: r.space(28)),
       children: <Widget>[
-        if (viewModel.categories.isNotEmpty) ...<Widget>[
+        if (viewModel.categories.isNotEmpty) ...[
           const _SectionTitle(title: 'دسته‌بندی‌ها'),
           ...viewModel.categories.map(
             (item) => ListTile(
@@ -246,14 +272,18 @@ class _SearchResults extends StatelessWidget {
             ),
           ),
         ],
-        if (viewModel.brands.isNotEmpty) ...<Widget>[
+        if (viewModel.brands.isNotEmpty) ...[
           const _SectionTitle(title: 'برندها'),
           ...viewModel.brands.map(
             (item) => ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding),
               leading: item.image.isEmpty
                   ? Icon(Icons.sell_outlined, color: colors.textSecondary)
-                  : SizedBox(width: r.icon(38), height: r.icon(38), child: CachedNetworkImage(imageUrl: item.image, fit: BoxFit.contain)),
+                  : SizedBox(
+                      width: r.icon(38),
+                      height: r.icon(38),
+                      child: CachedNetworkImage(imageUrl: item.image, fit: BoxFit.contain),
+                    ),
               title: AppText.bodyMedium(item.name, fontWeight: FontWeight.w600),
               subtitle: const AppText.bodySmall('برند', color: AppColors.primary),
               trailing: const Icon(Icons.chevron_left_rounded),
@@ -261,7 +291,7 @@ class _SearchResults extends StatelessWidget {
             ),
           ),
         ],
-        if (viewModel.products.isNotEmpty) ...<Widget>[
+        if (viewModel.products.isNotEmpty) ...[
           const _SectionTitle(title: 'محصولات مرتبط'),
           ...viewModel.products.map((item) => _ProductSuggestion(product: item)),
         ],
@@ -272,6 +302,7 @@ class _SearchResults extends StatelessWidget {
 
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle({required this.title});
+
   final String title;
 
   @override
@@ -289,16 +320,14 @@ class _SectionTitle extends StatelessWidget {
 
 class _ProductSuggestion extends StatelessWidget {
   const _ProductSuggestion({required this.product});
+
   final ProductCardModel product;
 
   @override
   Widget build(BuildContext context) {
     final r = context.responsive;
     final colors = context.appColors;
-    final subtitleParts = <String>[
-      if (product.categories.isNotEmpty) product.categories.first.name,
-      if (product.brand.name.isNotEmpty) product.brand.name,
-    ];
+    final subtitleParts = <String>[if (product.categories.isNotEmpty) product.categories.first.name, if (product.brand.name.isNotEmpty) product.brand.name];
 
     return ListTile(
       onTap: () => toProduct(id: product.id),
@@ -313,7 +342,9 @@ class _ProductSuggestion extends StatelessWidget {
         ),
       ),
       title: AppText.bodyMedium(product.name, maxLines: 2, overflow: TextOverflow.ellipsis, fontWeight: FontWeight.w600),
-      subtitle: subtitleParts.isEmpty ? null : AppText.bodySmall(subtitleParts.join(' • '), maxLines: 1, overflow: TextOverflow.ellipsis, color: AppColors.primary),
+      subtitle: subtitleParts.isEmpty
+          ? null
+          : AppText.bodySmall(subtitleParts.join(' • '), maxLines: 1, overflow: TextOverflow.ellipsis, color: AppColors.primary),
       trailing: const Icon(Icons.chevron_left_rounded),
     );
   }

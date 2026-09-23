@@ -70,6 +70,19 @@ class AppColors {
 
   // Backward-compatible names used by existing widgets.
   static const Color activeChipBackground = lightChipActive;
+
+  static Color hex(String color) {
+    final hex = color.replaceFirst('#', '');
+    if (hex.length == 6) {
+      final value = int.tryParse('FF$hex', radix: 16);
+      if (value != null) return Color(value);
+    }
+    if (hex.length == 8) {
+      final value = int.tryParse(hex, radix: 16);
+      if (value != null) return Color(value);
+    }
+    return AppColors.neutralOption;
+  }
 }
 
 @immutable

@@ -4,8 +4,8 @@ import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
-class AllFiltersChipButtonWidget extends StatelessWidget {
-  const AllFiltersChipButtonWidget({super.key, required this.title, required this.onTap, this.badgeCount = 0, this.icon});
+class BtnFilters extends StatelessWidget {
+  const BtnFilters({super.key, required this.title, required this.onTap, this.badgeCount = 0, this.icon});
 
   final String title;
   final int badgeCount;
@@ -25,7 +25,6 @@ class AllFiltersChipButtonWidget extends StatelessWidget {
           borderRadius: BorderRadiusDirectional.only(topEnd: Radius.circular(r.radius(8)), bottomEnd: Radius.circular(r.radius(8))),
           child: InkWell(
             onTap: onTap,
-            // borderRadius: BorderRadiusDirectional.only(topEnd: Radius.circular(r.radius(8)), bottomEnd: Radius.circular(r.radius(8))),
             child: Container(
               height: r.space(95, min: 88, max: 108),
               padding: EdgeInsets.all(r.space(10)),

@@ -144,25 +144,12 @@ class ShopProductCard extends StatelessWidget {
             height: context.responsive.space(18),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _colorHex(color),
+              color: AppColors.hex(color),
               border: Border.all(color: context.appColors.border),
             ),
           );
         },
       ),
     );
-  }
-
-  Color _colorHex(String color) {
-    final hex = color.replaceFirst('#', '');
-    if (hex.length == 6) {
-      final value = int.tryParse('FF$hex', radix: 16);
-      if (value != null) return Color(value);
-    }
-    if (hex.length == 8) {
-      final value = int.tryParse(hex, radix: 16);
-      if (value != null) return Color(value);
-    }
-    return AppColors.neutralOption;
   }
 }

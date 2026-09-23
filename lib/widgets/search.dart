@@ -15,9 +15,7 @@ class Search extends StatelessWidget {
 
     return InkWell(
       borderRadius: BorderRadius.circular(r.radius(50)),
-      onTap: () {
-        Get.to(const SearchScreen(), transition: Transition.upToDown, duration: const Duration(milliseconds: 500));
-      },
+      onTap: () => Get.to(const SearchScreen(), transition: Transition.upToDown, duration: const Duration(milliseconds: 500)),
       child: Container(
         alignment: Alignment.centerRight,
         padding: EdgeInsets.symmetric(horizontal: r.space(12), vertical: r.space(9)),
