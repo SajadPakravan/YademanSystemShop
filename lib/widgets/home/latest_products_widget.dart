@@ -4,7 +4,7 @@ import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
 import 'package:yad_sys/widgets/cards/view_all_widget.dart';
-import 'package:yad_sys/widgets/product/product_horizontal_card.dart';
+import 'package:yad_sys/widgets/product/product_row_card.dart';
 
 class LatestProductsWidget extends StatelessWidget {
   const LatestProductsWidget({super.key, required this.section, required this.products});
@@ -28,7 +28,7 @@ class LatestProductsWidget extends StatelessWidget {
           children: [
             SizedBox(
               width: metrics.gridWidth * 1.2,
-              height: metrics.sectionHeight,
+              height: double.infinity,
               child: GridView.builder(
                 padding: EdgeInsets.symmetric(horizontal: metrics.horizontalPadding, vertical: metrics.verticalPadding),
                 physics: const NeverScrollableScrollPhysics(),
@@ -41,8 +41,7 @@ class LatestProductsWidget extends StatelessWidget {
                   crossAxisSpacing: metrics.spacing,
                   mainAxisExtent: metrics.cardWidth * 1.2,
                 ),
-                itemBuilder: (context, index) =>
-                    ProductHorizontalCard(product: products[index], rows: metrics.rows, length: products.length, index: index),
+                itemBuilder: (context, index) => ProductRowCard(product: products[index], rows: metrics.rows, length: products.length, index: index),
               ),
             ),
             if (viewAll != null) ...[

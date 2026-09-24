@@ -9,8 +9,11 @@ import 'package:yad_sys/widgets/dialogs/product_consulta.dart';
 import 'package:yad_sys/widgets/product/price_view_widget.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
-class ShopProductCard extends StatelessWidget {
-  const ShopProductCard({super.key, required this.product});
+class ShopProductRowCard extends StatelessWidget {
+  const ShopProductRowCard({
+    super.key,
+    required this.product,
+  });
 
   final ProductCardModel product;
 
@@ -36,29 +39,33 @@ class ShopProductCard extends StatelessWidget {
         onTap: () => toProduct(id: product.id),
         child: Container(
           height: cardHeight(),
-          padding: EdgeInsets.all(r.space(12)),
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: colors.divider)),
-          ),
+          padding: EdgeInsets.all(r.space(10)),
+          decoration: BoxDecoration(border: Border.all(color: colors.divider)),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            spacing: r.space(10),
             children: [
-              SizedBox(
-                width: r.percentWidth(0.33, min: 118, max: 160),
-                child: CachedNetworkImage(
-                  imageUrl: product.image,
-                  fit: BoxFit.contain,
-                  placeholder: (_, _) => const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))),
-                  errorWidget: (_, _, _) => Center(
-                    child: Icon(Icons.image_not_supported_outlined, size: r.icon(46), color: colors.textMuted),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(r.radius(8)),
+                clipBehavior: Clip.antiAlias,
+                child: SizedBox(
+                  width: r.percentWidth(0.28, min: 111, max: 160),
+                  height: r.percentWidth(0.28, min: 111, max: 160),
+                  child: CachedNetworkImage(
+                    imageUrl: product.image,
+                    fit: BoxFit.contain,
+                    placeholder: (_, _) => const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))),
+                    errorWidget: (_, _, _) => Center(
+                      child: Icon(Icons.image_not_supported_outlined, size: r.icon(46), color: colors.textMuted),
+                    ),
                   ),
                 ),
               ),
-              SizedBox(width: r.space(10)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  spacing: r.space(10),
                   children: [
                     if (product.discountPercent > 0)
                       Align(
@@ -89,25 +96,27 @@ class ShopProductCard extends StatelessWidget {
                         '${AppFunction.faDigit(product.stockQuantity)} عدد در انبار باقی مانده',
                         color: AppColors.accent,
                         fontWeight: FontWeight.w600,
-                      )
-                    else if (product.stockQuantity > 0)
-                      AppText.bodySmall('موجود در انبار', color: colors.textMuted),
-                    if (product.inquiry)
-                      InkWell(
-                        onTap: () => ProductConsulta.show(context: context, name: displayName, image: product.image),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(vertical: r.space(9), horizontal: r.space(10)),
-                          decoration: BoxDecoration(color: colors.inquiryBackground, borderRadius: BorderRadius.circular(r.radius(9))),
-                          child: AppText.labelMedium(
-                            'استعلام قیمت و موجودی',
-                            textAlign: TextAlign.center,
-                            color: colors.inquiryForeground,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      )
-                    else
-                      PriceViewWidget(product: product),
+                      ),
+                    Expanded(
+                      child: Align(
+                        alignment: AlignmentDirectional.bottomCenter,
+                        child: product.inquiry
+                            ? InkWell(
+                                onTap: () => ProductConsulta.show(context: context, name: displayName, image: product.image),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(vertical: r.space(9), horizontal: r.space(10)),
+                                  decoration: BoxDecoration(color: colors.inquiryBackground, borderRadius: BorderRadius.circular(r.radius(9))),
+                                  child: AppText.labelMedium(
+                                    'استعلام قیمت و موجودی',
+                                    textAlign: TextAlign.center,
+                                    color: colors.inquiryForeground,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              )
+                            : PriceViewWidget(product: product),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -132,16 +141,16 @@ class ShopProductCard extends StatelessWidget {
   Widget _colorBar(BuildContext context) {
     if (product.colors.isEmpty) return const SizedBox.shrink();
     return SizedBox(
-      height: context.responsive.space(20),
+      height: context.responsive.space(15),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: product.colors.length,
-        separatorBuilder: (_, _) => SizedBox(width: context.responsive.space(4)),
+        separatorBuilder: (_, _) => SizedBox(width: context.responsive.space(2)),
         itemBuilder: (context, index) {
           final color = product.colors[index];
           return Container(
-            width: context.responsive.space(18),
-            height: context.responsive.space(18),
+            width: context.responsive.space(15),
+            height: context.responsive.space(15),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.hex(color),

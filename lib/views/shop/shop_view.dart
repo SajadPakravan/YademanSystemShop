@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:yad_sys/models/products_list_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
 import 'package:yad_sys/views/shop/filter/full_filter_dialog.dart';
+import 'package:yad_sys/views/shop/shop_products_view.dart';
 import 'package:yad_sys/widgets/bottom_sheet/filter_sheet_widget.dart';
 import 'package:yad_sys/widgets/buttons/btn_filters.dart';
 import 'package:yad_sys/widgets/buttons/app_button.dart';
 import 'package:yad_sys/widgets/buttons/filter_chip_button_widget.dart';
-import 'package:yad_sys/widgets/product/product_vertical_card.dart';
-import 'package:yad_sys/widgets/product/shop_product_card.dart';
 import 'package:yad_sys/widgets/search.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
@@ -27,7 +27,7 @@ class _ShopViewState extends State<ShopView> {
   final ScrollController _scrollController = ScrollController();
 
   ShopViewModel get vm => widget.viewModel;
-  bool isGridView = false;
+  bool isGrid = false;
 
   @override
   void initState() {
@@ -66,13 +66,17 @@ class _ShopViewState extends State<ShopView> {
               titleSpacing: r.space(10),
               collapsedHeight: r.space(80, min: 74, max: 88),
               title: const Search(),
-              bottom: vm.productsLst.isNotEmpty
-                  ? PreferredSize(preferredSize: Size.fromHeight(r.space(80, min: 74, max: 90)), child: filtersArea(context))
+              bottom: vm.initialized
+                  ? PreferredSize(
+                      preferredSize: Size.fromHeight(r.space(120, min: 74, max: 130)),
+                      child: Column(children: [filtersArea(context), productsListHeader(context)]),
+                    )
                   : null,
             ),
           ],
           body: RefreshIndicator(
             onRefresh: vm.refresh,
+            backgroundColor: Colors.white,
             child: CustomScrollView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
@@ -87,26 +91,7 @@ class _ShopViewState extends State<ShopView> {
                 else if (vm.productsLst.isEmpty)
                   const SliverFillRemaining(hasScrollBody: false, child: _EmptyState())
                 else ...[
-                  SliverToBoxAdapter(child: productsListHeader(context)),
-                  isGridView
-                      ? SliverGrid.builder(
-                          key: const ValueKey("grid"),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: r.space(5),
-                            mainAxisSpacing: r.space(5),
-                            childAspectRatio: 0.6,
-                          ),
-                          itemCount: vm.productsLst.length,
-                          itemBuilder: (context, index) => ProductVerticalCard(product: vm.productsLst[index], length: vm.productsLst.length, index: index),
-                        )
-                      : SliverList(
-                          key: const ValueKey("list"),
-                          delegate: SliverChildBuilderDelegate(
-                            childCount: vm.productsLst.length,
-                            (context, index) => ShopProductCard(product: vm.productsLst[index]),
-                          ),
-                        ),
+                  ShopProductsView(products: vm.productsLst, isGrid: isGrid),
                   SliverToBoxAdapter(
                     child: AnimatedSize(
                       duration: const Duration(milliseconds: 200),
@@ -223,24 +208,21 @@ class _ShopViewState extends State<ShopView> {
     final r = context.responsive;
 
     return Container(
-      color: colors.surface,
-      padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(18), r.pageHorizontalPadding, r.space(12)),
+      padding: EdgeInsets.symmetric(horizontal: r.space(10)),
+      decoration: BoxDecoration(color: colors.surface, borderRadius: BorderRadius.circular(100)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             spacing: r.space(10),
             children: [
-              AppText.titleSmall('${AppFunction.faDigit(vm.productCount)} کالا', fontWeight: FontWeight.w700, color: colors.textPrimary),
-              if (vm.isRefreshing)
-                SizedBox(
-                  width: r.space(20),
-                  height: r.space(20),
-                  child: const CircularProgressIndicator(strokeWidth: 2.5),
-                ),
+              vm.isRefreshing
+                  ? LoadingAnimationWidget.flickr(leftDotColor: Colors.red, rightDotColor: Colors.blue, size: r.space(20))
+                  : AppText.titleSmall(AppFunction.faDigit(vm.productCount), fontWeight: FontWeight.w700, color: colors.textPrimary),
+              AppText.titleSmall('کالا', fontWeight: FontWeight.w700, color: colors.textPrimary),
             ],
           ),
-          IconButton(onPressed: () => setState(() => isGridView = !isGridView), icon: Icon(isGridView ? Icons.format_list_bulleted : Icons.grid_view)),
+          IconButton(onPressed: () => setState(() => isGrid = !isGrid), icon: Icon(isGrid ? Icons.format_list_bulleted : Icons.grid_view)),
         ],
       ),
     );

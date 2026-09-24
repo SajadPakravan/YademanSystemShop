@@ -10,8 +10,8 @@ import 'package:yad_sys/widgets/dialogs/product_consulta.dart';
 import 'package:yad_sys/widgets/product/price_view_widget.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
-class ProductHorizontalCard extends StatelessWidget {
-  const ProductHorizontalCard({super.key, required this.product, required this.rows, required this.length, required this.index});
+class ProductRowCard extends StatelessWidget {
+  const ProductRowCard({super.key, required this.product, required this.rows, required this.length, required this.index});
 
   final ProductCardModel product;
   final int rows;

@@ -6,7 +6,6 @@ import 'package:yad_sys/models/category_item_model.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
-import 'package:yad_sys/tools/section_item_action_handler.dart';
 import 'package:yad_sys/widgets/home/section_header.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
@@ -94,7 +93,7 @@ class _CategoryCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         borderRadius: BorderRadius.circular(r.radius(14)),
-        onTap: () => SectionItemActionHandler.handle(context: context, type: 'category', title: item.name, destinationId: item.id),
+        // onTap: () => SectionItemActionHandler.handle(context: context, type: 'category', title: item.name, destinationId: item.id),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: r.space(3), vertical: verticalPadding),
           child: Column(

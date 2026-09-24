@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
-import 'package:yad_sys/tools/section_action_handler.dart';
 import 'package:yad_sys/widgets/cards/view_all_widget.dart';
 import 'package:yad_sys/widgets/home/section_header.dart';
 import 'package:yad_sys/widgets/post/post_horizontal_card_widget.dart';

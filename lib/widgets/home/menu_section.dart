@@ -4,7 +4,6 @@ import 'package:yad_sys/models/image_item_model.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
-import 'package:yad_sys/tools/section_action_handler.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class MenuSection extends StatelessWidget {

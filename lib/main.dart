@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
@@ -13,9 +14,11 @@ import 'package:yad_sys/tools/app_texts.dart';
 import 'package:yad_sys/view_models/categories/categories_view_model.dart';
 import 'package:yad_sys/view_models/home/home_view_model.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
+import 'package:device_preview/device_preview.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  DevicePreview.enable(enabled: kDebugMode);
+  // WidgetsFlutterBinding.ensureInitialized();
   final directory = await getApplicationDocumentsDirectory();
   await Hive.initFlutter(directory.path);
   Hive.registerAdapter(CartModelAdapter());

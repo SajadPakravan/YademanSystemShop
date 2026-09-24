@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:yad_sys/models/image_item_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
-import 'package:yad_sys/tools/section_action_handler.dart';
 
 class ImageSlider extends StatefulWidget {
   const ImageSlider({super.key, required this.currentIndex, required this.items});

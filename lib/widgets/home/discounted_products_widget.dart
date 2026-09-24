@@ -6,7 +6,7 @@ import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
 import 'package:yad_sys/widgets/cards/view_all_widget.dart';
-import 'package:yad_sys/widgets/product/product_vertical_card.dart';
+import 'package:yad_sys/widgets/product/product_column_card.dart';
 
 class DiscountedProductsWidget extends StatefulWidget {
   const DiscountedProductsWidget({super.key, required this.section, required this.products});
@@ -75,8 +75,8 @@ class _DiscountedProductsWidgetState extends State<DiscountedProductsWidget> {
             itemCount: itemCount,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: metrics.rows,
-              mainAxisSpacing: metrics.spacing,
-              crossAxisSpacing: metrics.spacing,
+              mainAxisSpacing: metrics.spacing - 2,
+              crossAxisSpacing: metrics.spacing - 2,
               mainAxisExtent: metrics.cardWidth,
             ),
             itemBuilder: (context, index) {
@@ -84,7 +84,7 @@ class _DiscountedProductsWidgetState extends State<DiscountedProductsWidget> {
 
               final contentIndex = index - logoSpacerCount;
               if (contentIndex < widget.products.length) {
-                return ProductVerticalCard(product: widget.products[contentIndex], rows: metrics.rows, length: widget.products.length, index: contentIndex);
+                return ProductColumnCard(product: widget.products[contentIndex], rows: metrics.rows, length: widget.products.length, index: contentIndex);
               }
 
               final viewAll = widget.section.viewAll!;

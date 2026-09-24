@@ -4,7 +4,6 @@ import 'package:yad_sys/models/brand_model.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
-import 'package:yad_sys/tools/section_item_action_handler.dart';
 import 'package:yad_sys/widgets/home/section_header.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
@@ -67,7 +66,7 @@ class _BrandCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(r.cardRadius),
       child: InkWell(
         borderRadius: BorderRadius.circular(r.cardRadius),
-        onTap: () => SectionItemActionHandler.handle(context: context, type: 'brand', title: item.name, destinationId: item.id),
+        // onTap: () => SectionItemActionHandler.handle(context: context, type: 'brand', title: item.name, destinationId: item.id),
         child: Container(
           padding: EdgeInsets.all(r.space(10)),
           decoration: BoxDecoration(border: Border.all(color: colors.border), borderRadius: BorderRadius.circular(r.cardRadius)),

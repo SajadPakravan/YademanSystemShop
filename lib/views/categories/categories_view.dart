@@ -99,7 +99,7 @@ class CategoriesView extends StatelessWidget {
           final imageUrl = category.image?.src ?? '';
           return InkWell(
             borderRadius: BorderRadius.circular(r.cardRadius),
-            onTap: () => appFun.onTapShowAll(title: category.name ?? '', category: category.id.toString()),
+            // onTap: () => appFun.onTapShowAll(title: category.name ?? '', category: category.id.toString()),
             child: Column(
               children: [
                 SizedBox(
@@ -155,7 +155,7 @@ class CategoriesView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(r.cardRadius),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(r.cardRadius),
-                      onTap: () => appFun.onTapShowAll(title: category.name ?? '', category: category.id.toString()),
+                      // onTap: () => appFun.onTapShowAll(title: category.name ?? '', category: category.id.toString()),
                       child: Padding(
                         padding: EdgeInsets.all(r.space(9)),
                         child: Column(

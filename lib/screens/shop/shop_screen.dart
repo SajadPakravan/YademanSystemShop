@@ -14,7 +14,10 @@ class _ShopScreenState extends State<ShopScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ShopViewModel>().loadInitial();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<ShopViewModel>().loadInitial();
+    });
   }
 
   @override

@@ -4,7 +4,7 @@ import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
 import 'package:yad_sys/widgets/cards/view_all_widget.dart';
-import 'package:yad_sys/widgets/product/product_vertical_card.dart';
+import 'package:yad_sys/widgets/product/product_column_card.dart';
 
 class ProductCarousel extends StatelessWidget {
   const ProductCarousel({super.key, required this.section, required this.products});
@@ -42,7 +42,7 @@ class ProductCarousel extends StatelessWidget {
                   crossAxisSpacing: metrics.spacing,
                   mainAxisExtent: metrics.cardWidth,
                 ),
-                itemBuilder: (context, index) => ProductVerticalCard(
+                itemBuilder: (context, index) => ProductColumnCard(
                   product: products[index],
                   rows: metrics.rows,
                   length: products.length,

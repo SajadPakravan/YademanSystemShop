@@ -11,8 +11,8 @@ import 'package:yad_sys/widgets/dialogs/product_consulta.dart';
 import 'package:yad_sys/widgets/product/price_view_widget.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
-class ProductVerticalCard extends StatelessWidget {
-  const ProductVerticalCard({super.key, required this.product, this.rows = 1, required this.length, required this.index, this.onTap});
+class ProductColumnCard extends StatelessWidget {
+  const ProductColumnCard({super.key, required this.product, this.rows = 1, required this.length, required this.index, this.onTap});
 
   final ProductCardModel product;
   final int rows;
