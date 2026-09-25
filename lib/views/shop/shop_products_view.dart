@@ -22,11 +22,11 @@ class ShopProductsView extends StatelessWidget {
             crossAxisCount: r.width > 800 ? 3 : 2,
             crossAxisSpacing: r.space(5),
             mainAxisSpacing: r.space(5),
-            childAspectRatio: r.height < 900 ? 0.6 : 0.65 ,
+            childAspectRatio: r.height < 900 ? 0.6 : 0.65,
           ),
           itemCount: products.length,
           itemBuilder: (context, index) {
-            return ProductColumnCard(product: products[index], length: products.length, index: index);
+            return ProductColumnCard(product: products[index], length: products.length, index: index, simpleRadius: false);
           },
         ),
       );

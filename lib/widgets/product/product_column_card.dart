@@ -6,19 +6,21 @@ import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/product_card_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/widgets/dialogs/product_consulta.dart';
 import 'package:yad_sys/widgets/product/price_view_widget.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class ProductColumnCard extends StatelessWidget {
-  const ProductColumnCard({super.key, required this.product, this.rows = 1, required this.length, required this.index, this.onTap});
+  const ProductColumnCard({super.key, required this.product, this.rows = 1, required this.length, required this.index, this.onTap, this.simpleRadius = true});
 
   final ProductCardModel product;
   final int rows;
   final int length;
   final int index;
   final VoidCallback? onTap;
+  final bool simpleRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -27,16 +29,16 @@ class ProductColumnCard extends StatelessWidget {
 
     return Material(
       color: colors.surface,
-      borderRadius: _borderRadius,
+      borderRadius: AppFunction.borderRadius(simpleRadius, index, rows, length),
       child: InkWell(
-        borderRadius: _borderRadius,
+        borderRadius: AppFunction.borderRadius(simpleRadius, index, rows, length),
         onTap: onTap ?? () => toProduct(id: product.id),
         child: Container(
           padding: EdgeInsets.all(r.space(10)),
           decoration: BoxDecoration(
             color: colors.surface,
             border: Border.all(color: colors.border),
-            borderRadius: _borderRadius,
+            borderRadius: AppFunction.borderRadius(simpleRadius, index, rows, length),
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -54,10 +56,9 @@ class ProductColumnCard extends StatelessWidget {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(r.radius(8)),
                         clipBehavior: Clip.antiAlias,
-                        child: Container(
+                        child: SizedBox(
                           width: imageHeight,
                           height: imageHeight,
-                          color: Colors.red,
                           child: CachedNetworkImage(
                             imageUrl: product.image,
                             width: double.infinity,
@@ -123,27 +124,6 @@ class ProductColumnCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  BorderRadius get _borderRadius {
-    final i = index + 1;
-    if (length == 1) {
-      return const BorderRadius.all(Radius.circular(12));
-    }
-    if (rows > 1) {
-      if (i <= rows) {
-        if (i == 1) return const BorderRadius.only(topRight: Radius.circular(12));
-        if (rows - i == 0) return const BorderRadius.only(bottomRight: Radius.circular(12));
-      }
-      if (i >= length - (rows - 1)) {
-        if (i - (length - (rows - 1)) == 0) return const BorderRadius.only(topLeft: Radius.circular(12));
-        if (i == length) return const BorderRadius.only(bottomLeft: Radius.circular(12));
-      }
-    } else {
-      if (i == 1) return const BorderRadius.only(topRight: Radius.circular(12), bottomRight: Radius.circular(12));
-      if (i == length) return const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12));
-    }
-    return BorderRadius.zero;
   }
 
   String get _displayName {
