@@ -7,6 +7,7 @@ import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
 import 'package:yad_sys/views/shop/filter/brand_list_view.dart';
+import 'package:yad_sys/views/shop/filter/category_filter_tree_view.dart';
 import 'package:yad_sys/views/shop/filter/sheet_footer_view.dart';
 import 'package:yad_sys/views/shop/shop_view.dart';
 import 'package:yad_sys/widgets/cards/color_options_cards_widget.dart';
@@ -80,7 +81,6 @@ Future<void> sortSheet(BuildContext context, ShopViewModel viewModel) async {
 
 Future<void> categorySheet(BuildContext context, ShopViewModel viewModel) async {
   final draft = viewModel.appliedFilters.copy();
-  final rows = flattenCategories(viewModel.filters.categories);
   viewModel.beginPreview();
 
   await showModalBottomSheet<void>(
@@ -90,16 +90,22 @@ Future<void> categorySheet(BuildContext context, ShopViewModel viewModel) async 
     builder: (sheetContext) {
       return StatefulBuilder(
         builder: (context, setSheetState) {
+          final r = context.responsive;
+          final rootCount = viewModel.filters.categories.length;
+          final categoryContentHeight = math.min(r.height * 0.72, math.max(r.space(320), (rootCount + 1) * r.space(58)));
+
           return _FilterSheetShell(
             title: 'دسته‌بندی',
-            contentHeight: _adaptiveContentHeight(context, rows.length),
+            contentHeight: categoryContentHeight,
             footer: SheetFooterView(
               viewModel: viewModel,
               deleteEnabled: draft.categoryIds.isNotEmpty,
               onDelete: () async {
-                setSheetState(draft.categoryIds.clear);
+                setSheetState(() => draft.categoryIds.clear());
+
                 final ready = await viewModel.previewFiltersNow(draft);
                 if (!ready || !sheetContext.mounted) return;
+
                 viewModel.applyPreview(draft);
                 Navigator.pop(sheetContext);
               },
@@ -109,30 +115,12 @@ Future<void> categorySheet(BuildContext context, ShopViewModel viewModel) async 
                 Navigator.pop(sheetContext);
               },
             ),
-            child: ListView.separated(
-              padding: EdgeInsets.zero,
-              itemCount: rows.length,
-              separatorBuilder: (_, _) => const Divider(height: 1, indent: 16, endIndent: 16),
-              itemBuilder: (context, index) {
-                final row = rows[index];
-                final checked = draft.categoryIds.contains(row.category.id);
-                return CheckboxListTile(
-                  value: checked,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.only(right: 16.0 + (row.depth * 18), left: 16),
-                  title: AppText.bodyMedium(row.category.name, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  secondary: row.depth > 0 ? Icon(Icons.subdirectory_arrow_left_rounded, size: context.responsive.icon(17), color: context.appColors.textMuted) : null,
-                  onChanged: (value) {
-                    setSheetState(() {
-                      if (value == true) {
-                        draft.categoryIds.add(row.category.id);
-                      } else {
-                        draft.categoryIds.remove(row.category.id);
-                      }
-                    });
-                    viewModel.previewFilters(draft);
-                  },
-                );
+            child: CategoryFilterTreeView(
+              categories: viewModel.filters.categories,
+              selectedIds: draft.categoryIds,
+              onSelectionChanged: () {
+                setSheetState(() {});
+                viewModel.previewFilters(draft);
               },
             ),
           );
@@ -140,21 +128,8 @@ Future<void> categorySheet(BuildContext context, ShopViewModel viewModel) async 
       );
     },
   );
+
   viewModel.cancelPreview();
-}
-
-List<CategoryRowData> flattenCategories(List<ProductCategoryFilterModel> categories) {
-  final result = <CategoryRowData>[];
-
-  void add(List<ProductCategoryFilterModel> items, int depth) {
-    for (final item in items) {
-      result.add(CategoryRowData(item, depth));
-      add(item.children, depth + 1);
-    }
-  }
-
-  add(categories, 0);
-  return result;
 }
 
 Future<void> brandSheet(BuildContext context, ShopViewModel viewModel) async {

@@ -69,7 +69,12 @@ class _ShopViewState extends State<ShopView> {
               bottom: vm.initialized
                   ? PreferredSize(
                       preferredSize: Size.fromHeight(r.space(120, min: 74, max: 130)),
-                      child: Column(children: [filtersArea(context), productsListHeader(context)]),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.only(bottomRight: Radius.circular(30), bottomLeft: Radius.circular(30)),
+                        ),
+                        child: Column(children: [filtersArea(context), productsListHeader(context)]),
+                      ),
                     )
                   : null,
             ),
@@ -120,25 +125,18 @@ class _ShopViewState extends State<ShopView> {
 
     return Material(
       color: colors.surface,
-      elevation: 0,
-      child: Padding(
-        padding: EdgeInsets.only(bottom: r.space(5)),
-        child: Row(
-          children: [
-            BtnFilters(
-              title: 'فیلتر',
-              badgeCount: state.activeFilterGroupsCount,
-              icon: Icons.tune_rounded,
-              onTap: () {
-                final dialog = AllFilter(viewModel: vm);
-                dialog.show(context);
-              },
-            ),
-            Expanded(
-              child: Column(spacing: r.space(5), children: [primaryFilters(context), attributeFilters(context)]),
-            ),
-          ],
-        ),
+      child: Row(
+        children: [
+          BtnFilters(
+            title: 'فیلتر',
+            badgeCount: state.activeFilterGroupsCount,
+            icon: Icons.tune_rounded,
+            onTap: () => AllFilter(viewModel: vm).show(context),
+          ),
+          Expanded(
+            child: Column(spacing: r.space(5), children: [primaryFilters(context), attributeFilters(context)]),
+          ),
+        ],
       ),
     );
   }
@@ -207,9 +205,8 @@ class _ShopViewState extends State<ShopView> {
     final colors = context.appColors;
     final r = context.responsive;
 
-    return Container(
+    return Padding(
       padding: EdgeInsets.symmetric(horizontal: r.space(10)),
-      decoration: BoxDecoration(color: colors.surface, borderRadius: BorderRadius.circular(100)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

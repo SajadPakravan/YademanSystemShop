@@ -8,7 +8,14 @@ import 'package:yad_sys/view_models/shop/shop_view_model.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class SheetFooterView extends StatelessWidget {
-  const SheetFooterView({super.key, required this.viewModel, required this.deleteEnabled, required this.onDelete, required this.onApply, this.deleteLabel = 'حذف فیلتر'});
+  const SheetFooterView({
+    super.key,
+    required this.viewModel,
+    required this.deleteEnabled,
+    required this.onDelete,
+    required this.onApply,
+    this.deleteLabel = 'حذف فیلتر',
+  });
 
   final ShopViewModel viewModel;
   final bool deleteEnabled;
@@ -23,7 +30,10 @@ class SheetFooterView extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(10), r.pageHorizontalPadding, math.max(r.space(10), r.padding.bottom + 4)),
-      decoration: BoxDecoration(color: colors.surface, border: Border(top: BorderSide(color: colors.divider))),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(top: BorderSide(color: colors.divider)),
+      ),
       child: Row(
         children: [
           Expanded(
@@ -49,10 +59,14 @@ class SheetFooterView extends StatelessWidget {
                     onPressed: onApply,
                     style: FilledButton.styleFrom(minimumSize: Size.fromHeight(r.buttonHeight), backgroundColor: AppColors.accent),
                     child: viewModel.isPreviewLoading
-                        ? SizedBox(width: r.icon(22), height: r.icon(22), child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBrand))
+                        ? SizedBox(
+                            width: r.icon(22),
+                            height: r.icon(22),
+                            child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBrand),
+                          )
                         : viewModel.previewErrorMessage != null
-                            ? const AppText.labelLarge('خطا در محاسبه محصولات', color: AppColors.onBrand)
-                            : AppText.labelLarge('مشاهده ${AppFunction.faDigit(viewModel.previewCount)} محصول', color: AppColors.onBrand),
+                        ? const AppText.labelLarge('خطا در محاسبه محصولات', color: AppColors.onBrand)
+                        : AppText.labelLarge('مشاهده ${AppFunction.faDigit(viewModel.previewCount)} محصول', color: AppColors.onBrand),
                   ),
                 );
               },

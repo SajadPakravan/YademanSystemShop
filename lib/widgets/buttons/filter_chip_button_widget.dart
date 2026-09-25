@@ -49,7 +49,7 @@ class FilterChipButtonWidget extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (icon != null) ...<Widget>[
+                    if (icon != null) ...[
                       Icon(icon, size: r.icon(18), color: active ? AppColors.accent : colors.textSecondary),
                       SizedBox(width: r.space(5)),
                     ],
@@ -72,7 +72,6 @@ class FilterChipButtonWidget extends StatelessWidget {
           ),
           if (badgeCount > 0)
             Positioned(
-              top: -r.space(2),
               left: -r.space(3),
               child: Container(
                 constraints: BoxConstraints(minWidth: r.icon(20), minHeight: r.icon(20)),

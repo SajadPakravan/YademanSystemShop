@@ -34,12 +34,9 @@ class BtnFilters extends StatelessWidget {
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: r.icon(18), color: colors.textSecondary),
-                    SizedBox(height: r.space(3)),
-                  ],
+                  if (badgeCount > 0) SizedBox(height: r.space(5)),
+                  if (icon != null) Icon(icon, size: r.icon(18), color: colors.textSecondary),
                   AppText.bodySmall(title, maxLines: 1, overflow: TextOverflow.ellipsis, color: colors.textPrimary),
                   Icon(Icons.keyboard_arrow_down_rounded, size: r.icon(18), color: colors.textSecondary),
                 ],
@@ -49,7 +46,6 @@ class BtnFilters extends StatelessWidget {
         ),
         if (badgeCount > 0)
           Positioned(
-            top: -r.space(10),
             left: 0,
             right: 0,
             child: Center(
