@@ -10,10 +10,7 @@ import 'package:yad_sys/widgets/product/price_view_widget.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class ShopProductRowCard extends StatelessWidget {
-  const ShopProductRowCard({
-    super.key,
-    required this.product,
-  });
+  const ShopProductRowCard({super.key, required this.product});
 
   final ProductCardModel product;
 
@@ -27,7 +24,7 @@ class ShopProductRowCard extends StatelessWidget {
       if (product.inquiry && (product.colors.isNotEmpty || product.averageRating != '0.0')) return r.percentHeight(0.21, min: 170, max: 240);
       if (product.discountPercent > 0) {
         if (product.colors.isEmpty && product.averageRating == '0.0') return r.percentHeight(0.23, min: 180, max: 250);
-        return r.percentHeight(0.25, min: 195, max: 270);
+        return r.percentHeight(0.28, min: 195, max: 270);
       }
       if (product.colors.isNotEmpty || product.averageRating != '0.0') return r.percentHeight(0.20, min: 165, max: 230);
       return r.percentHeight(0.18, min: 155, max: 215);

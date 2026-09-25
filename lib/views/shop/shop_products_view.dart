@@ -19,10 +19,10 @@ class ShopProductsView extends StatelessWidget {
         padding: EdgeInsets.all(r.space(10)),
         sliver: SliverGrid.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
+            crossAxisCount: r.width > 800 ? 3 : 2,
             crossAxisSpacing: r.space(5),
             mainAxisSpacing: r.space(5),
-            childAspectRatio: 0.6,
+            childAspectRatio: r.height < 900 ? 0.6 : 0.65 ,
           ),
           itemCount: products.length,
           itemBuilder: (context, index) {

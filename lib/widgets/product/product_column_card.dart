@@ -48,15 +48,16 @@ class ProductColumnCard extends StatelessWidget {
               return Stack(
                 children: [
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     spacing: r.space(15),
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(r.radius(8)),
                         clipBehavior: Clip.antiAlias,
-                        child: SizedBox(
-                          width: double.infinity,
+                        child: Container(
+                          width: imageHeight,
                           height: imageHeight,
+                          color: Colors.red,
                           child: CachedNetworkImage(
                             imageUrl: product.image,
                             width: double.infinity,
@@ -184,7 +185,7 @@ class ProductColumnCard extends StatelessWidget {
         color: context.appColors.surface,
       ),
       child: SizedBox(
-        width: r.space(productColors.length * 9),
+        width: r.space(productColors.length * 10),
         height: r.space(12),
         child: Stack(
           children: [
