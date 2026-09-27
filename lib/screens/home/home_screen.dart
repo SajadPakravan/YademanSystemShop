@@ -17,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final viewModel = context.read<HomeViewModel>();
-      if (!viewModel.hasLoadedOnce) viewModel.loadHome();
+      if (!viewModel.hasLoadedOnce) viewModel.load();
     });
   }
 
@@ -30,8 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
           isLoading: viewModel.isLoading,
           isRefreshing: viewModel.isRefreshing,
           errorMessage: viewModel.errorMessage,
-          onRefresh: () => viewModel.loadHome(refresh: true),
-          onRetry: () => viewModel.loadHome(),
+          onRefresh: () => viewModel.load(refresh: true),
+          onRetry: () => viewModel.load(),
         );
       },
     );

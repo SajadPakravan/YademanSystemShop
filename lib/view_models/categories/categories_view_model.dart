@@ -1,78 +1,65 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:yad_sys/connections/http_request.dart';
-import 'package:yad_sys/models/category_model.dart';
+import 'package:yad_sys/models/categories_model.dart';
+import 'package:yad_sys/models/section_model.dart';
 
 class CategoriesViewModel with ChangeNotifier {
-  HttpRequest httpRequest = HttpRequest();
-  List<CategoryModel> parentCategoriesLst = [];
-  List<CategoryModel> speakerSubCategoriesLst = [];
-  List<CategoryModel> computerSubCategoriesLst = [];
-  List<CategoryModel> hardwareSubCategoriesLst = [];
-  List<CategoryModel> laptopSubCategoriesLst = [];
-  List<CategoryModel> headphoneSubCategoriesLst = [];
-  List<CategoryModel> storageSubCategoriesLst = [];
-  List<CategoryModel> networkSubCategoriesLst = [];
-  int dataNumber = 1;
-  bool showContent = false;
+  final HttpRequest _httpRequest = HttpRequest();
+  List<SectionModel> _sections = const <SectionModel>[];
 
-  Future<void> getParentCategories() async {
-    dynamic jsonCategories = await httpRequest.getCategories(perPage: 12, include: "57,1818,1809,54,153,158,67,1601,1773,51,1816,151");
-    jsonCategories.forEach((c) => parentCategoriesLst.add(CategoryModel.fromJson(c)));
-    dataNumber++;
-    loadContent();
-  }
+  bool _isLoading = false;
+  bool _isRefreshing = false;
+  String _errorMessage = '';
+  bool _hasLoadedOnce = false;
 
-  Future<void> getSubCategories({required int parent, required List<CategoryModel> list}) async {
-    dynamic jsonCategories = await httpRequest.getCategories(parent: parent, perPage: 100);
-    jsonCategories.forEach((c) => list.add(CategoryModel.fromJson(c)));
-    dataNumber++;
-    loadContent();
-  }
+  List<SectionModel> get sections => _sections;
 
-  void loadContent() {
-    switch (dataNumber) {
-      case 1:
-        {
-          getParentCategories();
-          break;
-        }
-      case 2:
-        {
-          getSubCategories(parent: 153, list: speakerSubCategoriesLst);
-          break;
-        } //اسپیکر
-      case 3:
-        {
-          getSubCategories(parent: 1809, list: computerSubCategoriesLst);
-          break;
-        } // لوازم جانبی کامپیوتر
-      case 4:
-        {
-          getSubCategories(parent: 54, list: hardwareSubCategoriesLst);
-          break;
-        } // سخت افزار کامپیوتر
-      case 5:
-        {
-          getSubCategories(parent: 1818, list: laptopSubCategoriesLst);
-          break;
-        } // لوازم جانبی لپ تاپ// هدفون و هندزفری
-      case 6:
-        {
-          getSubCategories(parent: 158, list: headphoneSubCategoriesLst);
-          break;
-        } // هدفون و هندزفری
-      case 7:
-        {
-          getSubCategories(parent: 1601, list: storageSubCategoriesLst);
-          break;
-        } // تجهیزات ذخیره سازی
-      default:
-        {
-          showContent = true;
-          notifyListeners();
-          break;
-        }
+  bool get isLoading => _isLoading;
+
+  bool get isRefreshing => _isRefreshing;
+
+  String get errorMessage => _errorMessage;
+
+  bool get hasError => _errorMessage.isNotEmpty;
+
+  bool get hasLoadedOnce => _hasLoadedOnce;
+
+  Future<void> load({bool refresh = false}) async {
+    if (_isLoading || _isRefreshing) return;
+    if (!refresh && _hasLoadedOnce) return;
+
+    if (refresh) {
+      _isRefreshing = true;
+    } else {
+      _isLoading = true;
+    }
+
+    _errorMessage = '';
+    notifyListeners();
+
+    try {
+      final dynamic json = await _httpRequest.getCategories();
+      if (json is! Map) {
+        throw const FormatException('پاسخ API خانه معتبر نیست');
+      }
+
+      final response = CategoriesModel.fromJson(Map<String, dynamic>.from(json));
+      if (!response.success) {
+        throw const FormatException('API خانه پاسخ ناموفق برگرداند');
+      }
+
+      _sections = List<SectionModel>.unmodifiable(response.sections);
+      _hasLoadedOnce = true;
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('CATEGORY API ERROR >>>> $e');
+        debugPrint('$stackTrace');
+      }
+      _errorMessage = 'دریافت اطلاعات صفحه خانه انجام نشد. اتصال اینترنت یا API را بررسی کنید.';
+    } finally {
+      _isLoading = false;
+      _isRefreshing = false;
+      notifyListeners();
     }
   }
 }

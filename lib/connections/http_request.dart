@@ -16,9 +16,11 @@ class HttpRequest {
   final String _key = '?consumer_key=ck_d27778072e30065155639f3712fa349749d68f69';
   final String _secret = '&consumer_secret=cs_338b38793c800a59f4683f91024dd62cc66423c8';
 
-  String get _urlProducts2 => 'https://$_urlMain/wp-json/wc/v3/products/';
+  String get _urlHome => 'https://$_urlMain/wp-json/app-api/v1/home';
 
-  String get _urlCategories => 'https://$_urlMain/wp-json/wc/v3/products/categories/';
+  String get _urlProducts => 'https://$_urlMain/wp-json/app-api/v1/products/';
+
+  String get _urlCategories => 'https://$_urlMain/wp-json/app-api/v1/categories/';
 
   String get _urlProductReviews => 'https://$_urlMain/wp-json/wc/v3/products/reviews/';
 
@@ -39,10 +41,6 @@ class HttpRequest {
   String get _urlUpload => 'https://$_urlMain/wp-content/app-uploads/';
 
   String get _urlOrders => 'https://$_urlMain/wp-json/wc/v3/orders/';
-
-  String get _urlHome => 'https://$_urlMain/wp-json/app-api/v1/home';
-
-  String get _urlProducts => 'https://$_urlMain/wp-json/app-api/v1/products/';
 
   Future<dynamic> _getRequest({required String url, String id = '', String details = ''}) async {
     Map<String, String> headers = {'accept': 'application/json', 'Content-Type': 'application/json'};
@@ -171,12 +169,7 @@ class HttpRequest {
     String orderby = 'date',
     String order = 'desc',
   }) async {
-    final query = <String, String>{
-      'page': '$page',
-      'per_page': '$perPage',
-      'orderby': orderby,
-      'order': order,
-    };
+    final query = <String, String>{'page': '$page', 'per_page': '$perPage', 'orderby': orderby, 'order': order};
 
     if (search.trim().isNotEmpty) query['search'] = search.trim();
     if (categories.isNotEmpty) query['category'] = categories.join(',');
@@ -196,47 +189,7 @@ class HttpRequest {
 
   Future<dynamic> getProduct({required int id}) async => _getPublicRequest(url: '$_urlProducts$id');
 
-  Future<dynamic> getProducts2({
-    int perPage = 10,
-    int page = 1,
-    String order = 'desc',
-    String orderBy = 'date',
-    String category = '',
-    String onSale = '',
-    String search = '',
-  }) async {
-    String addCategory = '';
-    String addOnSale = '';
-    String addSearch = '';
-    if (category.isNotEmpty) addCategory = '&category=$category';
-    if (onSale.isNotEmpty) addOnSale = '&on_sale=$onSale';
-    if (search.isNotEmpty) addSearch = '&search=$search';
-    String details = "&per_page=$perPage&page=$page&order=$order&orderby=$orderBy$addCategory$addOnSale$addSearch";
-    return _getRequest(url: _urlProducts2, details: details);
-  }
-
-  Future<dynamic> getProductVariable({required int id, String onSale = '', String search = ''}) async {
-    String addOnSale = '';
-    String addSearch = '';
-    if (onSale.isNotEmpty) addOnSale = '&on_sale=$onSale';
-    if (search.isNotEmpty) addSearch = '&search=$search';
-    String details = "$addOnSale$addSearch";
-    return _getRequest(url: '$_urlProducts2$id/variations', details: details);
-  }
-
-  Future<dynamic> getCategories({int parent = 0, int perPage = 10, String include = ''}) async {
-    String addInclude = "";
-    if (include.isNotEmpty) {
-      addInclude = "&include=$include";
-    }
-    String details = "&parent=$parent&per_page=$perPage$addInclude&orderby=include";
-    return _getRequest(url: _urlCategories, details: details);
-  }
-
-  Future<Future<dynamic>> getProductReviews({required int id, String status = 'approved', int perPage = 10}) async {
-    String details = '&product=$id&status=$status&per_page=$perPage';
-    return _getRequest(url: _urlProductReviews, details: details);
-  }
+  Future<dynamic> getCategories() async => _getPublicRequest(url: _urlCategories);
 
   Future<dynamic> createProductReview({
     required BuildContext context,

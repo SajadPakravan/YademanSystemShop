@@ -13,10 +13,15 @@ class HomeViewModel with ChangeNotifier {
   bool _hasLoadedOnce = false;
 
   List<SectionModel> get sections => _sections;
+
   bool get isLoading => _isLoading;
+
   bool get isRefreshing => _isRefreshing;
+
   String get errorMessage => _errorMessage;
+
   bool get hasError => _errorMessage.isNotEmpty;
+
   bool get hasLoadedOnce => _hasLoadedOnce;
 
   void useSplashResponse(Map<String, dynamic> json) {
@@ -31,7 +36,7 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadHome({bool refresh = false}) async {
+  Future<void> load({bool refresh = false}) async {
     if (_isLoading || _isRefreshing) return;
     if (!refresh && _hasLoadedOnce) return;
 

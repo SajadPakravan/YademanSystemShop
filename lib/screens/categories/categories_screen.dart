@@ -14,25 +14,23 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   @override
   void initState() {
     super.initState();
-    final categoriesViewModel = Provider.of<CategoriesViewModel>(context, listen: false);
-    if (categoriesViewModel.parentCategoriesLst.isEmpty) categoriesViewModel.loadContent();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final viewModel = context.read<CategoriesViewModel>();
+      if (!viewModel.hasLoadedOnce) viewModel.load();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<CategoriesViewModel>(
-      builder: (context, categoriesModel, child) {
+      builder: (context, viewModel, child) {
         return CategoriesView(
-          context: context,
-          parentCategoriesLst: categoriesModel.parentCategoriesLst,
-          speakerSubCategoriesLst: categoriesModel.speakerSubCategoriesLst,
-          computerSubCategoriesLst: categoriesModel.computerSubCategoriesLst,
-          hardwareSubCategoriesLst: categoriesModel.hardwareSubCategoriesLst,
-          laptopSubCategoriesLst: categoriesModel.laptopSubCategoriesLst,
-          headphoneSubCategoriesLst: categoriesModel.headphoneSubCategoriesLst,
-          storageSubCategoriesLst: categoriesModel.storageSubCategoriesLst,
-          networkSubCategoriesLst: categoriesModel.networkSubCategoriesLst,
-          showContent: categoriesModel.showContent,
+          sections: viewModel.sections,
+          isLoading: viewModel.isLoading,
+          isRefreshing: viewModel.isRefreshing,
+          errorMessage: viewModel.errorMessage,
+          onRetry: viewModel.load,
         );
       },
     );

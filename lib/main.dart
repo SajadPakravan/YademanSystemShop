@@ -7,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:yad_sys/database/cart_model.dart';
 import 'package:yad_sys/database/favorite_model.dart';
-import 'package:yad_sys/models/category_model.dart';
 import 'package:yad_sys/screens/splash/splash_screen.dart';
 import 'package:yad_sys/themes/app_themes.dart';
 import 'package:yad_sys/tools/app_texts.dart';
@@ -31,7 +30,6 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => HomeViewModel()),
         ChangeNotifierProvider(create: (_) => ShopViewModel()),
         ChangeNotifierProvider(create: (_) => CategoriesViewModel()),
-        ChangeNotifierProvider(create: (_) => CategoryModel()),
       ],
       child: const YademanSystemShop(),
     ),
