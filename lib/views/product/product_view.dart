@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
-import 'package:yad_sys/models/product_detail_model.dart';
+import 'package:yad_sys/models/product/product_detail_model.dart';
 import 'package:yad_sys/models/review_card_model.dart';
 import 'package:yad_sys/screens/product/product_info_screen.dart';
 import 'package:yad_sys/screens/profile/cart/cart_screen.dart';

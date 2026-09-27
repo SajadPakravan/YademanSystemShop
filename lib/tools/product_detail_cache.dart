@@ -1,4 +1,4 @@
-import 'package:yad_sys/models/product_detail_model.dart';
+import 'package:yad_sys/models/product/product_detail_model.dart';
 
 class ProductDetailCache {
   ProductDetailCache._();

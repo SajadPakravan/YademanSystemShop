@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
-import 'package:yad_sys/widgets/home/category_section.dart';
+import 'package:yad_sys/widgets/sections/category_section.dart';
 import 'package:yad_sys/widgets/home/home_brand_section.dart';
 import 'package:yad_sys/widgets/home/home_posts_section.dart';
-import 'package:yad_sys/widgets/home/image_section.dart';
-import 'package:yad_sys/widgets/product/products_section.dart';
+import 'package:yad_sys/widgets/sections/image_section.dart';
+import 'package:yad_sys/widgets/sections/products_section.dart';
 
 class HomeSectionRenderer extends StatelessWidget {
   const HomeSectionRenderer({super.key, required this.section});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:yad_sys/models/product_card_model.dart';
-import 'package:yad_sys/models/product_detail_model.dart';
+import 'package:yad_sys/models/product/product_item_model.dart';
+import 'package:yad_sys/models/product/product_detail_model.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
 import 'package:yad_sys/widgets/cards/view_all_widget.dart';
@@ -15,7 +15,7 @@ class RelatedProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const rows = 1;
-    final products = <ProductCardModel>[];
+    final products = <ProductItemModel>[];
     ProductDetailViewAll? viewAll;
 
     for (final item in list) {

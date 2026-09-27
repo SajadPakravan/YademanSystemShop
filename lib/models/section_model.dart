@@ -1,9 +1,9 @@
 import 'package:yad_sys/models/brand_model.dart';
 import 'package:yad_sys/models/post_model.dart';
 import 'package:yad_sys/models/section_item_action_model.dart';
-import 'package:yad_sys/models/category_item_model.dart';
+import 'package:yad_sys/models/category/category_item_model.dart';
 import 'package:yad_sys/models/image_item_model.dart';
-import 'package:yad_sys/models/product_card_model.dart';
+import 'package:yad_sys/models/product/product_item_model.dart';
 
 class SectionModel {
   const SectionModel({
@@ -37,7 +37,7 @@ class SectionModel {
           data.add(ImageItemModel.fromJson(map));
           break;
         case 'products':
-          data.add(ProductCardModel.fromJson(map));
+          data.add(ProductItemModel.fromJson(map));
           break;
         case 'category':
           data.add(CategoryItemModel.fromJson(map));
@@ -67,7 +67,7 @@ class SectionModel {
 
   List<ImageItemModel> get images => data.whereType<ImageItemModel>().toList();
 
-  List<ProductCardModel> get products => data.whereType<ProductCardModel>().toList();
+  List<ProductItemModel> get products => data.whereType<ProductItemModel>().toList();
 
   List<CategoryItemModel> get categories => data.whereType<CategoryItemModel>().toList();
 

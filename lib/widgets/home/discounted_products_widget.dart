@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:yad_sys/models/product_card_model.dart';
+import 'package:yad_sys/models/product/product_item_model.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
@@ -12,7 +12,7 @@ class DiscountedProductsWidget extends StatefulWidget {
   const DiscountedProductsWidget({super.key, required this.section, required this.products});
 
   final SectionModel section;
-  final List<ProductCardModel> products;
+  final List<ProductItemModel> products;
 
   @override
   State<DiscountedProductsWidget> createState() => _DiscountedProductsWidgetState();

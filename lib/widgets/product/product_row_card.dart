@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:yad_sys/models/product_card_model.dart';
+import 'package:yad_sys/models/product/product_item_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/go_page.dart';
@@ -13,7 +13,7 @@ import 'package:yad_sys/widgets/text_views/app_text.dart';
 class ProductRowCard extends StatelessWidget {
   const ProductRowCard({super.key, required this.product, required this.rows, required this.length, required this.index});
 
-  final ProductCardModel product;
+  final ProductItemModel product;
   final int rows;
   final int length;
   final int index;

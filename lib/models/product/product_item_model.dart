@@ -1,5 +1,5 @@
-class ProductCardModel {
-  const ProductCardModel({
+class ProductItemModel {
+  const ProductItemModel({
     required this.id,
     required this.name,
     required this.price,
@@ -29,8 +29,8 @@ class ProductCardModel {
   final ProductCardBrandModel brand;
   final List<String> colors;
 
-  factory ProductCardModel.fromJson(Map<String, dynamic> json) {
-    return ProductCardModel(
+  factory ProductItemModel.fromJson(Map<String, dynamic> json) {
+    return ProductItemModel(
       id: json['id'],
       name: json['name'],
       price: json['price'],

@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
-import 'package:yad_sys/models/product_card_model.dart';
+import 'package:yad_sys/models/product/product_item_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/app_function.dart';
@@ -15,7 +15,7 @@ import 'package:yad_sys/widgets/text_views/app_text.dart';
 class ProductColumnCard extends StatelessWidget {
   const ProductColumnCard({super.key, required this.product, this.rows = 1, required this.length, required this.index, this.onTap, this.simpleRadius = true});
 
-  final ProductCardModel product;
+  final ProductItemModel product;
   final int rows;
   final int length;
   final int index;

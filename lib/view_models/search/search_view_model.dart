@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:yad_sys/connections/http_request.dart';
-import 'package:yad_sys/models/product_card_model.dart';
-import 'package:yad_sys/models/products_list_model.dart';
+import 'package:yad_sys/models/product/product_item_model.dart';
+import 'package:yad_sys/models/product/products_list_model.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
 
 class SearchViewModel with ChangeNotifier {
@@ -17,7 +17,7 @@ class SearchViewModel with ChangeNotifier {
   bool isApplying = false;
   List<ProductCategoryFilterModel> categories = const <ProductCategoryFilterModel>[];
   List<ProductBrandFilterModel> brands = const <ProductBrandFilterModel>[];
-  List<ProductCardModel> products = const <ProductCardModel>[];
+  List<ProductItemModel> products = const <ProductItemModel>[];
 
   List<String> get recentSearches => List<String>.unmodifiable(_sessionRecentSearches);
 
@@ -34,7 +34,7 @@ class SearchViewModel with ChangeNotifier {
       isSearching = false;
       categories = const <ProductCategoryFilterModel>[];
       brands = const <ProductBrandFilterModel>[];
-      products = const <ProductCardModel>[];
+      products = const <ProductItemModel>[];
       notifyListeners();
       return;
     }

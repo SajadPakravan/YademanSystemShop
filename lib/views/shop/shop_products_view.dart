@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yad_sys/models/product_card_model.dart';
+import 'package:yad_sys/models/product/product_item_model.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/widgets/product/shop_product_row_card.dart';
 import 'package:yad_sys/widgets/product/product_column_card.dart';
@@ -7,7 +7,7 @@ import 'package:yad_sys/widgets/product/product_column_card.dart';
 class ShopProductsView extends StatelessWidget {
   const ShopProductsView({super.key, required this.products, required this.isGrid});
 
-  final List<ProductCardModel> products;
+  final List<ProductItemModel> products;
   final bool isGrid;
 
   @override

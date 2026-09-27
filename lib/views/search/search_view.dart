@@ -2,8 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:yad_sys/models/product_card_model.dart';
-import 'package:yad_sys/models/products_list_model.dart';
+import 'package:yad_sys/models/product/product_item_model.dart';
+import 'package:yad_sys/models/product/products_list_model.dart';
 import 'package:yad_sys/screens/main_screen.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
@@ -321,7 +321,7 @@ class _SectionTitle extends StatelessWidget {
 class _ProductSuggestion extends StatelessWidget {
   const _ProductSuggestion({required this.product});
 
-  final ProductCardModel product;
+  final ProductItemModel product;
 
   @override
   Widget build(BuildContext context) {

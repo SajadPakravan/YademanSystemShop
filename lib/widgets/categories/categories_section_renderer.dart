@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
-import 'package:yad_sys/widgets/home/category_section.dart';
-import 'package:yad_sys/widgets/home/home_posts_section.dart';
-import 'package:yad_sys/widgets/home/image_section.dart';
-import 'package:yad_sys/widgets/product/products_section.dart';
+import 'package:yad_sys/widgets/sections/category_section.dart';
+import 'package:yad_sys/widgets/sections/image_section.dart';
+import 'package:yad_sys/widgets/sections/products_section.dart';
 
 class CategoriesSectionRenderer extends StatelessWidget {
   const CategoriesSectionRenderer({super.key, required this.section});
@@ -37,10 +36,8 @@ class CategoriesSectionRenderer extends StatelessWidget {
         return ImageSection(section: section);
       case 'products':
         return ProductsSection(section: section);
-      case 'category':
-        return CategorySection(section: section);
       default:
-        return HomePostsSection(section: section);
+        return CategorySection(section: section);
     }
   }
 }

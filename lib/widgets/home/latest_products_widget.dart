@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yad_sys/models/product_card_model.dart';
+import 'package:yad_sys/models/product/product_item_model.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/section_action_handler.dart';
@@ -10,7 +10,7 @@ class LatestProductsWidget extends StatelessWidget {
   const LatestProductsWidget({super.key, required this.section, required this.products});
 
   final SectionModel section;
-  final List<ProductCardModel> products;
+  final List<ProductItemModel> products;
 
   @override
   Widget build(BuildContext context) {

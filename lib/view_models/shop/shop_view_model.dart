@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:yad_sys/connections/http_request.dart';
-import 'package:yad_sys/models/product_card_model.dart';
-import 'package:yad_sys/models/products_list_model.dart';
+import 'package:yad_sys/models/product/product_item_model.dart';
+import 'package:yad_sys/models/product/products_list_model.dart';
 import 'package:yad_sys/models/section_item_action_model.dart';
 
 class ShopSortOption {
@@ -121,7 +121,7 @@ class ShopViewModel with ChangeNotifier {
   static const int _pageSize = 20;
   static const Duration _previewDebounceDuration = Duration(milliseconds: 280);
   final HttpRequest _httpRequest = HttpRequest();
-  List<ProductCardModel> productsLst = <ProductCardModel>[];
+  List<ProductItemModel> productsLst = <ProductItemModel>[];
   ProductsFiltersModel filters = ProductsFiltersModel.empty();
   ProductsPaginationModel pagination = ProductsPaginationModel.empty();
   ShopFilterState appliedFilters = ShopFilterState();
@@ -436,7 +436,7 @@ class ShopViewModel with ChangeNotifier {
     _updatePriceCeiling(response.data);
   }
 
-  void _updatePriceCeiling(List<ProductCardModel> items) {
+  void _updatePriceCeiling(List<ProductItemModel> items) {
     var maxPrice = 0;
     for (final item in items) {
       if (item.price > maxPrice) maxPrice = item.price;
@@ -497,8 +497,8 @@ class ShopViewModel with ChangeNotifier {
     ].join('~');
   }
 
-  ProductCardModel _toProductCard(ProductCardModel item) {
-    return ProductCardModel(
+  ProductItemModel _toProductCard(ProductItemModel item) {
+    return ProductItemModel(
       id: item.id,
       name: item.name,
       price: item.price,

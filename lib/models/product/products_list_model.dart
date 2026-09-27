@@ -1,4 +1,4 @@
-import 'package:yad_sys/models/product_card_model.dart';
+import 'package:yad_sys/models/product/product_item_model.dart';
 
 class ProductsListModel {
   const ProductsListModel({required this.success, required this.pagination, required this.filters, required this.filterBy, required this.data});
@@ -7,7 +7,7 @@ class ProductsListModel {
   final ProductsPaginationModel pagination;
   final ProductsFiltersModel filters;
   final ProductsFilterByModel filterBy;
-  final List<ProductCardModel> data;
+  final List<ProductItemModel> data;
 
   factory ProductsListModel.fromJson(Map<String, dynamic> json) {
     return ProductsListModel(
@@ -15,7 +15,7 @@ class ProductsListModel {
       pagination: ProductsPaginationModel.fromJson(json['pagination']),
       filters: ProductsFiltersModel.fromJson(json['filters']),
       filterBy: ProductsFilterByModel.fromJson(json['filter_by']),
-      data: List.castFrom(json['data']).map((item) => ProductCardModel.fromJson(item)).toList(growable: false),
+      data: List.castFrom(json['data']).map((item) => ProductItemModel.fromJson(item)).toList(growable: false),
     );
   }
 }
