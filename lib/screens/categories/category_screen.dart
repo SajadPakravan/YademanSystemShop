@@ -17,7 +17,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
   void initState() {
     super.initState();
     _viewModel = CategoryViewModel(id: Get.arguments['id']);
-    _viewModel.loadCategory();
+    _viewModel.load();
   }
 
   @override

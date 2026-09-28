@@ -10,16 +10,20 @@ class CategoryViewModel with ChangeNotifier {
   final CategoryDetailCache _cache = CategoryDetailCache.instance;
   int _currentCategoryId;
   final List<int> _categoryHistory = <int>[];
-  int _loadRequestSerial = 0;
   CategoryDetailModel? _response;
-  int get id => _currentCategoryId;
-  int get currentCategoryId => _currentCategoryId;
-  bool get hasCategoryHistory => _categoryHistory.isNotEmpty;
-  CategoryDetailData? get category => _response?.data;
+  int _loadRequestSerial = 0;
   bool isLoading = true;
   String errorMessage = '';
 
-  Future<void> loadCategory({bool forceRefresh = false}) async {
+  int get id => _currentCategoryId;
+
+  int get currentCategoryId => _currentCategoryId;
+
+  bool get hasCategoryHistory => _categoryHistory.isNotEmpty;
+
+  CategoryDetailData? get category => _response?.data;
+
+  Future<void> load({bool forceRefresh = false}) async {
     final targetId = _currentCategoryId;
     final requestSerial = ++_loadRequestSerial;
     errorMessage = '';
@@ -41,14 +45,10 @@ class CategoryViewModel with ChangeNotifier {
 
     try {
       final dynamic json = await _httpRequest.getCategory(id: targetId);
-      if (json is! Map) {
-        throw const FormatException('پاسخ API جزئیات دسته‌بندی معتبر نیست');
-      }
+      if (json is! Map) throw const FormatException('پاسخ API جزئیات دسته‌بندی معتبر نیست');
 
       final result = CategoryDetailModel.fromJson(Map<String, dynamic>.from(json));
-      if (!result.success || result.data.id == 0) {
-        throw const FormatException('جزئیات دسته‌بندی با موفقیت دریافت نشد');
-      }
+      if (!result.success || result.data.id == 0) throw const FormatException('جزئیات دسته‌بندی با موفقیت دریافت نشد');
 
       if (requestSerial != _loadRequestSerial || targetId != _currentCategoryId) return;
 
@@ -92,6 +92,6 @@ class CategoryViewModel with ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    await loadCategory();
+    await load();
   }
 }

@@ -65,9 +65,9 @@ class CategoryView extends StatelessWidget {
     final colors = context.appColors;
     final r = context.responsive;
 
-    if (viewModel.isLoading && category == null) const Loading();
+    if (viewModel.isLoading && category == null) return const Loading();
 
-    if (viewModel.errorMessage.isNotEmpty && category == null) {
+    if (viewModel.errorMessage.isNotEmpty) {
       return ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(r.pageHorizontalPadding * 1.5),
@@ -80,16 +80,14 @@ class CategoryView extends StatelessWidget {
           Center(
             child: SizedBox(
               width: r.percentWidth(0.46, min: 150, max: 220),
-              child: AppButton(label: 'تلاش دوباره', icon: Icons.refresh, onPressed: () => viewModel.loadCategory(forceRefresh: true)),
+              child: AppButton(label: 'تلاش دوباره', icon: Icons.refresh, onPressed: () => viewModel.load(forceRefresh: true)),
             ),
           ),
         ],
       );
     }
 
-    if (category == null) return const SizedBox.shrink();
-
-    final childrenSection = _childrenSection(category);
+    final childrenSection = _childrenSection(category!);
     final productSections = _productSections(category);
     final brandSections = _brandSections(category);
 
@@ -132,7 +130,7 @@ class CategoryView extends StatelessWidget {
             ],
           ],
         ),
-        if (viewModel.isLoading && category != null)
+        if (viewModel.isLoading)
           Positioned(top: 0, left: 0, right: 0, child: LinearProgressIndicator(minHeight: r.space(2, min: 2, max: 3))),
       ],
     );
