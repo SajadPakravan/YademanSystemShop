@@ -1,19 +1,12 @@
 class CategoryItemModel {
-  const CategoryItemModel({required this.id, required this.name, required this.children, required this.count, required this.image});
+  const CategoryItemModel({required this.id, required this.name, required this.count, required this.image});
 
   final int id;
   final String name;
   final int count;
   final String image;
-  final List<CategoryItemModel> children;
 
   factory CategoryItemModel.fromJson(Map<String, dynamic> json) {
-    return CategoryItemModel(
-      id: json['id'],
-      name: json['name'],
-      count: json['count'],
-      image: json['image'],
-      children: List.castFrom(json['children']).map((item) => CategoryItemModel.fromJson(item)).toList(),
-    );
+    return CategoryItemModel(id: json['id'], name: json['name'], count: json['count'], image: json['image']);
   }
 }

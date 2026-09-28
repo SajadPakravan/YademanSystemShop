@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:yad_sys/screens/product/product_screen.dart';
+import 'package:yad_sys/screens/categories/category_screen.dart';
 
 Future<dynamic>? rightToPage(dynamic page, {dynamic arguments}) {
   return Get.to(page, transition: Transition.rightToLeft, duration: const Duration(milliseconds: 300), arguments: arguments);
@@ -10,3 +11,6 @@ Future<dynamic>? zoomToPage(dynamic page, {dynamic arguments}) {
 }
 
 dynamic toProduct({int? id}) => zoomToPage(const ProductScreen(), arguments: {'id': id});
+
+
+dynamic toCategory({required int id}) => zoomToPage(const CategoryScreen(), arguments: {'id': id});

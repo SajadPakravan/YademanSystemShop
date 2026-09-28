@@ -8,11 +8,13 @@ import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/widgets/home/section_header.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
+import 'package:yad_sys/tools/go_page.dart';
 
 class CategorySection extends StatelessWidget {
-  const CategorySection({super.key, required this.section});
+  const CategorySection({super.key, required this.section, this.onCategoryTap});
 
   final SectionModel section;
+  final ValueChanged<int>? onCategoryTap;
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +65,14 @@ class CategorySection extends StatelessWidget {
                   titleHeight: titleHeight,
                   verticalPadding: verticalPadding,
                   compact: itemWidth < 94,
+                  onTap: () {
+                    final callback = onCategoryTap;
+                    if (callback != null) {
+                      callback(items[index].id);
+                    } else {
+                      toCategory(id: items[index].id);
+                    }
+                  },
                 ),
               ),
             );
@@ -74,13 +84,21 @@ class CategorySection extends StatelessWidget {
 }
 
 class _CategoryCard extends StatelessWidget {
-  const _CategoryCard({required this.item, required this.imageSize, required this.titleHeight, required this.verticalPadding, required this.compact});
+  const _CategoryCard({
+    required this.item,
+    required this.imageSize,
+    required this.titleHeight,
+    required this.verticalPadding,
+    required this.compact,
+    required this.onTap,
+  });
 
   final CategoryItemModel item;
   final double imageSize;
   final double titleHeight;
   final double verticalPadding;
   final bool compact;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +111,7 @@ class _CategoryCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         borderRadius: BorderRadius.circular(r.radius(14)),
-        // onTap: () => SectionItemActionHandler.handle(context: context, type: 'category', title: item.name, destinationId: item.id),
+        onTap: onTap,
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: r.space(3), vertical: verticalPadding),
           child: Column(

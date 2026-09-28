@@ -191,6 +191,8 @@ class HttpRequest {
 
   Future<dynamic> getCategories() async => _getPublicRequest(url: _urlCategories);
 
+  Future<dynamic> getCategory({required int id}) async => _getPublicRequest(url: '$_urlCategories$id');
+
   Future<dynamic> createProductReview({
     required BuildContext context,
     required int id,

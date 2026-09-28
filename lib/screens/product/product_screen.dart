@@ -28,12 +28,19 @@ class _ProductScreenState extends State<ProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _viewModel.handleBack,
-      child: AnimatedBuilder(
-        animation: _viewModel,
-        builder: (context, child) => ProductView(viewModel: _viewModel),
-      ),
+    return AnimatedBuilder(
+      animation: _viewModel,
+      builder: (context, child) {
+        return PopScope(
+          canPop: !_viewModel.hasProductHistory,
+          onPopInvokedWithResult: (didPop, result) async {
+            if (didPop) return;
+            final shouldPopRoute = await _viewModel.handleBack();
+            if (shouldPopRoute && context.mounted) Navigator.of(context).pop(result);
+          },
+          child: ProductView(viewModel: _viewModel),
+        );
+      },
     );
   }
 }

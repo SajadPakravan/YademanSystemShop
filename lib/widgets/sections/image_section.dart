@@ -25,7 +25,7 @@ class _ImageSectionState extends State<ImageSection> {
     return Column(
       children: [
         SectionHeader(section: widget.section),
-        if (sectionId.contains('header_banners'))
+        if (sectionId.contains('header_banners') || sectionId == 'banner_slider')
           ImageSlider(currentIndex: _currentIndex, items: items)
         else if (sectionId.contains('menu'))
           MenuSection(section: widget.section)
