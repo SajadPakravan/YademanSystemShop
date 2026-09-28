@@ -119,7 +119,13 @@ class _CategoryCard extends StatelessWidget {
             children: [
               SizedBox(
                 height: imageSize,
-                child: Center(child: SizedBox(width: imageSize, height: imageSize, child: _CategoryImage(imageUrl: item.image))),
+                child: Center(
+                  child: SizedBox(
+                    width: imageSize,
+                    height: imageSize,
+                    child: _CategoryImage(imageUrl: item.image),
+                  ),
+                ),
               ),
               SizedBox(height: r.space(8)),
               SizedBox(
@@ -168,7 +174,9 @@ class _CategoryImage extends StatelessWidget {
       ),
       errorWidget: (context, url, error) => ColoredBox(
         color: colors.surfaceVariant,
-        child: Center(child: Icon(Icons.category_outlined, color: colors.textMuted, size: r.icon(42))),
+        child: Center(
+          child: Icon(Icons.category_outlined, color: colors.textMuted, size: r.icon(42)),
+        ),
       ),
     );
   }

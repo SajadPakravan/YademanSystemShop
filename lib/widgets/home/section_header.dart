@@ -20,7 +20,7 @@ class SectionHeader extends StatelessWidget {
     final r = context.responsive;
     final colors = context.appColors;
 
-    if (!hasTitle && !hasViewAll) return const SizedBox.shrink();
+    if (!hasTitle && !hasViewAll) return const SizedBox(height: 10);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding, vertical: r.space(8)),
