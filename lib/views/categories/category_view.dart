@@ -1,19 +1,19 @@
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
-import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/category/category_detail_model.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/screens/search/search_screen.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/view_models/categories/category_view_model.dart';
 import 'package:yad_sys/widgets/buttons/app_button.dart';
 import 'package:yad_sys/widgets/home/home_brand_section.dart';
 import 'package:yad_sys/widgets/loading.dart';
+import 'package:yad_sys/widgets/net_image.dart';
 import 'package:yad_sys/widgets/sections/category_section.dart';
 import 'package:yad_sys/widgets/sections/products_section.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
@@ -437,7 +437,7 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     final image = category.image.trim();
-    final plainDescription = _plainText(category.description).toPersianDigit();
+    final plainDescription = AppFunction.faDigit(AppFunction.htmlToText(category.description));
 
     return Material(
       color: colors.surface,
@@ -558,40 +558,14 @@ class _CategoryHeaderImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     final r = context.responsive;
     final url = imageUrl.trim();
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(r.radius(16)),
-      child: CachedNetworkImage(
-        imageUrl: url,
-        fit: BoxFit.contain,
-        placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-        errorWidget: (context, url, error) => DecoratedBox(
-          decoration: BoxDecoration(color: colors.surfaceVariant, borderRadius: BorderRadius.circular(r.radius(16))),
-          child: Center(
-            child: Icon(Icons.category_outlined, color: colors.textMuted, size: r.icon(40)),
-          ),
-        ),
-      ),
+      child: NetImage(imageUrl: url),
     );
   }
 }
 
 double _lerp(double a, double b, double t) => a + ((b - a) * t);
-
-String _plainText(String html) {
-  if (html.trim().isEmpty) return '';
-
-  return html
-      .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), ' ')
-      .replaceAll(RegExp(r'</p\s*>', caseSensitive: false), ' ')
-      .replaceAll(RegExp(r'<[^>]*>'), '')
-      .replaceAll('&nbsp;', ' ')
-      .replaceAll('&amp;', '&')
-      .replaceAll('&quot;', '"')
-      .replaceAll('&#39;', "'")
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
-}

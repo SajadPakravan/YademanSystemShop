@@ -26,4 +26,19 @@ class AppFunction {
     }
     return BorderRadius.circular(15);
   }
+
+  static String htmlToText(String html) {
+    if (html.trim().isEmpty) return '';
+
+    return html
+        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), ' ')
+        .replaceAll(RegExp(r'</p\s*>', caseSensitive: false), ' ')
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
 }

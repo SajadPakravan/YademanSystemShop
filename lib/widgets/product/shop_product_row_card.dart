@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/product/product_item_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
@@ -6,6 +5,7 @@ import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/app_function.dart';
 import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/widgets/dialogs/product_consulta.dart';
+import 'package:yad_sys/widgets/net_image.dart';
 import 'package:yad_sys/widgets/product/price_view_widget.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
@@ -30,6 +30,8 @@ class ShopProductRowCard extends StatelessWidget {
       return r.percentHeight(0.18, min: 155, max: 215);
     }
 
+    final double imageSize = r.percentWidth(0.28, min: 111, max: 160);
+
     return Material(
       color: colors.surface,
       child: InkWell(
@@ -45,18 +47,7 @@ class ShopProductRowCard extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(r.radius(8)),
                 clipBehavior: Clip.antiAlias,
-                child: SizedBox(
-                  width: r.percentWidth(0.28, min: 111, max: 160),
-                  height: r.percentWidth(0.28, min: 111, max: 160),
-                  child: CachedNetworkImage(
-                    imageUrl: product.image,
-                    fit: BoxFit.contain,
-                    placeholder: (_, _) => const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))),
-                    errorWidget: (_, _, _) => Center(
-                      child: Icon(Icons.image_not_supported_outlined, size: r.icon(46), color: colors.textMuted),
-                    ),
-                  ),
-                ),
+                child: NetImage(imageUrl: product.image, width: imageSize, height: imageSize)
               ),
               Expanded(
                 child: Column(

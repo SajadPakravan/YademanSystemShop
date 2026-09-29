@@ -1,12 +1,12 @@
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/product/product_item_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/widgets/dialogs/product_consulta.dart';
+import 'package:yad_sys/widgets/net_image.dart';
 import 'package:yad_sys/widgets/product/price_view_widget.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
@@ -48,20 +48,7 @@ class ProductRowCard extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(r.radius(8)),
                     clipBehavior: Clip.antiAlias,
-                    child: SizedBox(
-                      width: imageHeight,
-                      height: imageHeight,
-                      child: CachedNetworkImage(
-                        width: double.infinity,
-                        height: double.infinity,
-                        imageUrl: product.image,
-                        fit: BoxFit.contain,
-                        placeholder: (context, url) => const Center(child: SizedBox(width: 23, height: 23, child: CircularProgressIndicator(strokeWidth: 2))),
-                        errorWidget: (context, url, error) => Center(
-                          child: Icon(Icons.broken_image_outlined, color: colors.textMuted, size: r.icon(44)),
-                        ),
-                      ),
-                    ),
+                    child: NetImage(imageUrl: product.image, width: imageHeight, height: imageHeight),
                   ),
                   Expanded(
                     child: Column(
