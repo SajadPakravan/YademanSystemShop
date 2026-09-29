@@ -144,7 +144,10 @@ class _ProductDetailsBottomSheetState extends State<ProductDetailsBottomSheet> {
       padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(18), r.pageHorizontalPadding, r.space(30)),
       children: [
         HtmlWidget(
-          widget.description.toPersianDigit(),
+          // HTML باید خام بماند. تبدیل کل HTML به رقم فارسی، رقم‌های داخل
+          // URL تصاویر (src) را هم تغییر می‌دهد و در نتیجه تصویر لود نمی‌شود
+          // و معمولاً فقط متن alt نمایش داده می‌شود.
+          widget.description,
           textStyle: baseStyle.copyWith(color: colors.textPrimary, height: 1.9, fontSize: r.font(baseStyle.fontSize ?? 14)),
         ),
       ],

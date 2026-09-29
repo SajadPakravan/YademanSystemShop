@@ -51,7 +51,7 @@ class ProductInfoScreen extends StatelessWidget {
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.pageHorizontalPadding),
       child: HtmlWidget(
-        Get.arguments['description'].toString().toPersianDigit(),
+        Get.arguments['description'].toString(),
         textStyle: baseStyle.copyWith(
           color: context.appColors.textPrimary,
           height: 2,
