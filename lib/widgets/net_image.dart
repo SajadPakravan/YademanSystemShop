@@ -15,16 +15,19 @@ class NetImage extends StatelessWidget {
     final colors = context.appColors;
     final r = context.responsive;
 
-    return SizedBox(
-      width: width,
-      height: height,
-      child: CachedNetworkImage(
-        imageUrl: imageUrl,
-        fit: BoxFit.contain,
-        placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-        errorWidget: (context, url, error) => DecoratedBox(
-          decoration: BoxDecoration(color: colors.surfaceVariant, borderRadius: BorderRadius.circular(r.radius(16))),
-          child: Icon(Icons.broken_image_outlined, color: colors.textMuted, size: width),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(r.radius(16)),
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          fit: BoxFit.contain,
+          placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          errorWidget: (context, url, error) => DecoratedBox(
+            decoration: BoxDecoration(color: colors.surfaceVariant, borderRadius: BorderRadius.circular(r.radius(16))),
+            child: Icon(Icons.broken_image_outlined, color: colors.textMuted, size: width),
+          ),
         ),
       ),
     );

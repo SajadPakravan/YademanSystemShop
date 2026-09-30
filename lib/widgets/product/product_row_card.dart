@@ -45,11 +45,7 @@ class ProductRowCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: r.space(10),
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(r.radius(8)),
-                    clipBehavior: Clip.antiAlias,
-                    child: NetImage(imageUrl: product.image, width: imageHeight, height: imageHeight),
-                  ),
+                  NetImage(imageUrl: product.image, width: imageHeight, height: imageHeight),
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

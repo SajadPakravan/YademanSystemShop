@@ -53,11 +53,7 @@ class ProductColumnCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     spacing: r.space(15),
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(r.radius(8)),
-                        clipBehavior: Clip.antiAlias,
-                        child: NetImage(imageUrl: product.image, width: imageHeight, height: imageHeight),
-                      ),
+                      NetImage(imageUrl: product.image, width: imageHeight, height: imageHeight),
                       SizedBox(
                         width: double.infinity,
                         height: titleHeight,

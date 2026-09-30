@@ -27,10 +27,10 @@ class CategoryView extends StatefulWidget {
   State<CategoryView> createState() => _CategoryViewState();
 }
 
-class _CategoryViewState extends State<CategoryView> with SingleTickerProviderStateMixin {
+class _CategoryViewState extends State<CategoryView> {
   late final ScrollController _scrollController;
-  late final AnimationController _headerExpandController;
   late int _lastCategoryId;
+  bool _descriptionExpanded = false;
 
   CategoryViewModel get viewModel => widget.viewModel;
 
@@ -38,7 +38,6 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _headerExpandController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500), reverseDuration: const Duration(milliseconds: 500));
     _lastCategoryId = viewModel.currentCategoryId;
     viewModel.addListener(_handleViewModelChange);
   }
@@ -58,7 +57,7 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
     if (newId == _lastCategoryId) return;
 
     _lastCategoryId = newId;
-    _headerExpandController.value = 0;
+    _descriptionExpanded = false;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) return;
@@ -69,7 +68,6 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
   @override
   void dispose() {
     viewModel.removeListener(_handleViewModelChange);
-    _headerExpandController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -78,7 +76,7 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: Scaffold(backgroundColor: context.appColors.background, body: _body(context)),
+      child: Scaffold(backgroundColor: context.appColors.background, body: body(context)),
     );
   }
 
@@ -87,21 +85,9 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
     if (shouldPop && context.mounted) Get.back();
   }
 
-  Future<void> _toggleHeader() async {
-    final opening = _headerExpandController.value < 0.5;
+  void _toggleDescription() => setState(() => _descriptionExpanded = !_descriptionExpanded);
 
-    if (opening && _scrollController.hasClients && _scrollController.offset > 0) {
-      _scrollController.animateTo(0, duration: const Duration(milliseconds: 260), curve: Curves.easeOutCubic);
-    }
-
-    if (opening) {
-      await _headerExpandController.forward();
-    } else {
-      await _headerExpandController.reverse();
-    }
-  }
-
-  Widget _body(BuildContext context) {
+  Widget body(BuildContext context) {
     final category = viewModel.category;
     final colors = context.appColors;
     final r = context.responsive;
@@ -109,7 +95,7 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
     if (viewModel.isLoading && category == null) {
       return CustomScrollView(
         slivers: [
-          _appBar(context),
+          appBar(context),
           const SliverFillRemaining(hasScrollBody: false, child: Loading()),
         ],
       );
@@ -118,7 +104,7 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
     if (viewModel.errorMessage.isNotEmpty || category == null) {
       return CustomScrollView(
         slivers: [
-          _appBar(context),
+          appBar(context),
           SliverFillRemaining(
             hasScrollBody: false,
             child: Padding(
@@ -147,19 +133,17 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
       );
     }
 
-    final childrenSection = _childrenSection(category);
-    final productSections = _productSections(category);
-    final brandSections = _brandSections(category);
+    final childrenSection = children(category);
+    final productSections = _products(category);
+    final brandSections = _brands(category);
 
     return Stack(
       children: [
         AnimatedBuilder(
-          animation: Listenable.merge([_headerExpandController, _scrollController]),
+          animation: _scrollController,
           builder: (context, child) {
-            final expandProgress = Curves.easeInOutCubic.transform(_headerExpandController.value);
-            final hasDescription = category.description.trim().isNotEmpty;
+            final hasDescription = category.description.isNotEmpty;
             final collapseDistance = r.space(110, min: 90, max: 150);
-
             double scrollOffset = 0;
             double availableScroll = collapseDistance;
 
@@ -178,24 +162,12 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
               key: PageStorageKey<int>(viewModel.currentCategoryId),
               controller: _scrollController,
               slivers: [
-                _appBar(context),
+                appBar(context),
                 SliverPersistentHeader(
                   pinned: true,
-                  delegate: _CategoryHeaderDelegate(
-                    category: category,
-                    expansion: hasDescription ? expandProgress : 0,
-                    collapse: scrollCollapse,
-                    colors: colors,
-                    r: r,
-                  ),
+                  delegate: Header(category: category, collapse: scrollCollapse, colors: colors, r: r),
                 ),
-                if (hasDescription) ...[
-                  SliverToBoxAdapter(child: _expandedDescription(context, expandProgress)),
-                  SliverPersistentHeader(
-                    pinned: true,
-                    delegate: _HeaderToggle(progress: expandProgress, onTap: _toggleHeader, height: r.space(25, min: 20, max: 30)),
-                  ),
-                ],
+                if (hasDescription) SliverToBoxAdapter(child: description(context, category)),
                 if (childrenSection != null) ...[
                   SliverToBoxAdapter(child: SizedBox(height: r.sectionVerticalGap)),
                   SliverToBoxAdapter(
@@ -250,7 +222,7 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
     );
   }
 
-  SliverAppBar _appBar(BuildContext context) {
+  SliverAppBar appBar(BuildContext context) {
     final colors = context.appColors;
 
     return SliverAppBar(
@@ -281,29 +253,64 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
     );
   }
 
-  Widget _expandedDescription(BuildContext context, double progress) {
-    final category = viewModel.category;
+  Widget description(BuildContext context, CategoryDetailData category) {
     final colors = context.appColors;
     final r = context.responsive;
     final baseStyle = Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
+    final plainDescription = AppFunction.htmlToText(category.description);
 
-    return ClipRect(
-      child: Align(
-        alignment: Alignment.topCenter,
-        heightFactor: progress,
-        child: Container(
-          color: colors.surface,
-          padding: EdgeInsetsDirectional.fromSTEB(r.pageHorizontalPadding, r.space(6), r.pageHorizontalPadding, r.space(18)),
-          child: HtmlWidget(
-            category!.description,
-            textStyle: baseStyle.copyWith(color: colors.textPrimary, height: 1.9, fontSize: r.font((baseStyle.fontSize ?? 14) + 0.5)),
+    return Container(
+      width: double.infinity,
+      color: colors.surface,
+      padding: EdgeInsetsDirectional.all(r.space(10)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: r.space(5),
+        children: [
+          AppText.titleMedium('معرفی دسته‌بندی', fontWeight: FontWeight.w800, color: colors.textPrimary),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 280),
+            reverseDuration: const Duration(milliseconds: 220),
+            curve: Curves.easeInOutCubic,
+            alignment: Alignment.topCenter,
+            child: _descriptionExpanded
+                ? HtmlWidget(
+                    category.description,
+                    textStyle: baseStyle.copyWith(color: colors.textPrimary, height: 1.9, fontSize: r.font((baseStyle.fontSize ?? 14) + 0.5)),
+                  )
+                : AppText.bodyMedium(plainDescription, color: colors.textSecondary, maxLines: 3, overflow: TextOverflow.ellipsis, height: 1.75),
           ),
-        ),
+          Center(
+            child: Material(
+              color: colors.surface,
+              child: InkWell(
+                onTap: _toggleDescription,
+                borderRadius: BorderRadius.circular(r.radius(24)),
+                child: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: r.space(5),
+                    children: [
+                      AppText.bodySmall(_descriptionExpanded ? 'کمتر' : 'بیشتر', color: colors.textSecondary, fontWeight: FontWeight.w700),
+                      AnimatedRotation(
+                        turns: _descriptionExpanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeInOutCubic,
+                        child: Icon(Icons.keyboard_arrow_down_rounded, color: colors.textSecondary, size: r.icon(20, min: 18, max: 24)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  SectionModel? _childrenSection(CategoryDetailData category) {
+  SectionModel? children(CategoryDetailData category) {
     if (category.children.isEmpty) return null;
 
     return SectionModel(
@@ -317,7 +324,7 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
     );
   }
 
-  List<SectionModel> _productSections(CategoryDetailData category) {
+  List<SectionModel> _products(CategoryDetailData category) {
     final result = <SectionModel>[];
 
     for (var index = 0; index < category.products.length; index++) {
@@ -341,7 +348,7 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
     return result;
   }
 
-  List<SectionModel> _brandSections(CategoryDetailData category) {
+  List<SectionModel> _brands(CategoryDetailData category) {
     final result = <SectionModel>[];
 
     for (var index = 0; index < category.brands.length; index++) {
@@ -366,67 +373,21 @@ class _CategoryViewState extends State<CategoryView> with SingleTickerProviderSt
   }
 }
 
-class _HeaderToggle extends SliverPersistentHeaderDelegate {
-  _HeaderToggle({required this.progress, required this.onTap, required this.height});
-
-  final double progress;
-  final VoidCallback onTap;
-  final double height;
-
-  @override
-  double get minExtent => height;
-
-  @override
-  double get maxExtent => height;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final colors = context.appColors;
-    final r = context.responsive;
-
-    return Material(
-      color: colors.chipBackground,
-      borderRadius: BorderRadius.only(bottomRight: Radius.circular(30), bottomLeft: Radius.circular(30)),
-      child: InkWell(
-        onTap: onTap,
-        child: SizedBox.expand(
-          child: Transform.rotate(
-            angle: 3.141592653589793 * progress,
-            child: Icon(Icons.keyboard_arrow_down_rounded, color: colors.textSecondary, size: r.icon(25, min: 20, max: 28)),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  bool shouldRebuild(covariant _HeaderToggle oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.height != height;
-  }
-}
-
-class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
-  _CategoryHeaderDelegate({required this.category, required this.expansion, required this.collapse, required this.colors, required this.r});
+class Header extends SliverPersistentHeaderDelegate {
+  Header({required this.category, required this.collapse, required this.colors, required this.r});
 
   final CategoryDetailData category;
-  final double expansion;
   final double collapse;
   final AppThemeColors colors;
   final AppDimension r;
 
-  double get _compactExtent => r.space(65, min: 60, max: r.isTablet ? 104 : 90);
+  double get _compactExtent => r.space(60, min: 60, max: r.isTablet ? 104 : 90);
 
-  double get _closedExtent {
-    final hasDescription = category.description.trim().isNotEmpty;
-    return r.space(hasDescription ? 130 : 112, min: hasDescription ? 135 : 104, max: r.isTablet ? 220 : 190);
-  }
+  double get _topImageSize => r.percentWidth(0.31, min: 112, max: r.isTablet ? 190 : 150);
 
-  double get _openedExtent => r.percentHeight(0.15, min: 220, max: r.isTablet ? 430 : 330);
+  double get _topExtent => _topImageSize + r.space(65, min: 68, max: r.isTablet ? 104 : 90);
 
-  double get _currentExtent {
-    final topExtent = _lerp(_closedExtent, _openedExtent, expansion);
-    return _lerp(topExtent, _compactExtent, collapse).clamp(_compactExtent, double.infinity).toDouble();
-  }
+  double get _currentExtent => _lerp(_topExtent, _compactExtent, collapse).clamp(_compactExtent, double.infinity).toDouble();
 
   @override
   double get minExtent => _currentExtent;
@@ -436,54 +397,36 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final image = category.image.trim();
-    final plainDescription = AppFunction.faDigit(AppFunction.htmlToText(category.description));
+    final image = category.image;
 
     return Material(
       color: colors.surface,
-      elevation: overlapsContent || collapse > 0.02 ? 1.5 : 0,
-      shadowColor: AppColors.shadow.withValues(alpha: 0.12),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
           final height = constraints.maxHeight;
           final horizontalPadding = r.pageHorizontalPadding;
           final gap = r.space(10);
-          final closedImageSize = r.percentWidth(0.24, min: 82, max: r.isTablet ? 150 : 122);
-          final openedImageSize = r.percentWidth(0.30, min: 105, max: r.isTablet ? 180 : 145);
+          final topImageSize = _topImageSize;
+          final topImageLeft = (width - topImageSize) / 2;
+          final topImageTop = r.space(8);
           final compactImageSize = r.space(48, min: 44, max: r.isTablet ? 66 : 54);
-          final baseImageSize = _lerp(closedImageSize, openedImageSize, expansion);
-          final imageSize = _lerp(baseImageSize, compactImageSize, collapse);
-          final closedImageLeft = width - horizontalPadding - closedImageSize;
-          final openedImageLeft = (width - openedImageSize) / 2;
           final compactImageLeft = width - horizontalPadding - compactImageSize;
-          final baseImageLeft = _lerp(closedImageLeft, openedImageLeft, expansion);
-          final imageLeft = _lerp(baseImageLeft, compactImageLeft, collapse);
-          final closedImageTop = r.space(12);
-          final openedImageTop = r.space(10);
           final compactImageTop = math.max(r.space(6), (height - compactImageSize) / 2);
-          final baseImageTop = _lerp(closedImageTop, openedImageTop, expansion);
-          final imageTop = _lerp(baseImageTop, compactImageTop, collapse);
-          final closedTitleLeft = horizontalPadding;
-          final closedTitleWidth = math.max(r.space(80), closedImageLeft - gap - horizontalPadding);
-          final closedTitleTop = r.space(18);
-          final openedTitleLeft = horizontalPadding;
-          final openedTitleWidth = width - (horizontalPadding * 2);
-          final openedTitleTop = openedImageTop + openedImageSize + r.space(8);
+          final imageSize = _lerp(topImageSize, compactImageSize, collapse);
+          final imageLeft = _lerp(topImageLeft, compactImageLeft, collapse);
+          final imageTop = _lerp(topImageTop, compactImageTop, collapse);
+          final topTitleLeft = horizontalPadding;
+          final topTitleWidth = width - (horizontalPadding * 2);
+          final topTitleTop = topImageTop + topImageSize + r.space(6);
           final compactTitleLeft = horizontalPadding;
           final compactTitleWidth = math.max(r.space(80), compactImageLeft - gap - horizontalPadding);
           final compactTitleTop = math.max(r.space(8), (height - r.space(42, min: 36, max: 48)) / 2);
-          final baseTitleLeft = _lerp(closedTitleLeft, openedTitleLeft, expansion);
-          final baseTitleWidth = _lerp(closedTitleWidth, openedTitleWidth, expansion);
-          final baseTitleTop = _lerp(closedTitleTop, openedTitleTop, expansion);
-          final titleLeft = _lerp(baseTitleLeft, compactTitleLeft, collapse);
-          final titleWidth = _lerp(baseTitleWidth, compactTitleWidth, collapse);
-          final titleTop = _lerp(baseTitleTop, compactTitleTop, collapse);
+          final titleLeft = _lerp(topTitleLeft, compactTitleLeft, collapse);
+          final titleWidth = _lerp(topTitleWidth, compactTitleWidth, collapse);
+          final titleTop = _lerp(topTitleTop, compactTitleTop, collapse);
           final titleScale = _lerp(1.0, 0.90, collapse);
-          final summaryFactor = ((1 - expansion) * (1 - collapse)).clamp(0.0, 1.0).toDouble();
-          final summaryTop = r.space(56);
-          final summaryMaxHeight = math.max(0.0, _closedExtent - summaryTop - r.space(10));
-          final summaryHeight = summaryMaxHeight * summaryFactor;
+          final titleAlignment = Alignment.lerp(Alignment.center, Alignment.centerRight, collapse)!;
 
           return Stack(
             fit: StackFit.expand,
@@ -492,9 +435,7 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
               Positioned(
                 left: imageLeft,
                 top: imageTop,
-                width: imageSize,
-                height: imageSize,
-                child: _CategoryHeaderImage(imageUrl: image),
+                child: NetImage(imageUrl: image, width: imageSize, height: imageSize),
               ),
               Positioned(
                 left: titleLeft,
@@ -502,14 +443,15 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
                 width: titleWidth,
                 height: r.space(46, min: 40, max: 56),
                 child: Align(
-                  alignment: Alignment(_lerp(1.0, 0.0, expansion * (1 - collapse)), 0),
+                  alignment: titleAlignment,
                   child: Transform.scale(
                     scale: titleScale,
-                    alignment: Alignment.centerRight,
+                    alignment: titleAlignment,
                     child: AppText.titleMedium(
                       category.name,
                       fontWeight: FontWeight.w800,
                       color: colors.textPrimary,
+                      textAlign: collapse < 0.5 ? TextAlign.center : TextAlign.start,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       height: 1.45,
@@ -517,19 +459,6 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
                   ),
                 ),
               ),
-              if (plainDescription.isNotEmpty && summaryHeight > 0)
-                Positioned(
-                  left: horizontalPadding,
-                  top: summaryTop,
-                  width: closedTitleWidth,
-                  height: summaryHeight,
-                  child: ClipRect(
-                    child: Align(
-                      alignment: Alignment.topRight,
-                      child: AppText.bodySmall(plainDescription, color: colors.textSecondary, maxLines: 3, overflow: TextOverflow.ellipsis, height: 1.65),
-                    ),
-                  ),
-                ),
             ],
           );
         },
@@ -538,33 +467,14 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(covariant _CategoryHeaderDelegate oldDelegate) {
+  bool shouldRebuild(covariant Header oldDelegate) {
     return oldDelegate.category.id != category.id ||
         oldDelegate.category.name != category.name ||
-        oldDelegate.category.description != category.description ||
         oldDelegate.category.image != category.image ||
-        oldDelegate.expansion != expansion ||
         oldDelegate.collapse != collapse ||
         oldDelegate.colors != colors ||
         oldDelegate.r.width != r.width ||
         oldDelegate.r.height != r.height;
-  }
-}
-
-class _CategoryHeaderImage extends StatelessWidget {
-  const _CategoryHeaderImage({required this.imageUrl});
-
-  final String imageUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.responsive;
-    final url = imageUrl.trim();
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(r.radius(16)),
-      child: NetImage(imageUrl: url),
-    );
   }
 }
 
