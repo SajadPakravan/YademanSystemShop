@@ -7,7 +7,6 @@ import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/product/product_detail_model.dart';
 import 'package:yad_sys/models/review_card_model.dart';
 import 'package:yad_sys/screens/product/product_info_screen.dart';
-import 'package:yad_sys/screens/profile/cart/cart_screen.dart';
 import 'package:yad_sys/screens/search/search_screen.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
@@ -130,7 +129,7 @@ class ProductView extends StatelessWidget {
                   SnackBarView.show(context, 'برای نمایش سبد خرید لطفا وارد حساب کاربری شوید');
                   return;
                 }
-                await Get.to(const CartScreen(), transition: Transition.upToDown, duration: const Duration(milliseconds: 300));
+                // await Get.to(const CartScreen(), transition: Transition.upToDown, duration: const Duration(milliseconds: 300));
                 await viewModel.refreshCartState();
               },
             ),
@@ -759,7 +758,7 @@ class ProductView extends StatelessWidget {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () async {
-                              await Get.to(const CartScreen(), transition: Transition.downToUp, duration: const Duration(milliseconds: 300));
+                              // await Get.to(const CartScreen(), transition: Transition.downToUp, duration: const Duration(milliseconds: 300));
                               await viewModel.refreshCartState();
                             },
                             child: const AppText.labelLarge('رفتن به سبد خرید', color: AppColors.onBrand),

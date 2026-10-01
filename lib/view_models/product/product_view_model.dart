@@ -250,9 +250,8 @@ class ProductViewModel with ChangeNotifier {
   }
 
   Future<void> _checkLogged() async {
-    final cache = AppCache();
-    _name = await cache.getString('name') ?? '';
-    _email = await cache.getString('email') ?? '';
+    _name = await AppCache.getString('name');
+    _email = await AppCache.getString('email');
     authError = _email.isEmpty;
     personalInfoError = _name.isEmpty;
   }
@@ -402,21 +401,21 @@ class ProductViewModel with ChangeNotifier {
       return;
     }
 
-    final dynamic jsonReview = await _httpRequest.createProductReview(
-      context: context,
-      id: value.id,
-      review: reviewController.text.trim(),
-      reviewer: _name,
-      email: _email,
-      rating: rating,
-    );
+    // final dynamic jsonReview = await _httpRequest.createProductReview(
+    //   context: context,
+    //   id: value.id,
+    //   review: reviewController.text.trim(),
+    //   reviewer: _name,
+    //   email: _email,
+    //   rating: rating,
+    // );
 
-    if (jsonReview != false) {
-      if (context.mounted) SnackBarView.show(context, 'دیدگاه شما ثبت شد و در حال بررسی است');
-      reviewController.clear();
-      rating = 0;
-      notifyListeners();
-    }
+    // if (jsonReview != false) {
+    //   if (context.mounted) SnackBarView.show(context, 'دیدگاه شما ثبت شد و در حال بررسی است');
+    //   reviewController.clear();
+    //   rating = 0;
+    //   notifyListeners();
+    // }
   }
 
   @override

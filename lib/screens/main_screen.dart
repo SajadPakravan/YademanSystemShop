@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:yad_sys/screens/account/account_screen.dart';
 import 'package:yad_sys/screens/categories/categories_screen.dart';
 import 'package:yad_sys/screens/home/home_screen.dart';
-import 'package:yad_sys/screens/profile/profile_screen.dart';
 import 'package:yad_sys/screens/shop/shop_screen.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/main_navigation_controller.dart';
@@ -36,7 +36,7 @@ class _MainScreenState extends State<MainScreen> {
       0 => const HomeScreen(),
       1 => const ShopScreen(),
       2 => const CategoriesScreen(),
-      3 => const ProfileScreen(),
+      3 => const AccountScreen(),
       _ => const HomeScreen(),
     };
   }

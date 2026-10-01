@@ -10,6 +10,7 @@ import 'package:yad_sys/database/favorite_model.dart';
 import 'package:yad_sys/screens/splash/splash_screen.dart';
 import 'package:yad_sys/themes/app_themes.dart';
 import 'package:yad_sys/tools/app_texts.dart';
+import 'package:yad_sys/view_models/account/account_view_model.dart' show AccountViewModel;
 import 'package:yad_sys/view_models/categories/categories_view_model.dart';
 import 'package:yad_sys/view_models/home/home_view_model.dart';
 import 'package:yad_sys/view_models/shop/shop_view_model.dart';
@@ -30,6 +31,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => HomeViewModel()),
         ChangeNotifierProvider(create: (_) => ShopViewModel()),
         ChangeNotifierProvider(create: (_) => CategoriesViewModel()),
+        ChangeNotifierProvider(create: (_) => AccountViewModel()..initialize()),
       ],
       child: const YademanSystemShop(),
     ),
