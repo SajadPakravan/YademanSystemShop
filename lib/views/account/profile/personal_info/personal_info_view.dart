@@ -85,82 +85,85 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
     return Scaffold(
       backgroundColor: colors.background,
       appBar: const AppBarView(title: 'مشخصات فردی'),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(18), r.pageHorizontalPadding, r.space(28)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    ClipOval(
-                      child: widget.customer.avatar.isNotEmpty
-                          ? NetImage(imageUrl: widget.customer.avatar, width: r.icon(104), height: r.icon(104))
-                          : Container(
-                              width: r.icon(104),
-                              height: r.icon(104),
-                              color: colors.surfaceVariant,
-                              child: Icon(Icons.person_rounded, size: r.icon(54), color: colors.textMuted),
+      body: Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(18), r.pageHorizontalPadding, r.space(28)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      ClipOval(
+                        child: widget.customer.avatar.isNotEmpty
+                            ? NetImage(imageUrl: widget.customer.avatar, width: r.icon(104), height: r.icon(104))
+                            : Container(
+                                width: r.icon(104),
+                                height: r.icon(104),
+                                color: colors.surfaceVariant,
+                                child: Icon(Icons.person_rounded, size: r.icon(54), color: colors.textMuted),
+                              ),
+                      ),
+                      Positioned(
+                        bottom: -2,
+                        left: -2,
+                        child: Material(
+                          color: AppColors.primary,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('آپلود آواتار بعد از آماده‌شدن API ویرایش فعال می‌شود.')),
                             ),
-                    ),
-                    Positioned(
-                      bottom: -2,
-                      left: -2,
-                      child: Material(
-                        color: AppColors.primary,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('آپلود آواتار بعد از آماده‌شدن API ویرایش فعال می‌شود.')),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(r.space(9)),
-                            child: Icon(Icons.camera_alt_rounded, color: AppColors.onBrand, size: r.icon(20)),
+                            child: Padding(
+                              padding: EdgeInsets.all(r.space(9)),
+                              child: Icon(Icons.camera_alt_rounded, color: AppColors.onBrand, size: r.icon(20)),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(height: r.space(22)),
-              const AppText.titleSmall('اطلاعات حساب', fontWeight: FontWeight.w800),
-              SizedBox(height: r.space(14)),
-              _fieldLabel(context, 'نام کاربری'),
-              AppTextField(controller: _username, hint: 'نام کاربری', icon: Icons.alternate_email_rounded, errorText: _usernameError, onChanged: (_) => setState(() {})),
-              SizedBox(height: r.space(12)),
-              _fieldLabel(context, 'نام'),
-              AppTextField(controller: _firstName, hint: 'نام', icon: Icons.badge_outlined, onChanged: (_) => setState(() {})),
-              SizedBox(height: r.space(12)),
-              _fieldLabel(context, 'نام خانوادگی'),
-              AppTextField(controller: _lastName, hint: 'نام خانوادگی', icon: Icons.badge_outlined, onChanged: (_) => setState(() {})),
-              SizedBox(height: r.space(12)),
-              _fieldLabel(context, 'شماره همراه'),
-              AppTextField(
-                controller: _phone,
-                hint: 'شماره همراه',
-                icon: Icons.phone_android_rounded,
-                keyboardType: TextInputType.phone,
-                errorText: _phoneError,
-                onChanged: (_) => setState(() {}),
-              ),
-              SizedBox(height: r.space(12)),
-              _fieldLabel(context, 'ایمیل'),
-              AppTextField(
-                controller: _email,
-                hint: 'ایمیل',
-                icon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
-                textDirection: TextDirection.ltr,
-                errorText: _emailError,
-                onChanged: (_) => setState(() {}),
-              ),
-              SizedBox(height: r.space(22)),
-              AppButton(label: 'ثبت تغییرات', enabled: _dirty, onPressed: _submit),
-            ],
+                SizedBox(height: r.space(22)),
+                const AppText.titleSmall('اطلاعات حساب', fontWeight: FontWeight.w800),
+                SizedBox(height: r.space(14)),
+                _fieldLabel(context, 'نام کاربری'),
+                AppTextField(controller: _username, hint: 'نام کاربری', icon: Icons.alternate_email_rounded, errorText: _usernameError, onChanged: (_) => setState(() {})),
+                SizedBox(height: r.space(12)),
+                _fieldLabel(context, 'نام'),
+                AppTextField(controller: _firstName, hint: 'نام', icon: Icons.badge_outlined, onChanged: (_) => setState(() {})),
+                SizedBox(height: r.space(12)),
+                _fieldLabel(context, 'نام خانوادگی'),
+                AppTextField(controller: _lastName, hint: 'نام خانوادگی', icon: Icons.badge_outlined, onChanged: (_) => setState(() {})),
+                SizedBox(height: r.space(12)),
+                _fieldLabel(context, 'شماره همراه'),
+                AppTextField(
+                  controller: _phone,
+                  hint: 'شماره همراه',
+                  icon: Icons.phone_android_rounded,
+                  keyboardType: TextInputType.phone,
+                  errorText: _phoneError,
+                  onChanged: (_) => setState(() {}),
+                ),
+                SizedBox(height: r.space(12)),
+                _fieldLabel(context, 'ایمیل'),
+                AppTextField(
+                  controller: _email,
+                  hint: 'ایمیل',
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  textDirection: TextDirection.ltr,
+                  errorText: _emailError,
+                  onChanged: (_) => setState(() {}),
+                ),
+                SizedBox(height: r.space(22)),
+                AppButton(label: 'ثبت تغییرات', enabled: _dirty, onPressed: _submit),
+              ],
+            ),
           ),
         ),
       ),

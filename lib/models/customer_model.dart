@@ -5,7 +5,7 @@ class CustomerResponseModel {
   final CustomerModel data;
 
   factory CustomerResponseModel.fromJson(Map<String, dynamic> json) {
-    return CustomerResponseModel(success: json['success'] == true, data: CustomerModel.fromJson(_asMap(json['data'])));
+    return CustomerResponseModel(success: json['success'], data: CustomerModel.fromJson(_asMap(json['data'])));
   }
 }
 

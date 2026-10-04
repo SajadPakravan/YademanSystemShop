@@ -7,16 +7,11 @@ import 'package:yad_sys/models/order/order_model.dart';
 import 'package:yad_sys/tools/app_cache.dart';
 
 class ProfileViewModel extends ChangeNotifier {
-  ProfileViewModel({
-    required this.customerId,
-    required this.token,
-    HttpRequest? httpRequest,
-  }) : _httpRequest = httpRequest ?? HttpRequest();
+  ProfileViewModel({required this.customerId, required this.token, HttpRequest? httpRequest}) : _httpRequest = httpRequest ?? HttpRequest();
 
   final int customerId;
   final String token;
   final HttpRequest _httpRequest;
-
   CustomerModel? customer;
   bool isLoading = false;
   bool isRefreshing = false;
@@ -44,9 +39,7 @@ class ProfileViewModel extends ChangeNotifier {
 
       final map = Map<String, dynamic>.from(response);
       if (map['success'] != true || map['data'] is! Map) {
-        errorMessage = map['message']?.toString().trim().isNotEmpty == true
-            ? map['message'].toString().trim()
-            : 'دریافت اطلاعات حساب کاربری انجام نشد.';
+        errorMessage = map['message']?.toString().isNotEmpty == true ? map['message'].toString() : 'دریافت اطلاعات حساب کاربری انجام نشد.';
         return;
       }
 
@@ -66,7 +59,6 @@ class ProfileViewModel extends ChangeNotifier {
 
   Future<void> refreshCustomer() => loadCustomer(forceRefresh: true);
 
-
   Future<void> _loadActiveOrdersCount() async {
     try {
       final response = await _httpRequest.getOrders(token: token);
@@ -82,7 +74,6 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-
   @override
   void dispose() {
     _disposed = true;
@@ -90,10 +81,10 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   Future<void> _cacheCustomerHeader(CustomerModel value) async {
-    await AppCache.setString('customer_first_name', value.firstName);
-    await AppCache.setString('customer_last_name', value.lastName);
-    await AppCache.setString('customer_display_name', value.displayName);
-    await AppCache.setString('customer_avatar', value.avatar);
-    await AppCache.setString('customer_phone', value.phone);
+    await AppCache.setString('first_name', value.firstName);
+    await AppCache.setString('last_name', value.lastName);
+    await AppCache.setString('display_name', value.displayName);
+    await AppCache.setString('avatar', value.avatar);
+    await AppCache.setString('phone', value.phone);
   }
 }

@@ -33,10 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _profileViewModel,
-      builder: (context, child) => ProfileView(
-        viewModel: _profileViewModel,
-        logout: widget.viewModel.logout,
-      ),
+      builder: (context, child) => ProfileView(viewModel: _profileViewModel, logout: widget.viewModel.logout),
     );
   }
 }
