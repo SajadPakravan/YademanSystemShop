@@ -138,7 +138,7 @@ class ProfileView extends StatelessWidget {
     final available = r.width - (r.pageHorizontalPadding * 2) - (spacing * 2);
     final cardSize = (available / 3).clamp(94.0, r.isTablet ? 170.0 : 132.0).toDouble();
 
-    final items = <Widget>[
+    final items = [
       ProfileMenuCard(
         title: 'مشخصات فردی',
         icon: Icons.person_outline_rounded,

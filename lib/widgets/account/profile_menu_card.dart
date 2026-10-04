@@ -5,14 +5,7 @@ import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class ProfileMenuCard extends StatelessWidget {
-  const ProfileMenuCard({
-    super.key,
-    required this.title,
-    required this.icon,
-    required this.onTap,
-    this.badgeCount,
-    this.showAlertDot = false,
-  });
+  const ProfileMenuCard({super.key, required this.title, required this.icon, required this.onTap, this.badgeCount, this.showAlertDot = false});
 
   final String title;
   final IconData icon;
@@ -37,7 +30,11 @@ class ProfileMenuCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(r.radius(16)),
             border: Border.all(color: colors.border),
             boxShadow: <BoxShadow>[
-              BoxShadow(color: AppColors.shadow.withValues(alpha: context.isDarkMode ? 0.12 : 0.05), blurRadius: 10, offset: const Offset(0, 3)),
+              BoxShadow(
+                color: AppColors.shadow.withValues(alpha: context.isDarkMode ? 0.12 : 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
             ],
           ),
           child: Stack(
@@ -45,18 +42,18 @@ class ProfileMenuCard extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.all(r.space(10)),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: r.space(10),
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Container(
-                      width: r.percentWidth(0.13, min: 46, max: 66),
-                      height: r.percentWidth(0.13, min: 46, max: 66),
-                      decoration: BoxDecoration(
-                        color: colors.inquiryBackground,
-                        shape: BoxShape.circle,
+                    Center(
+                      child: Container(
+                        width: r.percentWidth(0.2, min: 46, max: 66),
+                        height: r.percentWidth(0.2, min: 46, max: 66),
+                        decoration: BoxDecoration(color: colors.inquiryBackground, shape: BoxShape.circle),
+                        child: Center(child: Icon(icon, color: AppColors.primary, size: r.icon(35, min: 24, max: 36))),
                       ),
-                      child: Icon(icon, color: AppColors.primary, size: r.icon(28, min: 24, max: 36)),
                     ),
-                    SizedBox(height: r.space(10)),
                     AppText.bodySmall(
                       title,
                       textAlign: TextAlign.center,
@@ -77,12 +74,7 @@ class ProfileMenuCard extends StatelessWidget {
                     alignment: Alignment.center,
                     padding: EdgeInsets.symmetric(horizontal: r.space(6), vertical: r.space(2)),
                     decoration: const BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
-                    child: AppText.labelSmall(
-                      badgeCount.toString().toPersianDigit(),
-                      color: AppColors.onBrand,
-                      fontWeight: FontWeight.w800,
-                      height: 1,
-                    ),
+                    child: AppText.labelSmall(badgeCount.toString().toPersianDigit(), color: AppColors.onBrand, fontWeight: FontWeight.w800, height: 1),
                   ),
                 ),
               if (showAlertDot)
