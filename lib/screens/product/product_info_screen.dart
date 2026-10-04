@@ -4,7 +4,7 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/product/product_detail_model.dart';
-import 'package:yad_sys/models/review_card_model.dart';
+import 'package:yad_sys/models/review_item_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/widgets/app_bar_view.dart';
@@ -102,7 +102,7 @@ class ProductInfoScreen extends StatelessWidget {
     final r = context.responsive;
     final colors = context.appColors;
     final groups = List<ProductDetailReview>.from(Get.arguments['reviews']);
-    final List<ReviewCardModel> reviews = groups.expand((group) => group.data).toList(growable: false);
+    final List<ReviewItemModel> reviews = groups.expand((group) => group.data).toList(growable: false);
 
     if (reviews.isEmpty) {
       return Center(

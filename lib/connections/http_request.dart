@@ -19,9 +19,17 @@ class HttpRequest {
 
   String get _urlRegister => 'https://$_urlMain/wp-json/app-api/v1/auth/register';
 
-  String get _urlCustomer => 'https://$_urlMain/wp-json/app-api/v1/customer';
+  String get _urlCustomer => 'https://$_urlMain/wp-json/app-api/v1/customers';
 
-  String get _urlCustomers => 'https://$_urlMain/wp-json/app-api/v1/customers/';
+  String get _urlOrders => 'https://$_urlMain/wp-json/app-api/v1/orders';
+
+  String get _urlCart => 'https://$_urlMain/wp-json/app-api/v1/cart';
+
+  String get _urlFavorites => 'https://$_urlMain/wp-json/app-api/v1/favorites';
+
+  String get _urlViewedProducts => 'https://$_urlMain/wp-json/app-api/v1/viewed-products';
+
+  String get _urlComments => 'https://$_urlMain/wp-json/app-api/v1/comments';
 
   Future<dynamic> _getPublicRequest({required String url}) async {
     const headers = <String, String>{'accept': 'application/json', 'Content-Type': 'application/json; charset=UTF-8'};
@@ -33,7 +41,7 @@ class HttpRequest {
 
       final dynamic decoded = jsonDecode(utf8.decode(response.bodyBytes));
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        if (kDebugMode) print('JSON >>>> $decoded}');
+        if (kDebugMode) print('JSON >>>> $decoded');
         return decoded;
       }
 
@@ -47,7 +55,6 @@ class HttpRequest {
       return false;
     }
   }
-
 
   Future<dynamic> _getAuthorizedRequest({required String url, required String token}) async {
     final headers = <String, String>{
@@ -143,19 +150,17 @@ class HttpRequest {
   Future<dynamic> login({required String identifier, required String password}) =>
       _postPublicRequest(url: _urlLogin, body: <String, dynamic>{'identifier': identifier.trim(), 'password': password});
 
+  Future<dynamic> getCustomer({required String token}) async => _getAuthorizedRequest(url: _urlCustomer, token: token);
 
+  Future<dynamic> getOrders({required String token}) async => _getAuthorizedRequest(url: _urlOrders, token: token);
 
-  Future<dynamic> getCustomer({required int id, required String token}) async {
-    // مسیر اصلی API مشتری. اگر نسخه پلاگین شما جزئیات را با id در مسیر
-    // برگرداند، دو fallback بعدی بدون تغییر UI از آن پشتیبانی می‌کنند.
-    dynamic response = await _getAuthorizedRequest(url: _urlCustomer, token: token);
-    if (response is Map && response['success'] == true) return response;
+  Future<dynamic> getCart({required String token}) async => _getAuthorizedRequest(url: _urlCart, token: token);
 
-    response = await _getAuthorizedRequest(url: '$_urlCustomer/$id', token: token);
-    if (response is Map && response['success'] == true) return response;
+  Future<dynamic> getFavorites({required String token}) async => _getAuthorizedRequest(url: _urlFavorites, token: token);
 
-    return _getAuthorizedRequest(url: '$_urlCustomers$id', token: token);
-  }
+  Future<dynamic> getViewedProducts({required String token}) async => _getAuthorizedRequest(url: _urlViewedProducts, token: token);
+
+  Future<dynamic> getCustomerComments({required String token}) async => _getAuthorizedRequest(url: _urlComments, token: token);
 
   Future<dynamic> signUp({required BuildContext context, required String email, required String password}) => register(identifier: email, password: password);
 

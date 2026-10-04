@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
-import 'package:yad_sys/models/customer_model.dart';
+import 'package:yad_sys/models/cart_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/tools/go_page.dart';
@@ -8,10 +8,9 @@ import 'package:yad_sys/widgets/net_image.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class CustomerProductRowCard extends StatelessWidget {
-  const CustomerProductRowCard({super.key, required this.item, this.showQuantity = true});
+  const CustomerProductRowCard({super.key, required this.item});
 
-  final CustomerProductItemModel item;
-  final bool showQuantity;
+  final CartItemModel item;
 
   @override
   Widget build(BuildContext context) {
@@ -50,19 +49,25 @@ class CustomerProductRowCard extends StatelessWidget {
                     ),
                     if (item.variationText.isNotEmpty) ...[
                       SizedBox(height: r.space(6)),
-                      AppText.bodySmall(item.variationText, color: colors.textSecondary, maxLines: 2, overflow: TextOverflow.ellipsis),
+                      AppText.bodySmall(
+                        item.variationText,
+                        color: colors.textSecondary,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                     SizedBox(height: r.space(10)),
                     Row(
                       children: [
-                        if (showQuantity) ...[
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: r.space(8), vertical: r.space(4)),
-                            decoration: BoxDecoration(color: colors.surfaceVariant, borderRadius: BorderRadius.circular(r.radius(8))),
-                            child: AppText.labelSmall('تعداد ${item.quantity.toString().toPersianDigit()}', color: colors.textSecondary),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: r.space(8), vertical: r.space(4)),
+                          decoration: BoxDecoration(color: colors.surfaceVariant, borderRadius: BorderRadius.circular(r.radius(8))),
+                          child: AppText.labelSmall(
+                            'تعداد ${item.quantity.toString().toPersianDigit()}',
+                            color: colors.textSecondary,
                           ),
-                          const Spacer(),
-                        ],
+                        ),
+                        const Spacer(),
                         AppText.bodyMedium(
                           '${item.price.toString().seRagham().toPersianDigit()} تومان',
                           fontWeight: FontWeight.w800,

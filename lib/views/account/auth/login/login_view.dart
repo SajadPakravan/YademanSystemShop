@@ -1,117 +1,67 @@
-import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/tools/app_colors.dart';
-import 'package:yad_sys/tools/app_dimension.dart';
-import 'package:yad_sys/widgets/forms/app_text_field.dart';
-import 'package:yad_sys/widgets/loading.dart';
+import 'package:yad_sys/view_models/account/account_view_model.dart';
+import 'package:yad_sys/views/account/auth/auth_field.dart';
+import 'package:yad_sys/views/account/auth/auth_page_view.dart';
+import 'package:yad_sys/views/account/auth/auth_switch.dart';
+import 'package:yad_sys/widgets/buttons/app_button.dart';
+import 'package:yad_sys/widgets/snack_bar_view.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class LoginView extends StatelessWidget {
-  const LoginView({
-    super.key,
-    required this.emailCtrl,
-    required this.passCtrl,
-    required this.obscureText,
-    required this.showPass,
-    required this.showPassFun,
-    required this.signInFun,
-    required this.emailErrVis,
-    required this.emailErrStr,
-    required this.passErrVis,
-    required this.passErrStr,
-    required this.pageCtrl,
-  });
+  const LoginView({super.key, required this.viewModel});
 
-  final TextEditingController emailCtrl;
-  final TextEditingController passCtrl;
-  final bool obscureText;
-  final bool showPass;
-  final void Function(bool?) showPassFun;
-  final Future<void> Function() signInFun;
-  final bool emailErrVis;
-  final String emailErrStr;
-  final bool passErrVis;
-  final String passErrStr;
-  final PageController pageCtrl;
+  final AccountViewModel viewModel;
 
   @override
   Widget build(BuildContext context) {
-    final r = context.responsive;
-
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: r.pageHorizontalPadding),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: r.isTablet ? 520 : double.infinity),
-            child: Column(
-              children: [
-                AppTextField(
-                  controller: emailCtrl,
-                  hint: 'ایمیل',
-                  icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  textDirection: TextDirection.ltr,
-                  errorText: emailErrVis ? emailErrStr : null,
-                ),
-                SizedBox(height: r.space(18)),
-                AppTextField(
-                  controller: passCtrl,
-                  hint: 'کلمه عبور',
-                  icon: Icons.lock_outline_rounded,
-                  obscureText: obscureText,
-                  keyboardType: TextInputType.visiblePassword,
-                  textDirection: TextDirection.ltr,
-                  errorText: passErrVis ? passErrStr : null,
-                ),
-                SizedBox(height: r.space(14)),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CheckboxMenuButton(
-                        value: showPass,
-                        onChanged: showPassFun,
-                        child: const AppText.bodySmall('نمایش کلمه عبور'),
-                      ),
-                    ),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(r.cardRadius),
-                      onTap: () {},
-                      child: Padding(
-                        padding: EdgeInsets.all(r.space(8)),
-                        child: const AppText.bodySmall('فراموشی کلمه عبور', color: AppColors.primary, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: r.space(16)),
-                EasyButton(
-                  idleStateWidget: const AppText.labelLarge('ورود', color: AppColors.onBrand, fontWeight: FontWeight.w700),
-                  loadingStateWidget: const Padding(padding: EdgeInsets.all(5), child: Loading(color: AppColors.onBrand, size: 24)),
-                  buttonColor: AppColors.primary,
-                  width: double.infinity,
-                  height: r.buttonHeight,
-                  borderRadius: r.radius(14),
-                  onPressed: signInFun,
-                ),
-                SizedBox(height: r.space(18)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const AppText.bodyMedium('کاربر جدید هستید؟'),
-                    SizedBox(width: r.space(5)),
-                    InkWell(
-                      onTap: () => pageCtrl.animateToPage(1, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut),
-                      child: const AppText.bodyMedium('ثبت‌نام کنید', color: AppColors.primary, fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
-              ],
+      child: AuthPage(
+        title: 'ورود به حساب کاربری',
+        subtitle: 'برای دسترسی به حساب خود، شناسه کاربری و کلمه عبور را وارد کنید.',
+        icon: Icons.person_outline_rounded,
+        formKey: viewModel.loginFormKey,
+        apiError: viewModel.errorMessage,
+        children: [
+          AuthField(
+            controller: viewModel.loginIdentifierController,
+            focusNode: viewModel.loginIdentifierFocus,
+            label: 'نام کاربری، شماره همراه یا ایمیل',
+            hint: 'شناسه کاربری خود را وارد کنید',
+            icon: Icons.alternate_email_rounded,
+            keyboardType: TextInputType.text,
+            textInputAction: TextInputAction.next,
+            validator: viewModel.loginIdentifierValidator,
+            onSubmitted: (_) => viewModel.loginPasswordFocus.requestFocus(),
+          ),
+          AuthField(
+            controller: viewModel.loginPasswordController,
+            focusNode: viewModel.loginPasswordFocus,
+            label: 'کلمه عبور',
+            hint: 'کلمه عبور خود را وارد کنید',
+            icon: Icons.lock_outline_rounded,
+            obscureText: viewModel.hideLoginPassword,
+            keyboardType: TextInputType.visiblePassword,
+            textInputAction: TextInputAction.done,
+            validator: viewModel.loginPasswordValidator,
+            onSubmitted: (_) => viewModel.submitLogin(),
+            suffixIcon: IconButton(
+              tooltip: viewModel.hideLoginPassword ? 'نمایش کلمه عبور' : 'مخفی کردن کلمه عبور',
+              onPressed: () => viewModel.toggleLoginPassword(),
+              icon: Icon(viewModel.hideLoginPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
             ),
           ),
-        ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => SnackBarView.show(context, 'بازیابی کلمه عبور در نسخه بعدی فعال می‌شود.'),
+              child: AppText.bodySmall('فراموشی کلمه عبور', color: context.appColors.inquiryForeground, fontWeight: FontWeight.w700),
+            ),
+          ),
+          AppButton(label: 'ورود به حساب', icon: Icons.login_rounded, loading: viewModel.loading, onPressed: viewModel.submitLogin),
+          AuthSwitch(question: 'هنوز حساب ایجاد نکرده‌اید؟', action: 'یک حساب بسازید', onTap: () => viewModel.switchPage(1)),
+        ],
       ),
     );
   }

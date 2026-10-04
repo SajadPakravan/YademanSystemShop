@@ -5,7 +5,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/product/product_detail_model.dart';
-import 'package:yad_sys/models/review_card_model.dart';
+import 'package:yad_sys/models/review_item_model.dart';
 import 'package:yad_sys/screens/product/product_info_screen.dart';
 import 'package:yad_sys/screens/search/search_screen.dart';
 import 'package:yad_sys/tools/app_colors.dart';
@@ -409,7 +409,7 @@ class ProductView extends StatelessWidget {
     );
   }
 
-  Widget ratingReview(ProductDetail product, List<ReviewCardModel> reviews, BuildContext context) {
+  Widget ratingReview(ProductDetail product, List<ReviewItemModel> reviews, BuildContext context) {
     final r = context.responsive;
     final reviewCount = product.reviewCount > 0 ? product.reviewCount : reviews.length;
 
@@ -577,7 +577,7 @@ class ProductView extends StatelessWidget {
     return AppColors.neutralOption;
   }
 
-  Widget _reviewsSection(ProductDetail product, List<ReviewCardModel> reviews, BuildContext context) {
+  Widget _reviewsSection(ProductDetail product, List<ReviewItemModel> reviews, BuildContext context) {
     final r = context.responsive;
     final colors = context.appColors;
     final totalCount = product.reviewCount > 0 ? product.reviewCount : reviews.length;
@@ -820,7 +820,7 @@ class ProductView extends StatelessWidget {
     return product.attributes.where((item) => item.visible).toList(growable: false);
   }
 
-  List<ReviewCardModel> _reviewItems(ProductDetail product) {
+  List<ReviewItemModel> _reviewItems(ProductDetail product) {
     return product.reviews.expand((group) => group.data).toList(growable: false);
   }
 

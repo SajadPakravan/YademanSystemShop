@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/customer_model.dart';
+import 'package:yad_sys/models/order/order_model.dart';
 import 'package:yad_sys/tools/app_cache.dart';
 
 class ProfileViewModel extends ChangeNotifier {
@@ -18,6 +21,8 @@ class ProfileViewModel extends ChangeNotifier {
   bool isLoading = false;
   bool isRefreshing = false;
   String errorMessage = '';
+  int activeOrdersCount = 0;
+  bool _disposed = false;
 
   Future<void> loadCustomer({bool forceRefresh = false}) async {
     if (isLoading || isRefreshing) return;
@@ -31,7 +36,7 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _httpRequest.getCustomer(id: customerId, token: token);
+      final response = await _httpRequest.getCustomer(token: token);
       if (response is! Map) {
         errorMessage = 'دریافت اطلاعات حساب کاربری انجام نشد.';
         return;
@@ -45,8 +50,10 @@ class ProfileViewModel extends ChangeNotifier {
         return;
       }
 
-      customer = CustomerModel.fromJson(Map<String, dynamic>.from(map['data']));
+      final model = CustomerResponseModel.fromJson(map);
+      customer = model.data;
       await _cacheCustomerHeader(customer!);
+      unawaited(_loadActiveOrdersCount());
     } catch (e) {
       if (kDebugMode) print('CUSTOMER ERROR >>>> $e');
       errorMessage = 'دریافت اطلاعات حساب کاربری انجام نشد. اتصال اینترنت را بررسی کنید.';
@@ -58,6 +65,29 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   Future<void> refreshCustomer() => loadCustomer(forceRefresh: true);
+
+
+  Future<void> _loadActiveOrdersCount() async {
+    try {
+      final response = await _httpRequest.getOrders(token: token);
+      if (response is! Map) return;
+
+      final model = OrdersResponseModel.fromJson(Map<String, dynamic>.from(response));
+      if (!model.success) return;
+
+      activeOrdersCount = model.data.where((order) => order.isOpen).length;
+      if (!_disposed) notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('PROFILE ORDERS COUNT ERROR >>>> $e');
+    }
+  }
+
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 
   Future<void> _cacheCustomerHeader(CustomerModel value) async {
     await AppCache.setString('customer_first_name', value.firstName);

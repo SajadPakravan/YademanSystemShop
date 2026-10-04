@@ -1,5 +1,5 @@
 import 'package:yad_sys/models/product/product_item_model.dart';
-import 'package:yad_sys/models/review_card_model.dart';
+import 'package:yad_sys/models/review_item_model.dart';
 import 'package:yad_sys/models/section_item_action_model.dart';
 
 class ProductDetailModel {
@@ -207,12 +207,12 @@ class ProductVariationOption {
 class ProductDetailReview {
   const ProductDetailReview({required this.data, required this.viewAll});
 
-  final List<ReviewCardModel> data;
+  final List<ReviewItemModel> data;
   final ProductDetailViewAll? viewAll;
 
   factory ProductDetailReview.fromJson(Map<String, dynamic> json) {
     return ProductDetailReview(
-      data: List.castFrom(json['data']).map((item) => ReviewCardModel.fromJson(item)).toList(growable: false),
+      data: List.castFrom(json['data']).map((item) => ReviewItemModel.fromJson(item)).toList(growable: false),
       viewAll: json['view_all'] is Map ? ProductDetailViewAll.fromJson(Map<String, dynamic>.from(json['view_all'])) : null,
     );
   }

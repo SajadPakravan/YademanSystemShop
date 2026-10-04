@@ -5,6 +5,8 @@ import 'package:yad_sys/screens/account/profile/cart/cart_screen.dart';
 import 'package:yad_sys/screens/account/profile/favorites/favorites_screen.dart';
 import 'package:yad_sys/screens/account/profile/orders/orders_screen.dart';
 import 'package:yad_sys/screens/account/profile/password/change_password_screen.dart';
+import 'package:yad_sys/screens/account/profile/reviews/reviews_screen.dart';
+import 'package:yad_sys/screens/account/profile/viewed_products/viewed_products_screen.dart';
 import 'package:yad_sys/screens/account/profile/personal_info/personal_info_screen.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
@@ -150,22 +152,32 @@ class ProfileView extends StatelessWidget {
         onTap: () => _openEditable(context, AddressesScreen(customer: customer)),
       ),
       ProfileMenuCard(
+        title: 'سفارشات',
+        icon: Icons.receipt_long_outlined,
+        badgeCount: viewModel.activeOrdersCount,
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => OrdersScreen(token: viewModel.token))),
+      ),
+      ProfileMenuCard(
         title: 'علاقه‌مندی‌ها',
         icon: Icons.favorite_border_rounded,
-        badgeCount: customer.wishlistCount,
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => FavoritesScreen(items: customer.wishlist))),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => FavoritesScreen(token: viewModel.token))),
       ),
       ProfileMenuCard(
         title: 'سبد خرید',
         icon: Icons.shopping_cart_outlined,
         badgeCount: customer.cartCount,
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CartScreen(items: customer.cart))),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CartScreen(token: viewModel.token))),
       ),
       ProfileMenuCard(
-        title: 'سفارشات',
-        icon: Icons.receipt_long_outlined,
-        badgeCount: customer.incompleteOrdersCount,
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => OrdersScreen(orders: customer.orders))),
+        title: 'مشاهده‌شده‌ها',
+        icon: Icons.history_rounded,
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ViewedProductsScreen(token: viewModel.token))),
+      ),
+      ProfileMenuCard(
+        title: 'نظرات من',
+        icon: Icons.rate_review_outlined,
+        badgeCount: customer.commentsCount,
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReviewsScreen(token: viewModel.token))),
       ),
       ProfileMenuCard(
         title: 'تغییر گذرواژه',

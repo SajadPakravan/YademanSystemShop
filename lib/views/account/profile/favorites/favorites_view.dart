@@ -1,29 +1,82 @@
 import 'package:flutter/material.dart';
-import 'package:yad_sys/models/customer_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/view_models/account/profile/favorites_view_model.dart';
 import 'package:yad_sys/widgets/account/account_empty_state.dart';
-import 'package:yad_sys/widgets/account/customer_product_row_card.dart';
 import 'package:yad_sys/widgets/app_bar_view.dart';
+import 'package:yad_sys/widgets/buttons/app_button.dart';
+import 'package:yad_sys/widgets/loading.dart';
+import 'package:yad_sys/widgets/product/shop_product_row_card.dart';
+import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class FavoritesView extends StatelessWidget {
-  const FavoritesView({super.key, required this.items});
-  final List<CustomerProductItemModel> items;
+  const FavoritesView({super.key, required this.viewModel});
+
+  final FavoritesViewModel viewModel;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final r = context.responsive;
+
     return Scaffold(
-      backgroundColor: context.appColors.background,
+      backgroundColor: colors.background,
       appBar: const AppBarView(title: 'علاقه‌مندی‌ها'),
-      body: items.isEmpty
-          ? const AccountEmptyState(icon: Icons.favorite_border_rounded, title: 'لیست علاقه‌مندی خالی است', message: 'محصولاتی که دوست دارید را به علاقه‌مندی‌ها اضافه کنید.')
-          : ListView.separated(
-              padding: EdgeInsets.all(r.pageHorizontalPadding),
-              itemCount: items.length,
-              separatorBuilder: (_, _) => SizedBox(height: r.space(10)),
-              itemBuilder: (context, index) => CustomerProductRowCard(item: items[index], showQuantity: false),
+      body: _body(context, r),
+    );
+  }
+
+  Widget _body(BuildContext context, AppDimension r) {
+    if (viewModel.isLoading && viewModel.items.isEmpty) return const Loading();
+    if (viewModel.errorMessage.isNotEmpty && viewModel.items.isEmpty) return _error(context);
+
+    if (viewModel.items.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: viewModel.refresh,
+        child: const CustomScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: AccountEmptyState(
+                icon: Icons.favorite_border_rounded,
+                title: 'لیست علاقه‌مندی خالی است',
+                message: 'محصولاتی که دوست دارید را به علاقه‌مندی‌ها اضافه کنید.',
+              ),
             ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: viewModel.refresh,
+      child: ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(vertical: r.space(8)),
+        itemCount: viewModel.items.length,
+        separatorBuilder: (_, _) => SizedBox(height: r.space(4)),
+        itemBuilder: (context, index) => ShopProductRowCard(product: viewModel.items[index]),
+      ),
+    );
+  }
+
+  Widget _error(BuildContext context) {
+    final r = context.responsive;
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(r.pageHorizontalPadding * 1.5),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_off_outlined, color: context.appColors.textMuted, size: r.icon(62)),
+            SizedBox(height: r.space(14)),
+            AppText.bodyMedium(viewModel.errorMessage, textAlign: TextAlign.center, color: context.appColors.textSecondary),
+            SizedBox(height: r.space(14)),
+            AppButton(label: 'تلاش دوباره', expand: false, icon: Icons.refresh_rounded, onPressed: () => viewModel.load(refresh: true)),
+          ],
+        ),
+      ),
     );
   }
 }

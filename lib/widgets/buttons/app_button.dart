@@ -38,10 +38,11 @@ class AppButton extends StatelessWidget {
         : Row(
             mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              if (icon != null) ...<Widget>[Icon(icon, size: context.responsive.icon(19)), SizedBox(width: context.responsive.space(7))],
+            spacing: context.responsive.space(7),
+            children: [
+              if (icon != null) Icon(icon, size: context.responsive.icon(19)),
               Flexible(
-                child: AppText.labelLarge(label, maxLines: 1, overflow: TextOverflow.ellipsis, color: labelColor),
+                child: AppText.labelLarge(label, maxLines: 1, overflow: TextOverflow.ellipsis, color: Colors.white),
               ),
             ],
           );
