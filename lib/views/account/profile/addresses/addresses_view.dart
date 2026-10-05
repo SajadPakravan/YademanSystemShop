@@ -191,10 +191,10 @@ class _AddressFormState extends State<_AddressForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (var i = 0; i < widget.controllers.length; i++) ...[
-            AppText.labelMedium(widget.labels[i], color: context.appColors.textSecondary, fontWeight: FontWeight.w700),
             SizedBox(height: r.space(6)),
             AppTextField(
               controller: widget.controllers[i],
+              title: widget.labels[i],
               hint: widget.labels[i],
               icon: widget.icons[i],
               keyboardType: widget.labels[i] == 'شماره تماس'

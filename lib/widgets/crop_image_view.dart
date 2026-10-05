@@ -2,23 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 
-Future<CroppedFile> cropImageView({required BuildContext context, required String imageFile}) async {
-  final croppedFile = await ImageCropper().cropImage(
+Future<CroppedFile?> cropImageView({required BuildContext context, required String imageFile}) async {
+  return ImageCropper().cropImage(
     sourcePath: imageFile,
-    maxWidth: 512,
-    maxHeight: 512,
+    aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+    compressFormat: ImageCompressFormat.jpg,
+    compressQuality: 92,
+    maxWidth: 1024,
+    maxHeight: 1024,
     uiSettings: [
       AndroidUiSettings(
-        toolbarTitle: 'عکس خود را برش دهید',
+        toolbarTitle: 'عکس خود را تنظیم کنید',
         toolbarColor: AppColors.primary,
         toolbarWidgetColor: AppColors.onBrand,
         activeControlsWidgetColor: AppColors.primary,
-        lockAspectRatio: false,
+        initAspectRatio: CropAspectRatioPreset.square,
+        lockAspectRatio: true,
         cropStyle: CropStyle.circle,
+        hideBottomControls: false,
       ),
-      IOSUiSettings(title: 'عکس خود را برش دهید', cropStyle: CropStyle.circle),
+      IOSUiSettings(
+        title: 'عکس خود را تنظیم کنید',
+        cropStyle: CropStyle.circle,
+        aspectRatioLockEnabled: true,
+        resetAspectRatioEnabled: false,
+        rotateButtonsHidden: false,
+      ),
     ],
   );
-  if (croppedFile == null) throw StateError('Image crop was cancelled');
-  return croppedFile;
 }

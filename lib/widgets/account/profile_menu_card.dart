@@ -42,7 +42,6 @@ class ProfileMenuCard extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.all(r.space(10)),
                 child: Column(
-                  spacing: r.space(10),
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [

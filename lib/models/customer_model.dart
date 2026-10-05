@@ -63,13 +63,6 @@ class CustomerModel {
     );
   }
 
-  String get fullName {
-    final value = '$firstName $lastName'.trim();
-    if (value.isNotEmpty) return value;
-    if (displayName.isNotEmpty) return displayName;
-    return username;
-  }
-
   bool get personalInfoIncomplete => firstName.trim().isEmpty || lastName.trim().isEmpty || phone.trim().isEmpty;
 
   bool get addressIncomplete => billing.address1.trim().isEmpty && shipping.address1.trim().isEmpty;

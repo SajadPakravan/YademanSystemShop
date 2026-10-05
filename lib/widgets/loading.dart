@@ -11,10 +11,12 @@ class Loading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: LoadingAnimationWidget.threeArchedCircle(
-        color: color ?? AppColors.primary,
-        size: size ?? context.responsive.icon(50, min: 42, max: 58),
+    final colors = context.appColors;
+
+    return Scaffold(
+      backgroundColor: colors.background,
+      body: Center(
+        child: LoadingAnimationWidget.threeArchedCircle(color: color ?? AppColors.primary, size: size ?? context.responsive.icon(50, min: 42, max: 58)),
       ),
     );
   }

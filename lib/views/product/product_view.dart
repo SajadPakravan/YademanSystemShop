@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
 import 'package:yad_sys/models/product/product_detail_model.dart';
 import 'package:yad_sys/models/review_item_model.dart';
+import 'package:yad_sys/screens/account/profile/cart/cart_screen.dart';
 import 'package:yad_sys/screens/product/product_info_screen.dart';
 import 'package:yad_sys/screens/search/search_screen.dart';
 import 'package:yad_sys/tools/app_colors.dart';
@@ -757,10 +758,16 @@ class ProductView extends StatelessWidget {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () async {
-                              // await Get.to(const CartScreen(), transition: Transition.downToUp, duration: const Duration(milliseconds: 300));
-                              await viewModel.refreshCartState();
-                            },
+                            onPressed: viewModel.authToken.isEmpty
+                                ? null
+                                : () async {
+                                    await Get.to(
+                                      () => CartScreen(token: viewModel.authToken),
+                                      transition: Transition.downToUp,
+                                      duration: const Duration(milliseconds: 300),
+                                    );
+                                    await viewModel.refreshCartState();
+                                  },
                             child: const AppText.labelLarge('رفتن به سبد خرید', color: AppColors.onBrand),
                           ),
                         ),
@@ -770,8 +777,14 @@ class ProductView extends StatelessWidget {
                       width: double.infinity,
                       child: product.stockQuantity > 0 && product.price > 0
                           ? ElevatedButton(
-                              onPressed: () => viewModel.addCart(context),
-                              child: const AppText.labelLarge('افزودن به سبد خرید', color: AppColors.onBrand),
+                              onPressed: viewModel.isAddingToCart ? null : () => viewModel.addCart(context),
+                              child: viewModel.isAddingToCart
+                                  ? SizedBox(
+                                      width: r.icon(20),
+                                      height: r.icon(20),
+                                      child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBrand),
+                                    )
+                                  : const AppText.labelLarge('افزودن به سبد خرید', color: AppColors.onBrand),
                             )
                           : ElevatedButton(
                               onPressed: () => ProductConsulta.show(context: context, name: product.name, image: product.image),

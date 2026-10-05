@@ -20,6 +20,9 @@ class CartResponseModel {
 class CartItemModel {
   const CartItemModel({
     required this.id,
+    required this.productId,
+    required this.variationId,
+    required this.key,
     required this.name,
     required this.quantity,
     required this.price,
@@ -27,7 +30,12 @@ class CartItemModel {
     required this.variation,
   });
 
+  /// The current API exposes `id`. Older/newer plugin builds may also expose
+  /// `product_id`; both are normalized here so cart actions keep working.
   final int id;
+  final int productId;
+  final int variationId;
+  final String key;
   final String name;
   final int quantity;
   final int price;
@@ -35,8 +43,12 @@ class CartItemModel {
   final Map<String, String> variation;
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) {
+    final id = _asInt(json['id'] ?? json['product_id']);
     return CartItemModel(
-      id: _asInt(json['id']),
+      id: id,
+      productId: _asInt(json['product_id'], fallback: id),
+      variationId: _asInt(json['variation_id']),
+      key: _asString(json['key'] ?? json['cart_item_key']),
       name: _asString(json['name']),
       quantity: _asInt(json['quantity'], fallback: 1),
       price: _asInt(json['price']),
@@ -45,7 +57,20 @@ class CartItemModel {
     );
   }
 
-  String get variationText => variation.entries.map((entry) => '${entry.key}: ${entry.value}').join(' • ');
+  int get lineTotal => price * quantity;
+
+  String get variationText => variation.entries
+      .map((entry) => '${_humanizeVariationKey(entry.key)}: ${entry.value}')
+      .join(' • ');
+}
+
+String _humanizeVariationKey(String value) {
+  return value
+      .replaceFirst(RegExp(r'^attribute_'), '')
+      .replaceFirst(RegExp(r'^pa_'), '')
+      .replaceAll('_', ' ')
+      .replaceAll('-', ' ')
+      .trim();
 }
 
 List<dynamic> _asList(dynamic value) => value is List ? value : const <dynamic>[];

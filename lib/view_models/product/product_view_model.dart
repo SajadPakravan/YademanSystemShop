@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:yad_sys/connections/http_request.dart';
-import 'package:yad_sys/database/cart_model.dart';
 import 'package:yad_sys/database/favorite_model.dart';
+import 'package:yad_sys/models/cart_model.dart';
 import 'package:yad_sys/models/product/product_detail_model.dart';
 import 'package:yad_sys/screens/product/product_images_screen.dart';
 import 'package:yad_sys/tools/app_cache.dart';
@@ -16,35 +16,35 @@ class ProductViewModel with ChangeNotifier {
   int _currentProductId;
   final List<int> _productHistory = <int>[];
   int _loadRequestSerial = 0;
-
-  int get id => _currentProductId;
-  int get currentProductId => _currentProductId;
-  bool get hasProductHistory => _productHistory.isNotEmpty;
   final HttpRequest _httpRequest = HttpRequest();
   final ProductDetailCache _cache = ProductDetailCache.instance;
-  final Box<CartModel> _cartBox = Hive.box<CartModel>('cartBox');
   final Box<FavoriteModel> _favoritesBox = Hive.box<FavoriteModel>('favoritesBox');
-
   ProductDetailModel? _response;
   final Map<int, int> _selectedVariationOptionIds = <int, int>{};
-
-  ProductDetail? get product => _response?.data;
-
   bool isLoading = true;
   String errorMessage = '';
-
   bool authError = false;
   bool personalInfoError = false;
   bool existCart = false;
   int quantity = 0;
   bool isFavorite = false;
-
+  bool isAddingToCart = false;
+  String _authToken = '';
   int slideIndex = 0;
   final TextEditingController reviewController = TextEditingController();
   int rating = 0;
-
   String _name = '';
   String _email = '';
+
+  int get id => _currentProductId;
+
+  int get currentProductId => _currentProductId;
+
+  bool get hasProductHistory => _productHistory.isNotEmpty;
+
+  ProductDetail? get product => _response?.data;
+
+  String get authToken => _authToken;
 
   List<String> get galleryImages {
     final value = product;
@@ -117,10 +117,7 @@ class ProductViewModel with ChangeNotifier {
       if (requestSerial != _loadRequestSerial || targetId != _currentProductId) return;
 
       debugPrint('PRODUCT DETAIL ERROR >>> $e');
-      debugPrintStack(
-        label: 'PRODUCT DETAIL STACK TRACE',
-        stackTrace: stackTrace,
-      );
+      debugPrintStack(label: 'PRODUCT DETAIL STACK TRACE', stackTrace: stackTrace);
       errorMessage = 'دریافت جزئیات محصول انجام نشد. اتصال اینترنت را بررسی کنید.';
     } finally {
       if (requestSerial == _loadRequestSerial && targetId == _currentProductId) {
@@ -245,30 +242,66 @@ class ProductViewModel with ChangeNotifier {
 
   Future<void> _refreshLocalState() async {
     await _checkLogged();
-    _checkCart();
+    if (!authError) {
+      await _refreshServerCartState();
+    } else {
+      existCart = false;
+      quantity = 0;
+    }
     _checkFavorites();
   }
 
   Future<void> _checkLogged() async {
-    _name = await AppCache.getString('name');
+    _authToken = await AppCache.getString('token');
+    _name = await AppCache.getString('first_name');
     _email = await AppCache.getString('email');
-    authError = _email.isEmpty;
-    personalInfoError = _name.isEmpty;
+    authError = _authToken.isEmpty;
+    personalInfoError = _name.trim().isEmpty;
   }
 
-  void _checkCart() {
+  int? get selectedVariationId {
+    final value = product;
+    if (value == null || value.variations.isEmpty) return null;
+    for (final variation in value.variations) {
+      final selected = selectedOptionFor(variation);
+      if (selected != null && selected.id > 0) return selected.id;
+    }
+    return value.defaultVariation;
+  }
+
+  Map<String, String> get selectedVariationValues {
+    final value = product;
+    if (value == null) return const <String, String>{};
+    final result = <String, String>{};
+    for (final variation in value.variations) {
+      final selected = selectedOptionFor(variation);
+      if (selected != null) result[variation.name] = selected.name;
+    }
+    return result;
+  }
+
+  Future<void> _refreshServerCartState() async {
     final value = product;
     existCart = false;
     quantity = 0;
+    if (value == null || _authToken.isEmpty) return;
 
-    if (value == null || authError || _cartBox.isEmpty) return;
+    try {
+      final response = await _httpRequest.getCart(token: _authToken);
+      if (response is! Map) return;
+      final model = CartResponseModel.fromJson(Map<String, dynamic>.from(response));
+      if (!model.success) return;
 
-    for (final cart in _cartBox.values) {
-      if (cart.id == value.id) {
-        quantity = cart.quantity;
-        existCart = true;
-        return;
+      final selectedVarId = selectedVariationId;
+      for (final item in model.data) {
+        final sameProduct = item.productId == value.id || item.id == value.id;
+        if (!sameProduct) continue;
+        if (selectedVarId != null && item.variationId > 0 && item.variationId != selectedVarId) continue;
+        quantity += item.quantity;
       }
+      existCart = quantity > 0;
+    } catch (e) {
+      debugPrint('PRODUCT CART STATE ERROR >>> $e');
     }
   }
 
@@ -299,17 +332,15 @@ class ProductViewModel with ChangeNotifier {
       const ProductImagesScreen(),
       transition: Transition.size,
       duration: const Duration(milliseconds: 350),
-      arguments: <String, dynamic>{
-        'imageIndex': imageIndex,
-        'images': images,
-      },
+      arguments: <String, dynamic>{'imageIndex': imageIndex, 'images': images},
     );
   }
 
   Future<void> addCart(BuildContext context) async {
     final value = product;
-    if (value == null) return;
+    if (value == null || isAddingToCart) return;
 
+    await _checkLogged();
     if (authError) {
       SnackBarView.show(context, 'برای افزودن محصول به سبد خرید لطفا وارد حساب کاربری شوید');
       return;
@@ -320,25 +351,38 @@ class ProductViewModel with ChangeNotifier {
       return;
     }
 
-    if (!existCart) {
-      await _cartBox.add(
-        CartModel(
-          id: value.id,
-          name: value.name,
-          image: value.image,
-          price: value.price,
-          quantity: 1,
-          shippingClass: value.shippingClass,
-        ),
-      );
-    }
-
-    _checkCart();
+    isAddingToCart = true;
     notifyListeners();
+    try {
+      final response = await _httpRequest.addCartItem(
+        token: _authToken,
+        productId: value.id,
+        quantity: 1,
+        variationId: selectedVariationId,
+        variation: selectedVariationValues,
+      );
+
+      if (response is Map && response['success'] == true) {
+        await _refreshServerCartState();
+        if (context.mounted) SnackBarView.show(context, 'محصول به سبد خرید اضافه شد');
+      } else {
+        final message = response is Map && response['message']?.toString().trim().isNotEmpty == true
+            ? response['message'].toString().trim()
+            : 'افزودن محصول به سبد خرید انجام نشد';
+        if (context.mounted) SnackBarView.show(context, message);
+      }
+    } catch (e) {
+      debugPrint('ADD CART ERROR >>> $e');
+      if (context.mounted) SnackBarView.show(context, 'افزودن محصول به سبد خرید انجام نشد');
+    } finally {
+      isAddingToCart = false;
+      notifyListeners();
+    }
   }
 
   Future<void> refreshCartState() async {
-    _checkCart();
+    await _checkLogged();
+    if (!authError) await _refreshServerCartState();
     notifyListeners();
   }
 
@@ -400,22 +444,6 @@ class ProductViewModel with ChangeNotifier {
       SnackBarView.show(context, 'لطفا دیدگاه و امتیاز خود را وارد کنید');
       return;
     }
-
-    // final dynamic jsonReview = await _httpRequest.createProductReview(
-    //   context: context,
-    //   id: value.id,
-    //   review: reviewController.text.trim(),
-    //   reviewer: _name,
-    //   email: _email,
-    //   rating: rating,
-    // );
-
-    // if (jsonReview != false) {
-    //   if (context.mounted) SnackBarView.show(context, 'دیدگاه شما ثبت شد و در حال بررسی است');
-    //   reviewController.clear();
-    //   rating = 0;
-    //   notifyListeners();
-    // }
   }
 
   @override

@@ -24,7 +24,6 @@ class _AuthViewState extends State<AuthView> {
   @override
   void dispose() {
     widget.viewModel.pageController.dispose();
-    widget.viewModel.disposeFields;
     super.dispose();
   }
 

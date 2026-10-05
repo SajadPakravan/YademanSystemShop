@@ -57,8 +57,6 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> refreshCustomer() => loadCustomer(forceRefresh: true);
-
   Future<void> _loadActiveOrdersCount() async {
     try {
       final response = await _httpRequest.getOrders(token: token);
@@ -81,9 +79,11 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   Future<void> _cacheCustomerHeader(CustomerModel value) async {
+    await AppCache.setString('username', value.username);
     await AppCache.setString('first_name', value.firstName);
     await AppCache.setString('last_name', value.lastName);
     await AppCache.setString('display_name', value.displayName);
+    await AppCache.setString('email', value.email);
     await AppCache.setString('avatar', value.avatar);
     await AppCache.setString('phone', value.phone);
   }
