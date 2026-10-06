@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:yad_sys/models/cart_model.dart';
+import 'package:yad_sys/tools/account_session_cache.dart';
 import 'package:yad_sys/view_models/account/profile/account_list_view_model.dart';
 
 class CartViewModel extends AccountListViewModel<CartItemModel> {
@@ -20,10 +21,23 @@ class CartViewModel extends AccountListViewModel<CartItemModel> {
     return AccountListLoadResult(success: model.success, count: model.count, items: model.data);
   }
 
+  @override
+  bool restoreSessionCache() {
+    final cached = AccountSessionCache.cart;
+    if (cached == null) return false;
+    items = List<CartItemModel>.from(cached);
+    count = AccountSessionCache.cartCount;
+    return true;
+  }
+
+  @override
+  void writeSessionCache() {
+    AccountSessionCache.cart = List<CartItemModel>.unmodifiable(items);
+    AccountSessionCache.cartCount = count;
+  }
+
   String _identity(CartItemModel item) => '${item.key}|${item.productId}|${item.variation.entries.map((e) => '${e.key}:${e.value}').join(',')}';
-
   bool isBusy(CartItemModel item) => _busyItems.contains(_identity(item));
-
   int get totalPrice => items.fold<int>(0, (sum, item) => sum + item.lineTotal);
   int get totalQuantity => items.fold<int>(0, (sum, item) => sum + item.quantity);
 
@@ -55,7 +69,11 @@ class CartViewModel extends AccountListViewModel<CartItemModel> {
             : 'تغییر تعداد محصول در سبد خرید انجام نشد.';
         return false;
       }
-      await load(refresh: true);
+
+      final index = items.indexWhere((value) => _identity(value) == identity);
+      if (index >= 0) items[index] = items[index].copyWith(quantity: quantity);
+      count = items.length;
+      writeSessionCache();
       return true;
     } catch (e) {
       if (kDebugMode) print('CART UPDATE ERROR >>> $e');
@@ -87,7 +105,10 @@ class CartViewModel extends AccountListViewModel<CartItemModel> {
             : 'حذف محصول از سبد خرید انجام نشد.';
         return false;
       }
-      await load(refresh: true);
+
+      items.removeWhere((value) => _identity(value) == identity);
+      count = items.length;
+      writeSessionCache();
       return true;
     } catch (e) {
       if (kDebugMode) print('CART DELETE ERROR >>> $e');

@@ -1,11 +1,22 @@
 class CustomerResponseModel {
-  const CustomerResponseModel({required this.success, required this.data});
+  const CustomerResponseModel({required this.success, required this.data, this.message = ''});
 
   final bool success;
   final CustomerModel data;
+  final String message;
 
   factory CustomerResponseModel.fromJson(Map<String, dynamic> json) {
-    return CustomerResponseModel(success: json['success'], data: CustomerModel.fromJson(_asMap(json['data'])));
+    final source = json['user'] is Map
+        ? _asMap(json['user'])
+        : json['data'] is Map
+        ? _asMap(json['data'])
+        : json;
+
+    return CustomerResponseModel(
+      success: json.containsKey('success') ? json['success'] == true : true,
+      data: CustomerModel.fromJson(source),
+      message: _asString(json['message']),
+    );
   }
 }
 
@@ -20,12 +31,26 @@ class CustomerModel {
     required this.phone,
     required this.avatar,
     required this.dateCreated,
-    required this.billing,
-    required this.shipping,
+    required this.addressCount,
     required this.ordersCount,
     required this.cartCount,
     required this.commentsCount,
   });
+
+  const CustomerModel.empty()
+    : id = 0,
+      username = '',
+      firstName = '',
+      lastName = '',
+      displayName = '',
+      email = '',
+      phone = '',
+      avatar = '',
+      dateCreated = '',
+      addressCount = 0,
+      ordersCount = 0,
+      cartCount = 0,
+      commentsCount = 0;
 
   final int id;
   final String username;
@@ -36,14 +61,17 @@ class CustomerModel {
   final String phone;
   final String avatar;
   final String dateCreated;
-  final Billing billing;
-  final Shipping shipping;
+  final int addressCount;
   final int ordersCount;
   final int cartCount;
   final int commentsCount;
 
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
-    final source = json['data'] is Map ? _asMap(json['data']) : json;
+    final source = json['user'] is Map
+        ? _asMap(json['user'])
+        : json['data'] is Map
+        ? _asMap(json['data'])
+        : json;
 
     return CustomerModel(
       id: _asInt(source['id']),
@@ -52,132 +80,89 @@ class CustomerModel {
       lastName: _asString(source['last_name']),
       displayName: _asString(source['display_name']),
       email: _asString(source['email']),
-      phone: _asString(source['phone']),
+      phone: _asString(source['phone'] ?? source['mobile']),
       avatar: _asString(source['avatar']),
       dateCreated: _asString(source['date_created']),
-      billing: Billing.fromJson(_asMap(source['billing'])),
-      shipping: Shipping.fromJson(_asMap(source['shipping'])),
+      addressCount: _asInt(source['address_count']),
       ordersCount: _asInt(source['orders_count']),
       cartCount: _asInt(source['cart_count']),
       commentsCount: _asInt(source['comments_count']),
     );
   }
 
-  bool get personalInfoIncomplete => firstName.trim().isEmpty || lastName.trim().isEmpty || phone.trim().isEmpty;
+  CustomerModel mergeJson(Map<String, dynamic> json) {
+    final source = json['user'] is Map
+        ? _asMap(json['user'])
+        : json['data'] is Map
+        ? _asMap(json['data'])
+        : json;
 
-  bool get addressIncomplete => billing.address1.trim().isEmpty && shipping.address1.trim().isEmpty;
-}
+    return copyWith(
+      id: source.containsKey('id') ? _asInt(source['id'], fallback: id) : id,
+      username: source.containsKey('username') ? _asString(source['username']) : username,
+      firstName: source.containsKey('first_name') ? _asString(source['first_name']) : firstName,
+      lastName: source.containsKey('last_name') ? _asString(source['last_name']) : lastName,
+      displayName: source.containsKey('display_name') ? _asString(source['display_name']) : displayName,
+      email: source.containsKey('email') ? _asString(source['email']) : email,
+      phone: source.containsKey('phone') || source.containsKey('mobile') ? _asString(source['phone'] ?? source['mobile']) : phone,
+      avatar: source.containsKey('avatar') ? _asString(source['avatar']) : avatar,
+      dateCreated: source.containsKey('date_created') ? _asString(source['date_created']) : dateCreated,
+      addressCount: source.containsKey('address_count') ? _asInt(source['address_count'], fallback: addressCount) : addressCount,
+      ordersCount: source.containsKey('orders_count') ? _asInt(source['orders_count'], fallback: ordersCount) : ordersCount,
+      cartCount: source.containsKey('cart_count') ? _asInt(source['cart_count'], fallback: cartCount) : cartCount,
+      commentsCount: source.containsKey('comments_count') ? _asInt(source['comments_count'], fallback: commentsCount) : commentsCount,
+    );
+  }
 
-class Billing {
-  const Billing({
-    required this.firstName,
-    required this.lastName,
-    required this.email,
-    required this.phone,
-    required this.company,
-    required this.country,
-    required this.state,
-    required this.city,
-    required this.address1,
-    required this.address2,
-    required this.postcode,
-  });
-
-  final String firstName;
-  final String lastName;
-  final String email;
-  final String phone;
-  final String company;
-  final String country;
-  final String state;
-  final String city;
-  final String address1;
-  final String address2;
-  final String postcode;
-
-  factory Billing.fromJson(Map<String, dynamic> json) {
-    return Billing(
-      firstName: _asString(json['first_name']),
-      lastName: _asString(json['last_name']),
-      email: _asString(json['email']),
-      phone: _asString(json['phone']),
-      company: _asString(json['company']),
-      country: _asString(json['country']),
-      state: _asString(json['state']),
-      city: _asString(json['city']),
-      address1: _asString(json['address_1']),
-      address2: _asString(json['address_2']),
-      postcode: _asString(json['postcode']),
+  CustomerModel copyWith({
+    int? id,
+    String? username,
+    String? firstName,
+    String? lastName,
+    String? displayName,
+    String? email,
+    String? phone,
+    String? avatar,
+    String? dateCreated,
+    int? addressCount,
+    int? ordersCount,
+    int? cartCount,
+    int? commentsCount,
+  }) {
+    return CustomerModel(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      displayName: displayName ?? this.displayName,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      avatar: avatar ?? this.avatar,
+      dateCreated: dateCreated ?? this.dateCreated,
+      addressCount: addressCount ?? this.addressCount,
+      ordersCount: ordersCount ?? this.ordersCount,
+      cartCount: cartCount ?? this.cartCount,
+      commentsCount: commentsCount ?? this.commentsCount,
     );
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    'username': username,
     'first_name': firstName,
     'last_name': lastName,
+    'display_name': displayName,
     'email': email,
     'phone': phone,
-    'company': company,
-    'country': country,
-    'state': state,
-    'city': city,
-    'address_1': address1,
-    'address_2': address2,
-    'postcode': postcode,
+    'avatar': avatar,
+    'date_created': dateCreated,
+    'address_count': addressCount,
+    'orders_count': ordersCount,
+    'cart_count': cartCount,
+    'comments_count': commentsCount,
   };
-}
 
-class Shipping {
-  const Shipping({
-    required this.firstName,
-    required this.lastName,
-    required this.phone,
-    required this.company,
-    required this.country,
-    required this.state,
-    required this.city,
-    required this.address1,
-    required this.address2,
-    required this.postcode,
-  });
-
-  final String firstName;
-  final String lastName;
-  final String phone;
-  final String company;
-  final String country;
-  final String state;
-  final String city;
-  final String address1;
-  final String address2;
-  final String postcode;
-
-  factory Shipping.fromJson(Map<String, dynamic> json) {
-    return Shipping(
-      firstName: _asString(json['first_name']),
-      lastName: _asString(json['last_name']),
-      phone: _asString(json['phone']),
-      company: _asString(json['company']),
-      country: _asString(json['country']),
-      state: _asString(json['state']),
-      city: _asString(json['city']),
-      address1: _asString(json['address_1']),
-      address2: _asString(json['address_2']),
-      postcode: _asString(json['postcode']),
-    );
-  }
-
-  Map<String, dynamic> toJson() => <String, dynamic>{
-    'first_name': firstName,
-    'last_name': lastName,
-    'phone': phone,
-    'company': company,
-    'country': country,
-    'state': state,
-    'city': city,
-    'address_1': address1,
-    'address_2': address2,
-    'postcode': postcode,
-  };
+  bool get personalInfoIncomplete => firstName.trim().isEmpty || lastName.trim().isEmpty || phone.trim().isEmpty;
 }
 
 Map<String, dynamic> _asMap(dynamic value) {

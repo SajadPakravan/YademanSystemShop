@@ -3,8 +3,6 @@ import 'package:yad_sys/models/customer_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/view_models/account/profile_view_model.dart';
-import 'package:yad_sys/widgets/error_connection_widget.dart';
-import 'package:yad_sys/widgets/loading.dart';
 import 'package:yad_sys/widgets/net_image.dart';
 import 'package:yad_sys/widgets/profile/profile_menu_grid.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
@@ -21,27 +19,18 @@ class ProfileView extends StatelessWidget {
     final r = context.responsive;
     final customer = viewModel.customer;
 
-    if (viewModel.isLoading && customer == null) return const Loading();
-
-    if (customer == null) {
-      return ErrorConnectionWidget(
-        errorMessage: 'دریافت اطلاعات حساب کاربری انجام نشد\n لطفا اتصال اینترنت را بررسی و مجدد تلاش کنید',
-        onPressed: () => viewModel.loadCustomer(forceRefresh: true),
-      );
-    }
-
     return Scaffold(
       backgroundColor: colors.background,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => viewModel.loadCustomer(forceRefresh: true),
+          onRefresh: viewModel.refreshCustomer,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(18), r.pageHorizontalPadding, r.space(28)),
             children: [
               header(context, customer),
-              SizedBox(height: r.space(24)),
-              if (viewModel.isRefreshing) ...[const LinearProgressIndicator(minHeight: 2), SizedBox(height: r.space(24))],
+              SizedBox(height: r.space(20)),
+              if (viewModel.isRefreshing) ...[const LinearProgressIndicator(minHeight: 2), SizedBox(height: r.space(20))],
               ProfileMenuGrid(customer: customer, viewModel: viewModel, logout: logout),
             ],
           ),

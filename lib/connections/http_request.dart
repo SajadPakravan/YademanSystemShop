@@ -19,7 +19,9 @@ class HttpRequest {
 
   String get _urlRegister => 'https://$_urlMain/wp-json/app-api/v1/auth/register';
 
-  String get _urlCustomer => 'https://$_urlMain/wp-json/app-api/v1/customers';
+  String get _urlCustomer => 'https://$_urlMain/wp-json/app-api/v1/customer';
+
+  String get _urlAddress => 'https://$_urlMain/wp-json/app-api/v1/address';
 
   String get _urlOrders => 'https://$_urlMain/wp-json/app-api/v1/orders';
 
@@ -183,9 +185,16 @@ class HttpRequest {
 
   Future<dynamic> getCustomer({required String token}) => _authorizedJsonRequest(method: 'GET', url: _urlCustomer, token: token);
 
-  /// Partial profile update. Only changed fields should be supplied by the caller.
   Future<dynamic> updateCustomer({required String token, required Map<String, dynamic> changes}) =>
-      _authorizedJsonRequest(method: 'PATCH', url: _urlCustomer, token: token, body: changes, timeout: const Duration(seconds: 60));
+      _authorizedJsonRequest(method: 'PUT', url: _urlCustomer, token: token, body: changes, timeout: const Duration(seconds: 60));
+
+  Future<dynamic> getAddresses({required String token}) => _authorizedJsonRequest(method: 'GET', url: _urlAddress, token: token);
+
+  Future<dynamic> updateAddresses({required String token, required Map<String, dynamic> changes}) =>
+      _authorizedJsonRequest(method: 'PUT', url: _urlAddress, token: token, body: changes, timeout: const Duration(seconds: 45));
+
+  Future<dynamic> replaceAddresses({required String token, required Map<String, dynamic> addresses}) =>
+      _authorizedJsonRequest(method: 'PUT', url: _urlAddress, token: token, body: addresses, timeout: const Duration(seconds: 45));
 
   Future<dynamic> getOrders({required String token}) => _authorizedJsonRequest(method: 'GET', url: _urlOrders, token: token);
 

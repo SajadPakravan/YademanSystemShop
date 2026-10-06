@@ -13,8 +13,10 @@ Future<CroppedFile?> cropImageView({required BuildContext context, required Stri
     uiSettings: [
       AndroidUiSettings(
         toolbarTitle: 'عکس خود را تنظیم کنید',
-        toolbarColor: AppColors.primary,
-        toolbarWidgetColor: AppColors.onBrand,
+        toolbarColor: context.appColors.surface,
+        statusBarLight: !context.isDarkMode,
+        toolbarWidgetColor: context.appColors.textPrimary,
+        navBarLight: !context.isDarkMode,
         activeControlsWidgetColor: AppColors.primary,
         initAspectRatio: CropAspectRatioPreset.square,
         lockAspectRatio: true,

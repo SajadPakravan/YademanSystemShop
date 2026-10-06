@@ -29,7 +29,7 @@ class LoginView extends StatelessWidget {
             focusNode: viewModel.loginIdentifierFocus,
             label: 'نام کاربری، شماره همراه یا ایمیل',
             hint: 'شناسه کاربری خود را وارد کنید',
-            icon: Icons.alternate_email_rounded,
+            icon: Icons.person_outline,
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.next,
             validator: viewModel.loginIdentifierValidator,

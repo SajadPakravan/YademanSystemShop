@@ -19,8 +19,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     final authUser = widget.viewModel.user!;
-    _profileViewModel = ProfileViewModel(customerId: authUser.id, token: authUser.token);
-    _profileViewModel.loadCustomer();
+    _profileViewModel = ProfileViewModel(token: authUser.token, initialCustomer: authUser.customer, onCustomerUpdated: widget.viewModel.applyCustomer);
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfileScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final latest = widget.viewModel.customer;
+    if (latest != null && latest != _profileViewModel.customer) {
+      _profileViewModel.applyCustomer(latest);
+    }
   }
 
   @override
@@ -30,10 +38,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _profileViewModel,
-      builder: (context, child) => ProfileView(viewModel: _profileViewModel, logout: widget.viewModel.logout),
-    );
-  }
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _profileViewModel,
+    builder: (context, child) => ProfileView(viewModel: _profileViewModel, logout: widget.viewModel.logout),
+  );
 }

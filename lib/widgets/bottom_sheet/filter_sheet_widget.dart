@@ -17,10 +17,11 @@ Future<void> sortSheet(BuildContext context, ShopViewModel viewModel) async {
   final draft = viewModel.appliedFilters.copy();
   viewModel.beginPreview();
 
-  await showModalBottomSheet<void>(
+  await showModalBottomSheet(
     context: context,
+    showDragHandle: true,
+    enableDrag: true,
     isScrollControlled: true,
-    backgroundColor: AppColors.transparent,
     builder: (sheetContext) {
       return StatefulBuilder(
         builder: (context, setSheetState) {
@@ -85,8 +86,9 @@ Future<void> categorySheet(BuildContext context, ShopViewModel viewModel) async 
 
   await showModalBottomSheet<void>(
     context: context,
+    showDragHandle: true,
+    enableDrag: true,
     isScrollControlled: true,
-    backgroundColor: AppColors.transparent,
     builder: (sheetContext) {
       return StatefulBuilder(
         builder: (context, setSheetState) {
@@ -139,8 +141,9 @@ Future<void> brandSheet(BuildContext context, ShopViewModel viewModel) async {
 
   await showModalBottomSheet<void>(
     context: context,
+    showDragHandle: true,
+    enableDrag: true,
     isScrollControlled: true,
-    backgroundColor: AppColors.transparent,
     builder: (sheetContext) {
       return StatefulBuilder(
         builder: (context, setSheetState) {
@@ -191,8 +194,9 @@ Future<void> priceSheet(BuildContext context, ShopViewModel viewModel) async {
 
   await showModalBottomSheet<void>(
     context: context,
+    showDragHandle: true,
+    enableDrag: true,
     isScrollControlled: true,
-    backgroundColor: AppColors.transparent,
     builder: (sheetContext) {
       return StatefulBuilder(
         builder: (context, setSheetState) {
@@ -271,8 +275,9 @@ Future<void> attributeSheet(BuildContext context, ShopViewModel viewModel, Produ
 
   await showModalBottomSheet<void>(
     context: context,
+    showDragHandle: true,
+    enableDrag: true,
     isScrollControlled: true,
-    backgroundColor: AppColors.transparent,
     builder: (sheetContext) {
       return StatefulBuilder(
         builder: (context, setSheetState) {
@@ -377,11 +382,6 @@ class _FilterSheetShell extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(height: r.space(8)),
-            Container(
-              width: r.space(42),
-              height: r.space(4),
-              decoration: BoxDecoration(color: colors.border, borderRadius: BorderRadius.circular(r.radius(10))),
-            ),
             Padding(
               padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(10), r.space(8), r.space(8)),
               child: Row(

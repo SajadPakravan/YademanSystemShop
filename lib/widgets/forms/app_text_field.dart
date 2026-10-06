@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/tools/app_input_formatter.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class AppTextField extends StatelessWidget {
@@ -19,6 +20,7 @@ class AppTextField extends StatelessWidget {
     this.readOnly = false,
     this.maxLines = 1,
     this.maxLength,
+    this.inputFormatters,
     this.onChanged,
     this.onSubmitted,
     this.autofocus = false,
@@ -36,6 +38,7 @@ class AppTextField extends StatelessWidget {
   final bool readOnly;
   final int maxLines;
   final int? maxLength;
+  final List<TextInputFormatter>? inputFormatters;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final bool autofocus;
@@ -58,7 +61,8 @@ class AppTextField extends StatelessWidget {
           textDirection: textDirection,
           readOnly: readOnly,
           maxLines: obscureText ? 1 : maxLines,
-          inputFormatters: maxLength == null ? null : [LengthLimitingTextInputFormatter(maxLength)],
+          maxLength: maxLength,
+          inputFormatters: inputFormatters,
           autofocus: autofocus,
           onChanged: onChanged,
           onFieldSubmitted: onSubmitted,

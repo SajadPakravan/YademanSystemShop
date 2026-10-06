@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 
 class AuthField extends StatelessWidget {
@@ -40,7 +41,7 @@ class AuthField extends StatelessWidget {
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       textDirection: TextDirection.ltr,
-      textAlign: TextAlign.left,
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\x21-\x7E]'))],
       autofillHints: obscureText ? const <String>[AutofillHints.password] : null,
       validator: validator,
       onFieldSubmitted: onSubmitted,

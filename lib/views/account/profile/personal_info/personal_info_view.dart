@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/tools/app_input_formatter.dart';
 import 'package:yad_sys/view_models/account/profile/personal_info_view_model.dart';
 import 'package:yad_sys/widgets/app_bar_view.dart';
 import 'package:yad_sys/widgets/bottom_sheet/bottom_sheet_pick_image.dart';
@@ -22,12 +23,12 @@ class PersonalInfoView extends StatelessWidget {
     final colors = context.appColors;
     final r = context.responsive;
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      appBar: const AppBarView(title: 'مشخصات فردی'),
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: SafeArea(
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: colors.background,
+        appBar: const AppBarView(title: 'مشخصات فردی'),
+        body: SafeArea(
           child: SingleChildScrollView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(18), r.pageHorizontalPadding, r.space(28)),
@@ -35,44 +36,20 @@ class PersonalInfoView extends StatelessWidget {
               spacing: r.space(15),
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _avatar(context),
-                AppTextField(
-                  controller: viewModel.usernameController,
-                  title: 'نام کاربری',
-                  hint: 'نام کاربری',
-                  icon: Icons.alternate_email_rounded,
-                  errorText: viewModel.usernameError,
-                  textInputAction: TextInputAction.next,
-                  onChanged: (_) => viewModel.fieldChanged(),
-                ),
-                AppTextField(
-                  controller: viewModel.firstNameController,
-                  title: 'نام',
-                  hint: 'نام',
-                  icon: Icons.badge_outlined,
-                  errorText: viewModel.firstNameError,
-                  textInputAction: TextInputAction.next,
-                  onChanged: (_) => viewModel.fieldChanged(),
-                ),
-                AppTextField(
-                  controller: viewModel.lastNameController,
-                  title: 'نام خانوادگی',
-                  hint: 'نام خانوادگی',
-                  icon: Icons.badge_outlined,
-                  errorText: viewModel.lastNameError,
-                  textInputAction: TextInputAction.next,
-                  onChanged: (_) => viewModel.fieldChanged(),
-                ),
-                _displayNameField(context),
+                avatar(context),
+                SizedBox(height: r.space(10)),
+                nameFields(context),
+                useNameDisplayFields(context),
                 AppTextField(
                   controller: viewModel.phoneController,
                   title: 'شماره همراه',
                   hint: 'شماره همراه',
+                  textDirection: TextDirection.ltr,
                   icon: Icons.phone_android_rounded,
                   keyboardType: TextInputType.phone,
                   errorText: viewModel.phoneError,
                   textInputAction: TextInputAction.next,
-                  maxLength: 11,
+                  inputFormatters: AppInputFormatter.formatters(AppInputType.numbers, maxLength: 11),
                   onChanged: (_) => viewModel.fieldChanged(),
                 ),
                 AppTextField(
@@ -85,7 +62,7 @@ class PersonalInfoView extends StatelessWidget {
                   errorText: viewModel.emailError,
                   textInputAction: TextInputAction.done,
                   onChanged: (_) => viewModel.fieldChanged(),
-                  onSubmitted: (_) => _submit(context),
+                  onSubmitted: (_) => submit(context),
                 ),
                 if (viewModel.errorMessage.isNotEmpty)
                   Container(
@@ -99,7 +76,7 @@ class PersonalInfoView extends StatelessWidget {
                   icon: Icons.save_outlined,
                   loading: viewModel.saving,
                   enabled: viewModel.dirty,
-                  onPressed: () => _submit(context),
+                  onPressed: () => submit(context),
                 ),
               ],
             ),
@@ -109,58 +86,7 @@ class PersonalInfoView extends StatelessWidget {
     );
   }
 
-  Widget _displayNameField(BuildContext context) {
-    final colors = context.appColors;
-    final r = context.responsive;
-
-    return AnimatedBuilder(
-      animation: Listenable.merge([viewModel.usernameController, viewModel.firstNameController, viewModel.lastNameController, viewModel.displayNameController]),
-      builder: (context, child) {
-        final username = viewModel.usernameController.text.trim();
-        final firstName = viewModel.firstNameController.text.trim();
-        final lastName = viewModel.lastNameController.text.trim();
-        final fullName = [firstName, lastName].where((part) => part.isNotEmpty).join(' ').trim();
-
-        final options = <String>{firstName, lastName, username, fullName}.where((value) => value.isNotEmpty).toList(growable: false);
-
-        final currentValue = viewModel.displayNameController.text.trim();
-        final selectedValue = options.contains(currentValue) ? currentValue : null;
-
-        return Column(
-          spacing: r.space(5),
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AppText.labelMedium('نام نمایشی', color: colors.textSecondary, fontWeight: FontWeight.w700),
-            DropdownButtonFormField<String>(
-              key: ValueKey('display_name_${selectedValue ?? ''}_${options.join('|')}'),
-              initialValue: selectedValue,
-              isExpanded: true,
-              icon: Icon(Icons.keyboard_arrow_down_rounded, color: colors.textSecondary),
-              dropdownColor: colors.surface,
-              decoration: const InputDecoration(hintText: 'نام نمایشی را انتخاب کنید', prefixIcon: Icon(Icons.account_circle_outlined)),
-              items: options
-                  .map(
-                    (value) => DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    ),
-                  )
-                  .toList(growable: false),
-              onChanged: options.isEmpty
-                  ? null
-                  : (value) {
-                      if (value == null || value == viewModel.displayNameController.text) return;
-                      viewModel.displayNameController.text = value;
-                      viewModel.fieldChanged();
-                    },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _avatar(BuildContext context) {
+  Widget avatar(BuildContext context) {
     final colors = context.appColors;
     final r = context.responsive;
     final size = r.icon(112, min: 96, max: 132);
@@ -194,7 +120,7 @@ class PersonalInfoView extends StatelessWidget {
               shape: const CircleBorder(),
               child: InkWell(
                 customBorder: const CircleBorder(),
-                onTap: viewModel.pickingAvatar || viewModel.saving ? null : () => _showAvatarSource(context),
+                onTap: viewModel.pickingAvatar || viewModel.saving ? null : () => showAvatarSource(context),
                 child: Padding(
                   padding: EdgeInsets.all(r.space(9)),
                   child: viewModel.pickingAvatar
@@ -203,7 +129,7 @@ class PersonalInfoView extends StatelessWidget {
                           height: r.icon(20),
                           child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBrand),
                         )
-                      : Icon(Icons.camera_alt_rounded, color: AppColors.onBrand, size: r.icon(20)),
+                      : Icon(Icons.edit, color: AppColors.onBrand, size: r.icon(20)),
                 ),
               ),
             ),
@@ -213,7 +139,120 @@ class PersonalInfoView extends StatelessWidget {
     );
   }
 
-  void _showAvatarSource(BuildContext context) {
+  Widget nameFields(BuildContext context) {
+    final r = context.responsive;
+
+    return Row(
+      spacing: r.space(8),
+      children: [
+        Expanded(
+          child: AppTextField(
+            controller: viewModel.firstNameController,
+            title: 'نام',
+            hint: 'نام',
+            icon: Icons.badge_outlined,
+            errorText: viewModel.firstNameError,
+            textInputAction: TextInputAction.next,
+            inputFormatters: AppInputFormatter.formatters(AppInputType.persianLetters),
+            onChanged: (_) => viewModel.fieldChanged(),
+          ),
+        ),
+        Expanded(
+          child: AppTextField(
+            controller: viewModel.lastNameController,
+            title: 'نام خانوادگی',
+            hint: 'نام خانوادگی',
+            icon: Icons.badge_outlined,
+            errorText: viewModel.lastNameError,
+            textInputAction: TextInputAction.next,
+            inputFormatters: AppInputFormatter.formatters(AppInputType.persianLetters),
+            onChanged: (_) => viewModel.fieldChanged(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget useNameDisplayFields(BuildContext context) {
+    final r = context.responsive;
+
+    return Row(
+      spacing: r.space(8),
+      children: [
+        Expanded(
+          child: AppTextField(
+            controller: viewModel.usernameController,
+            title: 'نام کاربری',
+            hint: 'نام کاربری',
+            textDirection: TextDirection.ltr,
+            icon: Icons.alternate_email_rounded,
+            errorText: viewModel.usernameError,
+            textInputAction: TextInputAction.next,
+            inputFormatters: AppInputFormatter.formatters(AppInputType.englishLettersAndNumbers),
+            onChanged: (_) => viewModel.fieldChanged(),
+          ),
+        ),
+        Expanded(child: displayNameField(context)),
+      ],
+    );
+  }
+
+  Widget displayNameField(BuildContext context) {
+    final colors = context.appColors;
+    final r = context.responsive;
+
+    return AnimatedBuilder(
+      animation: Listenable.merge([viewModel.usernameController, viewModel.firstNameController, viewModel.lastNameController, viewModel.displayNameController]),
+      builder: (context, child) {
+        final username = viewModel.usernameController.text.trim();
+        final firstName = viewModel.firstNameController.text.trim();
+        final lastName = viewModel.lastNameController.text.trim();
+        final fullName = [firstName, lastName].where((part) => part.isNotEmpty).join(' ').trim();
+
+        final options = <String>{firstName, lastName, username, fullName}.where((value) => value.isNotEmpty).toList(growable: false);
+
+        final currentValue = viewModel.displayNameController.text.trim();
+        final selectedValue = options.contains(currentValue) ? currentValue : null;
+
+        return Column(
+          spacing: r.space(5),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AppText.labelMedium('نام نمایشی', color: colors.textSecondary, fontWeight: FontWeight.w700),
+            DropdownButtonFormField<String>(
+              key: ValueKey('display_name_${selectedValue ?? ''}_${options.join('|')}'),
+              initialValue: selectedValue,
+              isExpanded: true,
+              icon: Icon(Icons.keyboard_arrow_down_rounded, color: colors.textSecondary),
+              dropdownColor: colors.surface,
+              alignment: AlignmentGeometry.center,
+              decoration: const InputDecoration(
+                hint: AppText.bodyMedium('نام نمایشی را انتخاب کنید', maxLines: 1, height: 1),
+                prefixIcon: Icon(Icons.account_circle_outlined),
+              ),
+              items: options
+                  .map(
+                    (value) => DropdownMenuItem<String>(
+                      value: value,
+                      child: Center(child: AppText.bodyMedium(value, maxLines: 1, overflow: TextOverflow.ellipsis, height: 1)),
+                    ),
+                  )
+                  .toList(growable: false),
+              onChanged: options.isEmpty
+                  ? null
+                  : (value) {
+                      if (value == null || value == viewModel.displayNameController.text) return;
+                      viewModel.displayNameController.text = value;
+                      viewModel.fieldChanged();
+                    },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showAvatarSource(BuildContext context) {
     bottomSheetPickImage(
       context: context,
       onTapCamera: () {
@@ -227,9 +266,9 @@ class PersonalInfoView extends StatelessWidget {
     );
   }
 
-  Future<void> _submit(BuildContext context) async {
+  Future<void> submit(BuildContext context) async {
     FocusManager.instance.primaryFocus?.unfocus();
     final success = await viewModel.submit();
-    if (success && context.mounted) Navigator.of(context).pop(true);
+    if (success && context.mounted && viewModel.updatedCustomer != null) Navigator.of(context).pop(viewModel.updatedCustomer);
   }
 }

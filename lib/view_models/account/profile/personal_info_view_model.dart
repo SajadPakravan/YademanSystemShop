@@ -10,19 +10,15 @@ import 'package:yad_sys/tools/app_cache.dart';
 import 'package:yad_sys/widgets/crop_image_view.dart';
 
 class PersonalInfoViewModel extends ChangeNotifier {
-  PersonalInfoViewModel({
-    required this.customer,
-    required this.token,
-    HttpRequest? httpRequest,
-    ImagePicker? imagePicker,
-  })  : httpRequest = httpRequest ?? HttpRequest(),
-        imagePicker = imagePicker ?? ImagePicker(),
-        usernameController = TextEditingController(text: customer.username),
-        firstNameController = TextEditingController(text: customer.firstName),
-        lastNameController = TextEditingController(text: customer.lastName),
-        phoneController = TextEditingController(text: customer.phone),
-        emailController = TextEditingController(text: customer.email),
-        displayNameController = TextEditingController(text: customer.displayName);
+  PersonalInfoViewModel({required this.customer, required this.token, HttpRequest? httpRequest, ImagePicker? imagePicker})
+    : httpRequest = httpRequest ?? HttpRequest(),
+      imagePicker = imagePicker ?? ImagePicker(),
+      usernameController = TextEditingController(text: customer.username),
+      firstNameController = TextEditingController(text: customer.firstName),
+      lastNameController = TextEditingController(text: customer.lastName),
+      phoneController = TextEditingController(text: customer.phone),
+      emailController = TextEditingController(text: customer.email),
+      displayNameController = TextEditingController(text: customer.displayName);
 
   final CustomerModel customer;
   final String token;
@@ -43,6 +39,7 @@ class PersonalInfoViewModel extends ChangeNotifier {
   bool saving = false;
   bool pickingAvatar = false;
   String errorMessage = '';
+  CustomerModel? updatedCustomer;
 
   bool get hasAvatarChange => avatarFilePath != null && avatarFilePath!.isNotEmpty;
 
@@ -73,8 +70,8 @@ class PersonalInfoViewModel extends ChangeNotifier {
     phoneError = phone.isEmpty
         ? 'شماره همراه را وارد کنید.'
         : !RegExp(r'^(?:\+98|0098|98|0)?9\d{9}$').hasMatch(phone)
-            ? 'شماره همراه معتبر نیست.'
-            : null;
+        ? 'شماره همراه معتبر نیست.'
+        : null;
     emailError = email.isNotEmpty && !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email) ? 'ایمیل معتبر نیست.' : null;
 
     notifyListeners();
@@ -88,12 +85,7 @@ class PersonalInfoViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final picked = await imagePicker.pickImage(
-        source: source,
-        imageQuality: 95,
-        maxWidth: 2400,
-        maxHeight: 2400,
-      );
+      final picked = await imagePicker.pickImage(source: source, imageQuality: 95, maxWidth: 2400, maxHeight: 2400);
       if (picked == null) return;
 
       if (!context.mounted) return;
@@ -147,9 +139,24 @@ class PersonalInfoViewModel extends ChangeNotifier {
         return false;
       }
 
-      CustomerModel? updatedCustomer;
-      if (response['data'] is Map) {
-        updatedCustomer = CustomerModel.fromJson(Map<String, dynamic>.from(response['data'] as Map));
+      final responseMap = Map<String, dynamic>.from(response);
+      final payload = responseMap['user'] is Map
+          ? Map<String, dynamic>.from(responseMap['user'] as Map)
+          : responseMap['data'] is Map
+          ? Map<String, dynamic>.from(responseMap['data'] as Map)
+          : <String, dynamic>{};
+
+      if (payload.isNotEmpty) {
+        updatedCustomer = customer.mergeJson(payload);
+      } else {
+        updatedCustomer = customer.copyWith(
+          username: usernameController.text.trim(),
+          firstName: firstNameController.text.trim(),
+          lastName: lastNameController.text.trim(),
+          displayName: displayNameController.text.trim(),
+          email: emailController.text.trim(),
+          phone: phoneController.text.trim(),
+        );
       }
       await _updateCache(updatedCustomer);
       return true;
@@ -177,8 +184,13 @@ class PersonalInfoViewModel extends ChangeNotifier {
     await AppCache.setString('display_name', displayName);
     await AppCache.setString('email', email);
     await AppCache.setString('phone', phone);
-    if (updated != null && updated.avatar.trim().isNotEmpty) {
+    if (updated != null) {
       await AppCache.setString('avatar', updated.avatar);
+      await AppCache.setString('date_created', updated.dateCreated);
+      await AppCache.setInt('address_count', updated.addressCount);
+      await AppCache.setInt('orders_count', updated.ordersCount);
+      await AppCache.setInt('cart_count', updated.cartCount);
+      await AppCache.setInt('comments_count', updated.commentsCount);
     }
   }
 

@@ -10,6 +10,7 @@ import 'package:yad_sys/screens/account/profile/reviews/reviews_screen.dart';
 import 'package:yad_sys/screens/account/profile/viewed_products/viewed_products_screen.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/tools/go_page.dart';
 import 'package:yad_sys/view_models/account/profile_view_model.dart';
 import 'package:yad_sys/widgets/account/profile_menu_card.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
@@ -33,18 +34,18 @@ class ProfileMenuGrid extends StatelessWidget {
         title: 'مشخصات فردی',
         icon: Icons.person_outline_rounded,
         showAlertDot: customer.personalInfoIncomplete,
-        onTap: () => _openEditable(context, PersonalInfoScreen(customer: customer, token: viewModel.token)),
+        onTap: () => _openPersonalInfo(context, PersonalInfoScreen(customer: customer, token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'آدرس‌ها',
         icon: Icons.location_on_outlined,
-        showAlertDot: customer.addressIncomplete,
-        onTap: () => _openEditable(context, AddressesScreen(customer: customer)),
+        showAlertDot: customer.addressCount <= 0,
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => AddressesScreen(token: viewModel.token))),
       ),
       ProfileMenuCard(
         title: 'سفارشات',
         icon: Icons.receipt_long_outlined,
-        badgeCount: viewModel.activeOrdersCount,
+        badgeCount: customer.ordersCount,
         onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => OrdersScreen(token: viewModel.token))),
       ),
       ProfileMenuCard(
@@ -56,7 +57,7 @@ class ProfileMenuGrid extends StatelessWidget {
         title: 'سبد خرید',
         icon: Icons.shopping_cart_outlined,
         badgeCount: customer.cartCount,
-        onTap: () => _openAndRefresh(context, CartScreen(token: viewModel.token)),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CartScreen(token: viewModel.token))),
       ),
       ProfileMenuCard(
         title: 'مشاهده‌شده‌ها',
@@ -95,14 +96,10 @@ class ProfileMenuGrid extends StatelessWidget {
     return Column(spacing: r.space(10), children: rows);
   }
 
-  Future<void> _openAndRefresh(BuildContext context, Widget screen) async {
-    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
-    await viewModel.loadCustomer(forceRefresh: true);
-  }
-
-  Future<void> _openEditable(BuildContext context, Widget screen) async {
-    final changed = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => screen));
-    if (changed == true) await viewModel.loadCustomer(forceRefresh: true);
+  Future<void> _openPersonalInfo(BuildContext context, Widget screen) async {
+    final updated = await rightToPage(screen);
+    print("updated >>>> $updated");
+    if (updated != null) viewModel.applyCustomer(updated);
   }
 
   Future<void> _confirmLogout(BuildContext context) async {

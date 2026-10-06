@@ -57,6 +57,18 @@ class CartItemModel {
     );
   }
 
+  CartItemModel copyWith({int? quantity}) => CartItemModel(
+        id: id,
+        productId: productId,
+        variationId: variationId,
+        key: key,
+        name: name,
+        quantity: quantity ?? this.quantity,
+        price: price,
+        image: image,
+        variation: variation,
+      );
+
   int get lineTotal => price * quantity;
 
   String get variationText => variation.entries
