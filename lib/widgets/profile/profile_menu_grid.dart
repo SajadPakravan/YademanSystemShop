@@ -40,35 +40,37 @@ class ProfileMenuGrid extends StatelessWidget {
         title: 'آدرس‌ها',
         icon: Icons.location_on_outlined,
         showAlertDot: customer.addressCount <= 0,
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => AddressesScreen(token: viewModel.token))),
+        onTap: () => _openList(context, AddressesScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'سفارشات',
         icon: Icons.receipt_long_outlined,
         badgeCount: customer.ordersCount,
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => OrdersScreen(token: viewModel.token))),
+        onTap: () => _openList(context, OrdersScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'علاقه‌مندی‌ها',
         icon: Icons.favorite_border_rounded,
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => FavoritesScreen(token: viewModel.token))),
+        badgeCount: customer.favoritesCount,
+        onTap: () => _openList(context, FavoritesScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'سبد خرید',
         icon: Icons.shopping_cart_outlined,
         badgeCount: customer.cartCount,
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CartScreen(token: viewModel.token))),
+        onTap: () => _openList(context, CartScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'مشاهده‌شده‌ها',
         icon: Icons.history_rounded,
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ViewedProductsScreen(token: viewModel.token))),
+        badgeCount: customer.viewedProductsCount,
+        onTap: () => _openList(context, ViewedProductsScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'نظرات من',
         icon: Icons.rate_review_outlined,
         badgeCount: customer.commentsCount,
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReviewsScreen(token: viewModel.token))),
+        onTap: () => _openList(context, ReviewsScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'تغییر گذرواژه',
@@ -96,10 +98,16 @@ class ProfileMenuGrid extends StatelessWidget {
     return Column(spacing: r.space(10), children: rows);
   }
 
+  /// بازخوانی شمارنده‌های مشتری پس از بازگشت از فهرست‌ها یا آدرس.
+  Future<void> _openList(BuildContext context, Widget screen) async {
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+    await viewModel.refreshCustomer();
+  }
+
+  /// دریافت مدل ویرایش‌شده شخصی و به‌روزرسانی منوی پروفایل.
   Future<void> _openPersonalInfo(BuildContext context, Widget screen) async {
     final updated = await rightToPage(screen);
-    print("updated >>>> $updated");
-    if (updated != null) viewModel.applyCustomer(updated);
+    if (updated is CustomerModel) viewModel.applyCustomer(updated);
   }
 
   Future<void> _confirmLogout(BuildContext context) async {

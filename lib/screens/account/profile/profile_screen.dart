@@ -18,17 +18,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    final authUser = widget.viewModel.user!;
-    _profileViewModel = ProfileViewModel(token: authUser.token, initialCustomer: authUser.customer, onCustomerUpdated: widget.viewModel.applyCustomer);
-  }
-
-  @override
-  void didUpdateWidget(covariant ProfileScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final latest = widget.viewModel.customer;
-    if (latest != null && latest != _profileViewModel.customer) {
-      _profileViewModel.applyCustomer(latest);
-    }
+    _profileViewModel = ProfileViewModel(
+      token: widget.viewModel.token!,
+      initialCustomer: widget.viewModel.customer!,
+      onCustomerUpdated: widget.viewModel.applyCustomer,
+    );
+    // در هر بار ورود به پروفایل تعدادها از API مشتری بازخوانی می‌شوند.
+    _profileViewModel.refreshCustomer();
   }
 
   @override

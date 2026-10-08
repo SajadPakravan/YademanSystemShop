@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hive/hive.dart';
 import 'package:yad_sys/connections/http_request.dart';
-import 'package:yad_sys/database/favorite_model.dart';
 import 'package:yad_sys/models/cart_model.dart';
 import 'package:yad_sys/models/product/product_detail_model.dart';
 import 'package:yad_sys/screens/product/product_images_screen.dart';
@@ -18,7 +16,6 @@ class ProductViewModel with ChangeNotifier {
   int _loadRequestSerial = 0;
   final HttpRequest _httpRequest = HttpRequest();
   final ProductDetailCache _cache = ProductDetailCache.instance;
-  final Box<FavoriteModel> _favoritesBox = Hive.box<FavoriteModel>('favoritesBox');
   ProductDetailModel? _response;
   final Map<int, int> _selectedVariationOptionIds = <int, int>{};
   bool isLoading = true;
@@ -287,7 +284,7 @@ class ProductViewModel with ChangeNotifier {
     if (value == null || _authToken.isEmpty) return;
 
     try {
-      final response = await _httpRequest.getCart(token: _authToken);
+      final response = await _httpRequest.getCompleteCart(token: _authToken);
       if (response is! Map) return;
       final model = CartResponseModel.fromJson(Map<String, dynamic>.from(response));
       if (!model.success) return;
@@ -297,6 +294,8 @@ class ProductViewModel with ChangeNotifier {
         final sameProduct = item.productId == value.id || item.id == value.id;
         if (!sameProduct) continue;
         if (selectedVarId != null && item.variationId > 0 && item.variationId != selectedVarId) continue;
+        if (item.variationId == 0 && item.variation.isNotEmpty && selectedVariationValues.isNotEmpty &&
+            !item.variation.values.every((option) => selectedVariationValues.values.contains(option))) continue;
         quantity += item.quantity;
       }
       existCart = quantity > 0;
@@ -309,14 +308,14 @@ class ProductViewModel with ChangeNotifier {
     final value = product;
     isFavorite = false;
 
-    if (value == null || authError || _favoritesBox.isEmpty) return;
-
-    for (final favorite in _favoritesBox.values) {
-      if (favorite.id == value.id) {
-        isFavorite = true;
-        return;
-      }
-    }
+    // if (value == null || authError || _favoritesBox.isEmpty) return;
+    //
+    // for (final favorite in _favoritesBox.values) {
+    //   if (favorite.id == value.id) {
+    //     isFavorite = true;
+    //     return;
+    //   }
+    // }
   }
 
   void onSlideChange(int index) {
@@ -395,27 +394,27 @@ class ProductViewModel with ChangeNotifier {
       return;
     }
 
-    if (isFavorite) {
-      FavoriteModel? target;
-      for (final favorite in _favoritesBox.values) {
-        if (favorite.id == value.id) {
-          target = favorite;
-          break;
-        }
-      }
-      if (target != null) await target.delete();
-    } else {
-      await _favoritesBox.add(
-        FavoriteModel(
-          id: value.id,
-          name: value.name,
-          image: value.image,
-          price: value.price,
-          regularPrice: value.regularPrice,
-          onSale: value.discountPercent > 0,
-        ),
-      );
-    }
+    // if (isFavorite) {
+    //   FavoriteModel? target;
+    //   for (final favorite in _favoritesBox.values) {
+    //     if (favorite.id == value.id) {
+    //       target = favorite;
+    //       break;
+    //     }
+    //   }
+    //   if (target != null) await target.delete();
+    // } else {
+    //   await _favoritesBox.add(
+    //     FavoriteModel(
+    //       id: value.id,
+    //       name: value.name,
+    //       image: value.image,
+    //       price: value.price,
+    //       regularPrice: value.regularPrice,
+    //       onSale: value.discountPercent > 0,
+    //     ),
+    //   );
+    // }
 
     _checkFavorites();
     notifyListeners();

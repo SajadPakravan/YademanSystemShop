@@ -20,38 +20,41 @@ class ProductsListModel {
   }
 }
 
+/// مدل مشترک صفحه‌بندی فروشگاه و تمام فهرست‌های حساب کاربری.
+/// برای APIهای دیگر، کلید total_* از طریق totalKey در totalProducts نگاشت می‌شود.
 class ProductsPaginationModel {
-  const ProductsPaginationModel({
-    required this.currentPage,
-    required this.perPage,
-    required this.totalItems,
-    required this.totalPages,
-    required this.totalSiteProducts,
-    required this.hasNext,
-    required this.hasPrevious,
-  });
+  /// ساخت مدل صفحه‌بندی با همان فیلدهای اصلی API محصولات.
+  const ProductsPaginationModel({required this.currentPage, required this.perPage, required this.totalItems, required this.totalPages, required this.totalProducts, required this.hasNext, required this.hasPrevious});
 
   final int currentPage;
   final int perPage;
   final int totalItems;
   final int totalPages;
-  final int totalSiteProducts;
+  final int totalProducts;
   final bool hasNext;
   final bool hasPrevious;
 
-  factory ProductsPaginationModel.empty() {
-    return const ProductsPaginationModel(currentPage: 1, perPage: 20, totalItems: 0, totalPages: 1, totalSiteProducts: 0, hasNext: false, hasPrevious: false);
-  }
+  /// مقدار کل موارد هر نوع فهرست را با یک نام خوانا در دسترس می‌گذارد.
+  int get total => totalProducts;
 
-  factory ProductsPaginationModel.fromJson(Map<String, dynamic> json) {
+  /// ایجاد حالت اولیه پیش از دریافت اولین پاسخ سرور.
+  factory ProductsPaginationModel.empty() => const ProductsPaginationModel(currentPage: 1, perPage: 20, totalItems: 0, totalPages: 1, totalProducts: 0, hasNext: false, hasPrevious: false);
+
+  /// خواندن صفحه‌بندی با پشتیبانی از نام اختصاصی مجموع هر API.
+  factory ProductsPaginationModel.fromJson(dynamic value, {String totalKey = 'total_products', int fallbackCount = 0}) {
+    final json = value is Map ? value : const <String, dynamic>{};
+    int number(String key, int fallback) => int.tryParse(json[key]?.toString() ?? '') ?? fallback;
+    final page = number('current_page', 1);
+    final pages = number('total_pages', 1);
+    final totalItems = number('total_items', fallbackCount);
     return ProductsPaginationModel(
-      currentPage: json['current_page'],
-      perPage: json['per_page'],
-      totalItems: json['total_items'],
-      totalPages: json['total_pages'],
-      totalSiteProducts: json['total_site_products'],
-      hasNext: json['has_next'],
-      hasPrevious: json['has_previous'],
+      currentPage: page,
+      perPage: number('per_page', 20),
+      totalItems: totalItems,
+      totalPages: pages,
+      totalProducts: number(totalKey, number('total_products', number('total_site_products', totalItems))),
+      hasNext: json['has_next'] is bool ? json['has_next'] == true : page < pages,
+      hasPrevious: json['has_previous'] is bool ? json['has_previous'] == true : page > 1,
     );
   }
 }

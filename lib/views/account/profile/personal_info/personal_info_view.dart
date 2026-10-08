@@ -11,6 +11,7 @@ import 'package:yad_sys/widgets/bottom_sheet/bottom_sheet_pick_image.dart';
 import 'package:yad_sys/widgets/buttons/app_button.dart';
 import 'package:yad_sys/widgets/forms/app_text_field.dart';
 import 'package:yad_sys/widgets/net_image.dart';
+import 'package:yad_sys/widgets/loading.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class PersonalInfoView extends StatelessWidget {
@@ -22,6 +23,18 @@ class PersonalInfoView extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final r = context.responsive;
+
+    // تا پیش از اولین GET موفق، فرم ناقص از کش کم‌حجم نمایش داده نمی‌شود.
+    if (viewModel.isLoading) return const Scaffold(body: Loading());
+    if (viewModel.errorMessage.startsWith('دریافت مشخصات فردی انجام نشد')) {
+      return Scaffold(
+        appBar: const AppBarView(title: 'مشخصات فردی'),
+        body: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+          AppText.bodyMedium(viewModel.errorMessage),
+          TextButton(onPressed: viewModel.initialize, child: const Text('تلاش مجدد')),
+        ])),
+      );
+    }
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -39,7 +52,17 @@ class PersonalInfoView extends StatelessWidget {
                 avatar(context),
                 SizedBox(height: r.space(10)),
                 nameFields(context),
-                useNameDisplayFields(context),
+                // نام نمایشی از API خوانده می‌شود و دیگر قابل تغییر نیست.
+                AppTextField(
+                  controller: viewModel.usernameController,
+                  title: 'نام کاربری', hint: 'نام کاربری',
+                  textDirection: TextDirection.ltr,
+                  icon: Icons.alternate_email_rounded,
+                  errorText: viewModel.usernameError,
+                  textInputAction: TextInputAction.next,
+                  inputFormatters: AppInputFormatter.formatters(AppInputType.englishLettersAndNumbers),
+                  onChanged: (_) => viewModel.fieldChanged(),
+                ),
                 AppTextField(
                   controller: viewModel.phoneController,
                   title: 'شماره همراه',
@@ -75,7 +98,7 @@ class PersonalInfoView extends StatelessWidget {
                   label: 'ثبت تغییرات',
                   icon: Icons.save_outlined,
                   loading: viewModel.saving,
-                  enabled: viewModel.dirty,
+                  enabled: viewModel.formChanged,
                   onPressed: () => submit(context),
                 ),
               ],
@@ -173,85 +196,6 @@ class PersonalInfoView extends StatelessWidget {
     );
   }
 
-  Widget useNameDisplayFields(BuildContext context) {
-    final r = context.responsive;
-
-    return Row(
-      spacing: r.space(8),
-      children: [
-        Expanded(
-          child: AppTextField(
-            controller: viewModel.usernameController,
-            title: 'نام کاربری',
-            hint: 'نام کاربری',
-            textDirection: TextDirection.ltr,
-            icon: Icons.alternate_email_rounded,
-            errorText: viewModel.usernameError,
-            textInputAction: TextInputAction.next,
-            inputFormatters: AppInputFormatter.formatters(AppInputType.englishLettersAndNumbers),
-            onChanged: (_) => viewModel.fieldChanged(),
-          ),
-        ),
-        Expanded(child: displayNameField(context)),
-      ],
-    );
-  }
-
-  Widget displayNameField(BuildContext context) {
-    final colors = context.appColors;
-    final r = context.responsive;
-
-    return AnimatedBuilder(
-      animation: Listenable.merge([viewModel.usernameController, viewModel.firstNameController, viewModel.lastNameController, viewModel.displayNameController]),
-      builder: (context, child) {
-        final username = viewModel.usernameController.text.trim();
-        final firstName = viewModel.firstNameController.text.trim();
-        final lastName = viewModel.lastNameController.text.trim();
-        final fullName = [firstName, lastName].where((part) => part.isNotEmpty).join(' ').trim();
-
-        final options = <String>{firstName, lastName, username, fullName}.where((value) => value.isNotEmpty).toList(growable: false);
-
-        final currentValue = viewModel.displayNameController.text.trim();
-        final selectedValue = options.contains(currentValue) ? currentValue : null;
-
-        return Column(
-          spacing: r.space(5),
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AppText.labelMedium('نام نمایشی', color: colors.textSecondary, fontWeight: FontWeight.w700),
-            DropdownButtonFormField<String>(
-              key: ValueKey('display_name_${selectedValue ?? ''}_${options.join('|')}'),
-              initialValue: selectedValue,
-              isExpanded: true,
-              icon: Icon(Icons.keyboard_arrow_down_rounded, color: colors.textSecondary),
-              dropdownColor: colors.surface,
-              alignment: AlignmentGeometry.center,
-              decoration: const InputDecoration(
-                hint: AppText.bodyMedium('نام نمایشی را انتخاب کنید', maxLines: 1, height: 1),
-                prefixIcon: Icon(Icons.account_circle_outlined),
-              ),
-              items: options
-                  .map(
-                    (value) => DropdownMenuItem<String>(
-                      value: value,
-                      child: Center(child: AppText.bodyMedium(value, maxLines: 1, overflow: TextOverflow.ellipsis, height: 1)),
-                    ),
-                  )
-                  .toList(growable: false),
-              onChanged: options.isEmpty
-                  ? null
-                  : (value) {
-                      if (value == null || value == viewModel.displayNameController.text) return;
-                      viewModel.displayNameController.text = value;
-                      viewModel.fieldChanged();
-                    },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void showAvatarSource(BuildContext context) {
     bottomSheetPickImage(
       context: context,
@@ -269,6 +213,6 @@ class PersonalInfoView extends StatelessWidget {
   Future<void> submit(BuildContext context) async {
     FocusManager.instance.primaryFocus?.unfocus();
     final success = await viewModel.submit();
-    if (success && context.mounted && viewModel.updatedCustomer != null) Navigator.of(context).pop(viewModel.updatedCustomer);
+    if (success && context.mounted && viewModel.updatedCustomer != null) Navigator.pop(context, viewModel.updatedCustomer);
   }
 }

@@ -23,15 +23,15 @@ class HttpRequest {
 
   String get _urlAddress => 'https://$_urlMain/wp-json/app-api/v1/address';
 
-  String get _urlOrders => 'https://$_urlMain/wp-json/app-api/v1/orders';
+  String get _urlOrders => 'https://$_urlMain/wp-json/app-api/v1/orders/';
 
-  String get _urlCart => 'https://$_urlMain/wp-json/app-api/v1/cart';
+  String get _urlCart => 'https://$_urlMain/wp-json/app-api/v1/cart/';
 
-  String get _urlFavorites => 'https://$_urlMain/wp-json/app-api/v1/favorites';
+  String get _urlFavorites => 'https://$_urlMain/wp-json/app-api/v1/favorites/';
 
-  String get _urlViewedProducts => 'https://$_urlMain/wp-json/app-api/v1/viewed-products';
+  String get _urlViewedProducts => 'https://$_urlMain/wp-json/app-api/v1/viewed-products/';
 
-  String get _urlComments => 'https://$_urlMain/wp-json/app-api/v1/comments';
+  String get _urlComments => 'https://$_urlMain/wp-json/app-api/v1/comments/';
 
   static const Map<String, String> _jsonHeaders = <String, String>{'accept': 'application/json', 'Content-Type': 'application/json; charset=UTF-8'};
 
@@ -196,15 +196,36 @@ class HttpRequest {
   Future<dynamic> replaceAddresses({required String token, required Map<String, dynamic> addresses}) =>
       _authorizedJsonRequest(method: 'PUT', url: _urlAddress, token: token, body: addresses, timeout: const Duration(seconds: 45));
 
-  Future<dynamic> getOrders({required String token}) => _authorizedJsonRequest(method: 'GET', url: _urlOrders, token: token);
+  Future<dynamic> getOrders({required String token, int page = 1, int perPage = 20}) =>
+      _authorizedJsonRequest(method: 'GET', url: '$_urlOrders?page=$page&per_page=$perPage', token: token);
 
   Future<dynamic> createOrder({required String token, required Map<String, dynamic> body}) =>
       _authorizedJsonRequest(method: 'POST', url: _urlOrders, token: token, body: body);
 
   Future<dynamic> updateOrder({required String token, required int orderId, required Map<String, dynamic> body}) =>
-      _authorizedJsonRequest(method: 'PATCH', url: '$_urlOrders/$orderId', token: token, body: body);
+      _authorizedJsonRequest(method: 'PATCH', url: '$_urlOrders$orderId', token: token, body: body);
 
-  Future<dynamic> getCart({required String token}) => _authorizedJsonRequest(method: 'GET', url: _urlCart, token: token);
+  Future<dynamic> getCart({required String token, int page = 1, int perPage = 20}) =>
+      _authorizedJsonRequest(method: 'GET', url: '$_urlCart?page=$page&per_page=$perPage', token: token);
+
+  Future<dynamic> getCompleteCart({required String token}) async {
+    final items = <dynamic>[];
+    var page = 1;
+    while (true) {
+      final response = await getCart(token: token, page: page);
+      if (response is! Map || response['success'] != true) return response;
+      final data = response['data'];
+      if (data is! List) return false;
+      items.addAll(data);
+      final pagination = response['pagination'];
+      if (pagination is! Map || pagination['has_next'] != true) {
+        return <String, dynamic>{...Map<String, dynamic>.from(response), 'count': items.length, 'data': items};
+      }
+      final current = int.tryParse(pagination['current_page']?.toString() ?? '');
+      if (current != page || data.isEmpty) return false;
+      page++;
+    }
+  }
 
   Future<dynamic> addCartItem({
     required String token,
@@ -255,11 +276,14 @@ class HttpRequest {
     return _authorizedJsonRequest(method: 'DELETE', url: _urlCart, token: token, body: body);
   }
 
-  Future<dynamic> getFavorites({required String token}) => _authorizedJsonRequest(method: 'GET', url: _urlFavorites, token: token);
+  Future<dynamic> getFavorites({required String token, int page = 1, int perPage = 20}) =>
+      _authorizedJsonRequest(method: 'GET', url: '$_urlFavorites?page=$page&per_page=$perPage', token: token);
 
-  Future<dynamic> getViewedProducts({required String token}) => _authorizedJsonRequest(method: 'GET', url: _urlViewedProducts, token: token);
+  Future<dynamic> getViewedProducts({required String token, int page = 1, int perPage = 20}) =>
+      _authorizedJsonRequest(method: 'GET', url: '$_urlViewedProducts?page=$page&per_page=$perPage', token: token);
 
-  Future<dynamic> getCustomerComments({required String token}) => _authorizedJsonRequest(method: 'GET', url: _urlComments, token: token);
+  Future<dynamic> getCustomerComments({required String token, int page = 1, int perPage = 20}) =>
+      _authorizedJsonRequest(method: 'GET', url: '$_urlComments?page=$page&per_page=$perPage', token: token);
 
   Future<dynamic> signUp({required BuildContext context, required String email, required String password}) => register(identifier: email, password: password);
 

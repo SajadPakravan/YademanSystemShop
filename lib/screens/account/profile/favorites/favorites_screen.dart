@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yad_sys/widgets/account/account_pagination.dart';
 import 'package:yad_sys/view_models/account/profile/favorites_view_model.dart';
 import 'package:yad_sys/views/account/profile/favorites/favorites_view.dart';
 
@@ -30,7 +31,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _viewModel,
-      builder: (context, _) => FavoritesView(viewModel: _viewModel),
+      builder: (context, _) => AccountPagination(viewModel: _viewModel, child: FavoritesView(viewModel: _viewModel)),
     );
   }
 }

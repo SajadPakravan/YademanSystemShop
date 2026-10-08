@@ -18,12 +18,10 @@ class _AuthViewState extends State<AuthView> {
   @override
   void initState() {
     super.initState();
-    widget.viewModel.pageController = PageController(initialPage: 0);
   }
 
   @override
   void dispose() {
-    widget.viewModel.pageController.dispose();
     super.dispose();
   }
 

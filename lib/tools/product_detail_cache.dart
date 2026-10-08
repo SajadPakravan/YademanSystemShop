@@ -9,15 +9,9 @@ class ProductDetailCache {
 
   ProductDetailModel? get(int productId) => _items[productId];
 
-  void save(ProductDetailModel product) {
-    _items[product.data.id] = product;
-  }
+  void save(ProductDetailModel product) => _items[product.data.id] = product;
 
-  void remove(int productId) {
-    _items.remove(productId);
-  }
+  void remove(int productId) => _items.remove(productId);
 
-  void clear() {
-    _items.clear();
-  }
+  void clear() => _items.clear();
 }

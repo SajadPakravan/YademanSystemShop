@@ -4,16 +4,10 @@ import 'package:yad_sys/view_models/account/profile/addresses_view_model.dart';
 import 'package:yad_sys/views/account/profile/addresses/addresses_view.dart';
 
 class AddressesScreen extends StatefulWidget {
-  const AddressesScreen({
-    super.key,
-    required this.token,
-    this.initialAddresses,
-    this.onUpdated,
-  });
+  const AddressesScreen({super.key, required this.token, this.initialAddresses});
 
   final String token;
   final AddressBookModel? initialAddresses;
-  final ValueChanged<AddressBookModel>? onUpdated;
 
   @override
   State<AddressesScreen> createState() => _AddressesScreenState();
@@ -25,12 +19,8 @@ class _AddressesScreenState extends State<AddressesScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = AddressesViewModel(
-      token: widget.token,
-      initialAddresses: widget.initialAddresses,
-      onUpdated: widget.onUpdated,
-    );
-    _viewModel.load();
+    // مدل با توکن ورودی ساخته می‌شود و سپس آدرس‌های تازه دریافت می‌شوند.
+    _viewModel = AddressesViewModel(token: widget.token, initialAddresses: widget.initialAddresses)..load();
   }
 
   @override

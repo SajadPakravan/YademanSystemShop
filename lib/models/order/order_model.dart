@@ -1,14 +1,20 @@
+import 'package:yad_sys/models/product/products_list_model.dart';
+
 import 'package:yad_sys/models/order/order_item_model.dart';
 
+/// مدل پاسخ این API با صفحه‌بندی مشترک فروشگاه.
 class OrdersResponseModel {
-  const OrdersResponseModel({required this.success, required this.count, required this.data});
+  const OrdersResponseModel({required this.success, required this.count, required this.data, required this.pagination});
+  final ProductsPaginationModel pagination;
 
   final bool success;
   final int count;
   final List<OrderModel> data;
 
+  /// تبدیل داده‌های API و صفحه‌بندی اختصاصی به مدل.
   factory OrdersResponseModel.fromJson(Map<String, dynamic> json) {
     return OrdersResponseModel(
+      pagination: ProductsPaginationModel.fromJson(json['pagination'], totalKey: 'total_orders', fallbackCount: _asInt(json['count'])),
       success: json['success'] == true,
       count: _asInt(json['count']),
       data: _asList(json['data'])

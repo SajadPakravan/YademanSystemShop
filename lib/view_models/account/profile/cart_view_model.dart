@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:yad_sys/models/cart_model.dart';
-import 'package:yad_sys/tools/account_session_cache.dart';
 import 'package:yad_sys/view_models/account/profile/account_list_view_model.dart';
 
+/// مدل فهرست با دریافت تازه داده در هر بار ورود و بدون کش لیست.
 class CartViewModel extends AccountListViewModel<CartItemModel> {
   CartViewModel({required super.token, super.httpRequest});
 
@@ -13,27 +13,16 @@ class CartViewModel extends AccountListViewModel<CartItemModel> {
   String get loadErrorMessage => 'دریافت سبد خرید انجام نشد.';
 
   @override
-  Future<dynamic> request() => httpRequest.getCart(token: token);
+  Future<dynamic> request({int page = 1}) => httpRequest.getCart(token: token, page: page, perPage: perPage);
+
+  /// برای نمایش تمام سبد/تب‌های سفارش‌ها، همه صفحه‌ها دریافت می‌شوند.
+  @override
+  bool get loadAllPages => true;
 
   @override
   AccountListLoadResult<CartItemModel> parse(Map<String, dynamic> json) {
     final model = CartResponseModel.fromJson(json);
-    return AccountListLoadResult(success: model.success, count: model.count, items: model.data);
-  }
-
-  @override
-  bool restoreSessionCache() {
-    final cached = AccountSessionCache.cart;
-    if (cached == null) return false;
-    items = List<CartItemModel>.from(cached);
-    count = AccountSessionCache.cartCount;
-    return true;
-  }
-
-  @override
-  void writeSessionCache() {
-    AccountSessionCache.cart = List<CartItemModel>.unmodifiable(items);
-    AccountSessionCache.cartCount = count;
+    return AccountListLoadResult(success: model.success, count: model.count, items: model.data, pagination: model.pagination);
   }
 
   String _identity(CartItemModel item) => '${item.key}|${item.productId}|${item.variation.entries.map((e) => '${e.key}:${e.value}').join(',')}';
@@ -73,7 +62,6 @@ class CartViewModel extends AccountListViewModel<CartItemModel> {
       final index = items.indexWhere((value) => _identity(value) == identity);
       if (index >= 0) items[index] = items[index].copyWith(quantity: quantity);
       count = items.length;
-      writeSessionCache();
       return true;
     } catch (e) {
       if (kDebugMode) print('CART UPDATE ERROR >>> $e');
@@ -108,7 +96,6 @@ class CartViewModel extends AccountListViewModel<CartItemModel> {
 
       items.removeWhere((value) => _identity(value) == identity);
       count = items.length;
-      writeSessionCache();
       return true;
     } catch (e) {
       if (kDebugMode) print('CART DELETE ERROR >>> $e');

@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/auth/auth_model.dart';
 import 'package:yad_sys/models/customer_model.dart';
-import 'package:yad_sys/tools/account_session_cache.dart';
+import 'package:yad_sys/tools/account_cache.dart';
 import 'package:yad_sys/tools/app_cache.dart';
+import 'package:yad_sys/tools/personal_info_session.dart';
+import 'package:yad_sys/tools/address_cache.dart';
 
 class AccountViewModel extends ChangeNotifier {
   AccountViewModel({HttpRequest? httpRequest}) : httpRequest = httpRequest ?? HttpRequest();
 
   final HttpRequest httpRequest;
-  AuthModel? user;
   final loginIdentifierController = TextEditingController();
   final loginPasswordController = TextEditingController();
   final registerIdentifierController = TextEditingController();
@@ -24,44 +25,29 @@ class AccountViewModel extends ChangeNotifier {
   final loginFormKey = GlobalKey<FormState>();
   final registerFormKey = GlobalKey<FormState>();
   bool hideLoginPassword = true;
-  late final PageController pageController;
+  final PageController pageController = PageController(initialPage: 0);
   bool initializing = true;
   bool loading = false;
   String errorMessage = '';
+  String? token;
+  CustomerModel? customer;
 
-  bool get loggedIn => user?.token.isNotEmpty == true;
-
-  CustomerModel? get customer => user?.customer;
-
-  String get token => user?.token ?? '';
+  bool get loggedIn => (token?.isNotEmpty ?? false) && customer != null;
 
   Future<void> initialize() async {
     initializing = true;
-    final token = await AppCache.getString('token');
 
-    if (token.isNotEmpty) {
-      final customer = CustomerModel(
-        id: await AppCache.getInt('id'),
-        username: await AppCache.getString('username'),
-        firstName: await AppCache.getString('first_name'),
-        lastName: await AppCache.getString('last_name'),
-        displayName: await AppCache.getString('display_name'),
-        email: await AppCache.getString('email'),
-        phone: await AppCache.getString('phone'),
-        avatar: await AppCache.getString('avatar'),
-        dateCreated: await AppCache.getString('date_created'),
-        addressCount: await AppCache.getInt('address_count'),
-        ordersCount: await AppCache.getInt('orders_count'),
-        cartCount: await AppCache.getInt('cart_count'),
-        commentsCount: await AppCache.getInt('comments_count'),
-      );
-      user = AuthModel(token: token, customer: customer);
-    } else {
-      user = null;
+    try {
+    token = await AppCache.getString('token');
+    if (token!.isNotEmpty) customer = await AccountCache.getCustomer();
+    } catch (e) {
+      token = null;
+      customer = null;
+      errorMessage = 'بازیابی حساب انجام نشد. دوباره وارد شوید.';
+    } finally {
+      initializing = false;
+      notifyListeners();
     }
-
-    initializing = false;
-    notifyListeners();
   }
 
   Future<bool> login({required String identifier, required String password}) => authenticate(
@@ -87,18 +73,18 @@ class AccountViewModel extends ChangeNotifier {
 
       final map = Map<String, dynamic>.from(response);
       if (map['success'] != true) {
-        errorMessage = map['message']?.toString().trim().isNotEmpty == true ? map['message'].toString().trim() : 'عملیات احراز هویت انجام نشد.';
+        errorMessage = map['message']?.toString() ?? 'ورود انجام نشد.';
         return false;
       }
 
       final authenticated = AuthModel.fromJson(map);
-      if (authenticated.token.isEmpty) {
-        errorMessage = 'توکن ورود از سرور دریافت نشد.';
-        return false;
-      }
 
-      AccountSessionCache.clear();
-      await setAuthenticatedUser(authenticated);
+      // اطلاعات نشست شخصی قبلی هنگام ورود موفق حساب جدید پاک می‌شود.
+      PersonalInfoSession.clear();
+      AddressCache.instance.clear();
+      await AccountCache.save(auth: authenticated);
+      token = authenticated.token;
+      customer = authenticated.user;
       return true;
     } catch (e) {
       if (kDebugMode) print('AUTH ERROR >>>> $e');
@@ -110,18 +96,9 @@ class AccountViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> setAuthenticatedUser(AuthModel authenticated) async {
-    user = authenticated;
-    await _saveSession(authenticated);
-    errorMessage = '';
-    notifyListeners();
-  }
-
   Future<void> applyCustomer(CustomerModel customer) async {
-    final current = user;
-    if (current == null) return;
-    user = current.copyWith(customer: customer);
-    await _cacheCustomer(customer);
+    this.customer = customer;
+    await AccountCache.save(customer: customer);
     notifyListeners();
   }
 
@@ -194,47 +171,13 @@ class AccountViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _saveSession(AuthModel value) async {
-    await AppCache.setString('token', value.token);
-    await _cacheCustomer(value.customer);
-  }
-
-  Future<void> _cacheCustomer(CustomerModel value) async {
-    await AppCache.setInt('id', value.id);
-    await AppCache.setString('username', value.username);
-    await AppCache.setString('first_name', value.firstName);
-    await AppCache.setString('last_name', value.lastName);
-    await AppCache.setString('display_name', value.displayName);
-    await AppCache.setString('email', value.email);
-    await AppCache.setString('phone', value.phone);
-    await AppCache.setString('avatar', value.avatar);
-    await AppCache.setInt('address_count', value.addressCount);
-    await AppCache.setInt('orders_count', value.ordersCount);
-    await AppCache.setInt('cart_count', value.cartCount);
-    await AppCache.setInt('comments_count', value.commentsCount);
-  }
-
   Future<void> logout() async {
-    const keys = <String>[
-      'id',
-      'username',
-      'first_name',
-      'last_name',
-      'display_name',
-      'email',
-      'phone',
-      'avatar',
-      'address_count',
-      'orders_count',
-      'cart_count',
-      'comments_count',
-      'token',
-    ];
-    for (final key in keys) {
-      await AppCache.remove(key);
-    }
-    AccountSessionCache.clear();
-    user = null;
+    // خروج، هم داده‌های پایدار و هم اطلاعات حساس حافظه‌ای را پاک می‌کند.
+    PersonalInfoSession.clear();
+    AddressCache.instance.clear();
+    await AccountCache.clear();
+    token = null;
+    customer = null;
     errorMessage = '';
     notifyListeners();
   }
@@ -250,5 +193,12 @@ class AccountViewModel extends ChangeNotifier {
     registerIdentifierFocus.dispose();
     registerPasswordFocus.dispose();
     confirmPasswordFocus.dispose();
+  }
+
+  @override
+  void dispose() {
+    pageController.dispose();
+    disposeFields();
+    super.dispose();
   }
 }

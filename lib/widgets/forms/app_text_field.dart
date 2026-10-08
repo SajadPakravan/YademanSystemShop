@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
-import 'package:yad_sys/tools/app_input_formatter.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class AppTextField extends StatelessWidget {
@@ -24,6 +23,8 @@ class AppTextField extends StatelessWidget {
     this.onChanged,
     this.onSubmitted,
     this.autofocus = false,
+    this.focusNode,
+    this.onTap,
   });
 
   final TextEditingController controller;
@@ -42,6 +43,10 @@ class AppTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final bool autofocus;
+  /// مدیریت فوکوس فیلد، برای نمایش لیست combobox هنگام تایپ.
+  final FocusNode? focusNode;
+  /// فراخوانی هنگام لمس فیلد، حتی اگر قبلاً فوکوس گرفته باشد.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +60,8 @@ class AppTextField extends StatelessWidget {
         AppText.labelMedium(title, color: context.appColors.textSecondary, fontWeight: FontWeight.w700),
         TextFormField(
           controller: controller,
+          focusNode: focusNode,
+          onTap: onTap,
           obscureText: obscureText,
           keyboardType: keyboardType,
           textInputAction: textInputAction,

@@ -19,7 +19,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = PersonalInfoViewModel(customer: widget.customer, token: widget.token);
+    // اولین مراجعه مشخصات را دریافت می‌کند؛ دفعات بعد مدل حافظه‌ای را می‌خواند.
+    _viewModel = PersonalInfoViewModel(customer: widget.customer, token: widget.token)..initialize();
   }
 
   @override

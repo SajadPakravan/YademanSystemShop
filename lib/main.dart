@@ -2,11 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:hive_flutter/adapters.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:yad_sys/database/cart_model.dart';
-import 'package:yad_sys/database/favorite_model.dart';
 import 'package:yad_sys/screens/splash/splash_screen.dart';
 import 'package:yad_sys/themes/app_themes.dart';
 import 'package:yad_sys/tools/app_texts.dart';
@@ -18,13 +14,7 @@ import 'package:device_preview/device_preview.dart';
 
 Future<void> main() async {
   DevicePreview.enable(enabled: kDebugMode);
-  // WidgetsFlutterBinding.ensureInitialized();
-  final directory = await getApplicationDocumentsDirectory();
-  await Hive.initFlutter(directory.path);
-  Hive.registerAdapter(CartModelAdapter());
-  await Hive.openBox<CartModel>('cartBox');
-  Hive.registerAdapter(FavoriteModelAdapter());
-  await Hive.openBox<FavoriteModel>('favoritesBox');
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MultiProvider(
       providers: [

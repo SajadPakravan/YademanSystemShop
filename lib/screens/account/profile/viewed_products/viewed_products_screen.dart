@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yad_sys/widgets/account/account_pagination.dart';
 import 'package:yad_sys/view_models/account/profile/viewed_products_view_model.dart';
 import 'package:yad_sys/views/account/profile/viewed_products/viewed_products_view.dart';
 
@@ -30,7 +31,7 @@ class _ViewedProductsScreenState extends State<ViewedProductsScreen> {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _viewModel,
-      builder: (context, _) => ViewedProductsView(viewModel: _viewModel),
+      builder: (context, _) => AccountPagination(viewModel: _viewModel, child: ViewedProductsView(viewModel: _viewModel)),
     );
   }
 }

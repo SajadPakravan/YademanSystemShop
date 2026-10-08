@@ -6,6 +6,7 @@ import 'package:yad_sys/view_models/account/profile/addresses_view_model.dart';
 import 'package:yad_sys/widgets/buttons/app_button.dart';
 import 'package:yad_sys/widgets/error_connection_widget.dart';
 import 'package:yad_sys/widgets/forms/app_text_field.dart';
+import 'package:yad_sys/widgets/forms/province_combobox.dart';
 import 'package:yad_sys/widgets/loading.dart';
 import 'package:yad_sys/widgets/snack_bar_view.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
@@ -20,12 +21,8 @@ class AddressesView extends StatelessWidget {
     final colors = context.appColors;
     final addresses = viewModel.addresses;
 
-    if (viewModel.isLoading && addresses == null) {
-      return Scaffold(
-        backgroundColor: colors.background,
-        body: const SafeArea(child: Loading()),
-      );
-    }
+    // پیش از دریافت پاسخ اولیه، نشانگر بارگذاری به جای خطا نمایش داده می‌شود.
+    if (viewModel.isLoading && addresses == null) return const Scaffold(body: Loading());
 
     if (addresses == null) {
       return ErrorConnectionWidget(
@@ -88,8 +85,8 @@ const List<_AddressFieldMeta> _fieldDefinitions = <_AddressFieldMeta>[
   _AddressFieldMeta(keyName: 'address_1', label: 'آدرس اصلی', icon: Icons.location_on_outlined),
   _AddressFieldMeta(keyName: 'address_2', label: 'ادامه آدرس', icon: Icons.add_location_alt_outlined),
   _AddressFieldMeta(keyName: 'postcode', label: 'کدپستی', icon: Icons.markunread_mailbox_outlined, keyboardType: TextInputType.number),
+  _AddressFieldMeta(keyName: 'phone', label: 'شماره همراه', icon: Icons.phone_outlined, keyboardType: TextInputType.phone),
   _AddressFieldMeta(keyName: 'email', label: 'ایمیل', icon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
-  _AddressFieldMeta(keyName: 'phone', label: 'شماره تماس', icon: Icons.phone_outlined, keyboardType: TextInputType.phone),
 ];
 
 class _AddressForm extends StatefulWidget {
@@ -107,6 +104,9 @@ class _AddressFormState extends State<_AddressForm> {
   late final Map<String, TextEditingController> _controllers;
   late Map<String, String> _initialValues;
   final Map<String, String> _errors = <String, String>{};
+
+  /// فهرست استان‌ها مستقیم از مدل جدید locations خوانده می‌شود.
+  List<Province> get _provinces => widget.viewModel.addresses?.locations.provinces ?? const <Province>[];
 
   List<_AddressFieldMeta> get _visibleFields {
     return _fieldDefinitions.where((field) => widget.address.hasField(field.keyName)).toList(growable: false);
@@ -189,6 +189,12 @@ class _AddressFormState extends State<_AddressForm> {
       if (!iranPhone.hasMatch(phone)) _errors['phone'] = 'شماره تماس وارد شده معتبر نیست.';
     }
 
+    // اگر فهرست استان فعال است، تغییر دستی باید به انتخاب کد معتبر منتهی شود.
+    final state = _controllers['state']?.text.trim() ?? '';
+    if (_provinces.isNotEmpty && state != (_initialValues['state'] ?? '') && state.isNotEmpty && !_provinces.any((province) => province.code == state)) {
+      _errors['state'] = 'لطفاً استان را از فهرست انتخاب کنید.';
+    }
+
     setState(() {});
     return _errors.isEmpty;
   }
@@ -197,9 +203,9 @@ class _AddressFormState extends State<_AddressForm> {
     FocusManager.instance.primaryFocus?.unfocus();
     if (!_dirty || !_validate()) return;
 
+    // ذخیره واقعی آدرس با ارسال کد استان و نگه‌داشتن فیلد شهر به‌صورت متنی.
     final success = await widget.viewModel.updateAddress(widget.kind, _changes);
     if (!mounted) return;
-
     if (!success) {
       SnackBarView.show(context, widget.viewModel.saveErrorMessage.isNotEmpty ? widget.viewModel.saveErrorMessage : 'ذخیره آدرس انجام نشد.');
       return;
@@ -252,22 +258,39 @@ class _AddressFormState extends State<_AddressForm> {
         padding: EdgeInsets.fromLTRB(r.pageHorizontalPadding, r.space(18), r.pageHorizontalPadding, r.space(30)),
         children: [
           for (var index = 0; index < visibleFields.length; index++) ...[
-            AppTextField(
-              controller: _controllers[visibleFields[index].keyName]!,
-              title: visibleFields[index].label,
-              hint: visibleFields[index].label,
-              icon: visibleFields[index].icon,
-              keyboardType: visibleFields[index].keyboardType,
-              textInputAction: index == visibleFields.length - 1 ? TextInputAction.done : TextInputAction.next,
-              errorText: _errors[visibleFields[index].keyName],
-              onChanged: (_) {
-                if (_errors.remove(visibleFields[index].keyName) != null) setState(() {});
-                setState(() {});
-              },
-              onSubmitted: (_) {
-                if (index == visibleFields.length - 1) _submit(context);
-              },
-            ),
+            // استان با کمبوباکس جستجویی و شهر با ورودی متنی پیشین نمایش داده می‌شود.
+            if (visibleFields[index].keyName == 'state' && _provinces.isNotEmpty)
+              ProvinceCombobox(
+                code: _controllers['state']!.text,
+                provinces: _provinces,
+                errorText: _errors['state'],
+                onChanged: (value) => setState(() {
+                  final oldValue = _controllers['state']!.text;
+                  _controllers['state']!.text = value;
+                  // تغییر استان انتخاب‌شده، نام شهر قبلی را پاک می‌کند.
+                  if (_provinces.any((province) => province.code == value) && value != oldValue) {
+                    _controllers['city']?.clear();
+                  }
+                  _errors.remove('state');
+                }),
+              )
+            else
+              AppTextField(
+                controller: _controllers[visibleFields[index].keyName]!,
+                title: visibleFields[index].label,
+                hint: visibleFields[index].label,
+                icon: visibleFields[index].icon,
+                keyboardType: visibleFields[index].keyboardType,
+                textInputAction: index == visibleFields.length - 1 ? TextInputAction.done : TextInputAction.next,
+                errorText: _errors[visibleFields[index].keyName],
+                onChanged: (_) {
+                  if (_errors.remove(visibleFields[index].keyName) != null) setState(() {});
+                  setState(() {});
+                },
+                onSubmitted: (_) {
+                  if (index == visibleFields.length - 1) _submit(context);
+                },
+              ),
             if (index != visibleFields.length - 1) SizedBox(height: r.space(14)),
           ],
           SizedBox(height: r.space(20)),

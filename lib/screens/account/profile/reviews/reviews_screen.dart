@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yad_sys/widgets/account/account_pagination.dart';
 import 'package:yad_sys/view_models/account/profile/reviews_view_model.dart';
 import 'package:yad_sys/views/account/profile/reviews/reviews_view.dart';
 
@@ -30,7 +31,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _viewModel,
-      builder: (context, _) => ReviewsView(viewModel: _viewModel),
+      builder: (context, _) => AccountPagination(viewModel: _viewModel, child: ReviewsView(viewModel: _viewModel)),
     );
   }
 }

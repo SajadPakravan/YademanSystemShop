@@ -1,7 +1,7 @@
 import 'package:yad_sys/models/order/order_model.dart';
 import 'package:yad_sys/view_models/account/profile/account_list_view_model.dart';
-import 'package:yad_sys/tools/account_session_cache.dart';
 
+/// مدل فهرست با دریافت تازه داده در هر بار ورود و بدون کش لیست.
 class OrdersViewModel extends AccountListViewModel<OrderModel> {
   OrdersViewModel({required super.token, super.httpRequest});
 
@@ -9,26 +9,16 @@ class OrdersViewModel extends AccountListViewModel<OrderModel> {
   String get loadErrorMessage => 'دریافت سفارشات انجام نشد.';
 
   @override
-  Future<dynamic> request() => httpRequest.getOrders(token: token);
+  Future<dynamic> request({int page = 1}) => httpRequest.getOrders(token: token, page: page, perPage: perPage);
+
+  /// برای نمایش تمام سبد/تب‌های سفارش‌ها، همه صفحه‌ها دریافت می‌شوند.
+  @override
+  bool get loadAllPages => true;
 
   @override
   AccountListLoadResult<OrderModel> parse(Map<String, dynamic> json) {
     final model = OrdersResponseModel.fromJson(json);
-    return AccountListLoadResult(success: model.success, count: model.count, items: model.data);
+    return AccountListLoadResult(success: model.success, count: model.count, items: model.data, pagination: model.pagination);
   }
 
-  @override
-  bool restoreSessionCache() {
-    final cached = AccountSessionCache.orders;
-    if (cached == null) return false;
-    items = List<OrderModel>.from(cached);
-    count = AccountSessionCache.ordersCount;
-    return true;
-  }
-
-  @override
-  void writeSessionCache() {
-    AccountSessionCache.orders = List<OrderModel>.unmodifiable(items);
-    AccountSessionCache.ordersCount = count;
-  }
 }

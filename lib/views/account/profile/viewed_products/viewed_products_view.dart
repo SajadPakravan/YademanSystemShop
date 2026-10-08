@@ -22,42 +22,36 @@ class ViewedProductsView extends StatelessWidget {
     return Scaffold(
       backgroundColor: colors.background,
       appBar: const AppBarView(title: 'محصولات مشاهده‌شده'),
-      body: _body(context, r),
+      body: RefreshIndicator(onRefresh: viewModel.refresh, child: _body(context, r)),
     );
   }
 
   Widget _body(BuildContext context, AppDimension r) {
-    if (viewModel.isLoading && viewModel.items.isEmpty) return const Loading();
-    if (viewModel.errorMessage.isNotEmpty && viewModel.items.isEmpty) return _error(context);
+    if (viewModel.isLoading && viewModel.productsLst.isEmpty) return const Loading();
+    if (viewModel.errorMessage.isNotEmpty && viewModel.productsLst.isEmpty) return _error(context);
 
-    if (viewModel.items.isEmpty) {
-      return RefreshIndicator(
-        onRefresh: viewModel.refresh,
-        child: const CustomScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: AccountEmptyState(
-                icon: Icons.history_rounded,
-                title: 'محصول مشاهده‌شده‌ای وجود ندارد',
-                message: 'محصولاتی که مشاهده می‌کنید در این بخش نمایش داده می‌شوند.',
-              ),
+    if (viewModel.productsLst.isEmpty) {
+      return const CustomScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: AccountEmptyState(
+              icon: Icons.history_rounded,
+              title: 'محصول مشاهده‌شده‌ای وجود ندارد',
+              message: 'محصولاتی که مشاهده می‌کنید در این بخش نمایش داده می‌شوند.',
             ),
-          ],
-        ),
+          ),
+        ],
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: viewModel.refresh,
-      child: ListView.separated(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(vertical: r.space(8)),
-        itemCount: viewModel.items.length,
-        separatorBuilder: (_, _) => SizedBox(height: r.space(4)),
-        itemBuilder: (context, index) => ShopProductRowCard(product: viewModel.items[index]),
-      ),
+    return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(vertical: r.space(8)),
+      itemCount: viewModel.productsLst.length,
+      separatorBuilder: (_, _) => SizedBox(height: r.space(4)),
+      itemBuilder: (context, index) => ShopProductRowCard(product: viewModel.productsLst[index]),
     );
   }
 

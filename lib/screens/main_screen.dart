@@ -41,11 +41,14 @@ class _MainScreenState extends State<MainScreen> {
     };
   }
 
+  /// ورود مجدد به تب حساب، مدل پروفایل را تازه می‌کند تا شمارنده‌ها از سرور خوانده شوند.
   void _openPage(int index) {
     if (index == pageIndex) return;
 
     setState(() {
-      _pages[index] ??= _createPage(index);
+      // AccountScreen قدیمی به‌دلیل Offstage نگهداری می‌شود؛ برای refresh کلید جدید می‌گیرد.
+      if (index == 3) { _pages[index] = AccountScreen(key: UniqueKey()); }
+      else { _pages[index] ??= _createPage(index); }
       pageIndex = index;
     });
   }
