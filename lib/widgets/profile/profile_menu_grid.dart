@@ -51,7 +51,6 @@ class ProfileMenuGrid extends StatelessWidget {
       ProfileMenuCard(
         title: 'علاقه‌مندی‌ها',
         icon: Icons.favorite_border_rounded,
-        badgeCount: customer.favoritesCount,
         onTap: () => _openList(context, FavoritesScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
@@ -63,7 +62,6 @@ class ProfileMenuGrid extends StatelessWidget {
       ProfileMenuCard(
         title: 'مشاهده‌شده‌ها',
         icon: Icons.history_rounded,
-        badgeCount: customer.viewedProductsCount,
         onTap: () => _openList(context, ViewedProductsScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
@@ -113,17 +111,21 @@ class ProfileMenuGrid extends StatelessWidget {
   Future<void> _confirmLogout(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const AppText.titleMedium('خروج از حساب', fontWeight: FontWeight.w800),
-        content: const AppText.bodyMedium('آیا می‌خواهید از حساب کاربری خارج شوید؟'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('انصراف')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.onBrand),
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('خروج'),
-          ),
-        ],
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const AppText.titleMedium('خروج از حساب', fontWeight: FontWeight.w800),
+          content: const AppText.bodyMedium('آیا می‌خواهید از حساب کاربری خارج شوید؟'),
+          actionsAlignment: MainAxisAlignment.spaceAround,
+          actions: [
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.onBrand),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('خروج'),
+            ),
+            TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('انصراف')),
+          ],
+        ),
       ),
     );
     if (confirmed == true) await logout();

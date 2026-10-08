@@ -4,21 +4,27 @@ import 'package:yad_sys/models/customer_model.dart';
 import 'package:yad_sys/tools/account_cache.dart';
 
 class ProfileViewModel extends ChangeNotifier {
-  ProfileViewModel({required this.token, required CustomerModel initialCustomer, this.onCustomerUpdated, HttpRequest? httpRequest})
-    : customer = initialCustomer,
-      _httpRequest = httpRequest ?? HttpRequest();
+  ProfileViewModel({required this.token, HttpRequest? httpRequest}) : _httpRequest = httpRequest ?? HttpRequest();
 
-  final String token;
   final HttpRequest _httpRequest;
-  final ValueChanged<CustomerModel>? onCustomerUpdated;
-  CustomerModel customer;
+  final String token;
+  CustomerModel? customer;
   bool isRefreshing = false;
   String errorMessage = '';
   bool _disposed = false;
 
-  bool get addressIncomplete => customer.addressCount <= 0;
+  bool get addressIncomplete => customer!.addressCount <= 0;
 
-  /// درخواست تازه اطلاعات و شمارنده‌های مشتری برای بروزرسانی منوی پروفایل.
+  Future<void> load() async {
+    if (isRefreshing) return;
+    isRefreshing = true;
+    notifyListeners();
+
+    customer = await AccountCache.getCustomer();
+    isRefreshing = false;
+    notifyListeners();
+  }
+
   Future<void> refreshCustomer() async {
     if (isRefreshing) return;
     isRefreshing = true;
@@ -37,10 +43,8 @@ class ProfileViewModel extends ChangeNotifier {
         errorMessage = response['message']?.toString() ?? 'دریافت اطلاعات حساب کاربری انجام نشد.';
         return;
       }
-      // هر بار سرور شمارنده‌ها و نام نمایشی را به‌روز می‌کند؛ سایر اطلاعات خصوصی فقط در مدل حافظه‌ای باقی می‌مانند.
-      customer = model.data;
-      await AccountCache.save(customer: customer);
-      onCustomerUpdated?.call(customer);
+
+      applyCustomer(model.data);
     } catch (e) {
       if (kDebugMode) print('CUSTOMER REFRESH ERROR >>>> $e');
       errorMessage = 'دریافت اطلاعات حساب کاربری انجام نشد. اتصال اینترنت را بررسی کنید.';
@@ -56,13 +60,12 @@ class ProfileViewModel extends ChangeNotifier {
     if (!_disposed) super.notifyListeners();
   }
 
-  void applyCustomer(CustomerModel customer) {
-    AccountCache.save(customer: customer);
+  Future<void> applyCustomer(CustomerModel customer) async {
+    await AccountCache.save(customer: customer);
     this.customer = customer;
     notifyListeners();
   }
 
-  /// پایان عمر مدل و قطع بروزرسانی‌های دیرهنگام.
   @override
   void dispose() {
     _disposed = true;

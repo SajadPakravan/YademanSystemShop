@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/address_model.dart';
-import 'package:yad_sys/tools/address_cache.dart';
+import 'package:yad_sys/tools/sessions/address_session.dart';
 
 /// نوع آدرس مورد ویرایش برای تعیین کلید ارسال API.
 enum AddressKind { billing, shipping }
@@ -53,7 +53,7 @@ class AddressesViewModel extends ChangeNotifier {
         return;
       }
       addresses = AddressesResponseModel.fromJson(Map<String, dynamic>.from(response)).data;
-      AddressCache.instance.save(addresses!);
+      AddressSession.save(addresses!);
     } catch (e) {
       if (kDebugMode) print('ADDRESSES LOAD ERROR >>> $e');
       errorMessage = 'دریافت آدرس‌ها انجام نشد. اتصال اینترنت را بررسی کنید.';
@@ -84,7 +84,7 @@ class AddressesViewModel extends ChangeNotifier {
         return previous.merge({...changed, ...fromServer});
       }
       addresses = current.copyWith(billing: merged(AddressKind.billing), shipping: merged(AddressKind.shipping));
-      AddressCache.instance.save(addresses!);
+      AddressSession.save(addresses!);
       return true;
     } catch (e) {
       if (kDebugMode) print('ADDRESS UPDATE ERROR >>> $e');

@@ -2,11 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/auth/auth_model.dart';
-import 'package:yad_sys/models/customer_model.dart';
 import 'package:yad_sys/tools/account_cache.dart';
 import 'package:yad_sys/tools/app_cache.dart';
-import 'package:yad_sys/tools/personal_info_session.dart';
-import 'package:yad_sys/tools/address_cache.dart';
+import 'package:yad_sys/tools/sessions/address_session.dart';
+import 'package:yad_sys/tools/sessions/personal_info_session.dart';
 
 class AccountViewModel extends ChangeNotifier {
   AccountViewModel({HttpRequest? httpRequest}) : httpRequest = httpRequest ?? HttpRequest();
@@ -30,19 +29,16 @@ class AccountViewModel extends ChangeNotifier {
   bool loading = false;
   String errorMessage = '';
   String? token;
-  CustomerModel? customer;
 
-  bool get loggedIn => (token?.isNotEmpty ?? false) && customer != null;
+  bool get loggedIn => token?.isNotEmpty ?? false;
 
   Future<void> initialize() async {
     initializing = true;
 
     try {
-    token = await AppCache.getString('token');
-    if (token!.isNotEmpty) customer = await AccountCache.getCustomer();
+      token = await AppCache.getString('token');
     } catch (e) {
       token = null;
-      customer = null;
       errorMessage = 'بازیابی حساب انجام نشد. دوباره وارد شوید.';
     } finally {
       initializing = false;
@@ -50,13 +46,17 @@ class AccountViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> login({required String identifier, required String password}) => authenticate(
-    request: () => httpRequest.login(identifier: identifier, password: password),
-  );
+  Future<bool> login({required String identifier, required String password}) {
+    return authenticate(
+      request: () => httpRequest.login(identifier: identifier, password: password),
+    );
+  }
 
-  Future<bool> register({required String identifier, required String password}) => authenticate(
-    request: () => httpRequest.register(identifier: identifier, password: password),
-  );
+  Future<bool> register({required String identifier, required String password}) {
+    return authenticate(
+      request: () => httpRequest.register(identifier: identifier, password: password),
+    );
+  }
 
   Future<bool> authenticate({required Future<dynamic> Function() request}) async {
     if (loading) return false;
@@ -78,13 +78,9 @@ class AccountViewModel extends ChangeNotifier {
       }
 
       final authenticated = AuthModel.fromJson(map);
-
-      // اطلاعات نشست شخصی قبلی هنگام ورود موفق حساب جدید پاک می‌شود.
-      PersonalInfoSession.clear();
-      AddressCache.instance.clear();
       await AccountCache.save(auth: authenticated);
       token = authenticated.token;
-      customer = authenticated.user;
+
       return true;
     } catch (e) {
       if (kDebugMode) print('AUTH ERROR >>>> $e');
@@ -94,12 +90,6 @@ class AccountViewModel extends ChangeNotifier {
       loading = false;
       notifyListeners();
     }
-  }
-
-  Future<void> applyCustomer(CustomerModel customer) async {
-    this.customer = customer;
-    await AccountCache.save(customer: customer);
-    notifyListeners();
   }
 
   String? loginIdentifierValidator(String? value) {
@@ -172,12 +162,10 @@ class AccountViewModel extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    // خروج، هم داده‌های پایدار و هم اطلاعات حساس حافظه‌ای را پاک می‌کند.
     PersonalInfoSession.clear();
-    AddressCache.instance.clear();
+    AddressSession.clear();
     await AccountCache.clear();
     token = null;
-    customer = null;
     errorMessage = '';
     notifyListeners();
   }

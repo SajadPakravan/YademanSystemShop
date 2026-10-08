@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:yad_sys/tools/app_log.dart';
 
 class HttpRequest {
   HttpRequest();
@@ -109,14 +110,12 @@ class HttpRequest {
       }
 
       final decoded = _decodeResponse(response);
-      if (kDebugMode) {
-        print('Authorized ${method.toUpperCase()} >>>> ${response.request}');
-        print('Status Code >>>> ${response.statusCode}');
-        print('JSON >>>> $decoded');
-      }
+      AppLog.response('Authorized ${method.toUpperCase()} >>>> ${response.request}');
+      AppLog.response('Status Code >>>> ${response.statusCode}');
+      AppLog.response('JSON >>>> $decoded');
       return decoded;
     } catch (e) {
-      if (kDebugMode) print('AUTHORIZED ${method.toUpperCase()} ERROR >>>> $e');
+      AppLog.error('AUTHORIZED ${method.toUpperCase()} ERROR >>>> $e');
       return false;
     }
   }

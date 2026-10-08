@@ -14,24 +14,23 @@ class PersonalInfoScreen extends StatefulWidget {
 }
 
 class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
-  late final PersonalInfoViewModel _viewModel;
+  late final PersonalInfoViewModel viewModel;
 
   @override
   void initState() {
     super.initState();
-    // اولین مراجعه مشخصات را دریافت می‌کند؛ دفعات بعد مدل حافظه‌ای را می‌خواند.
-    _viewModel = PersonalInfoViewModel(customer: widget.customer, token: widget.token)..initialize();
+    viewModel = PersonalInfoViewModel(customer: widget.customer, token: widget.token)..initialize();
   }
 
   @override
   void dispose() {
-    _viewModel.dispose();
+    viewModel.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
-    animation: _viewModel,
-    builder: (context, _) => PersonalInfoView(viewModel: _viewModel),
+    animation: viewModel,
+    builder: (context, _) => PersonalInfoView(viewModel: viewModel),
   );
 }

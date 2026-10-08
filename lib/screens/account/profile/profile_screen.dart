@@ -13,29 +13,23 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late final ProfileViewModel _profileViewModel;
+  late final ProfileViewModel profileViewModel;
 
   @override
   void initState() {
     super.initState();
-    _profileViewModel = ProfileViewModel(
-      token: widget.viewModel.token!,
-      initialCustomer: widget.viewModel.customer!,
-      onCustomerUpdated: widget.viewModel.applyCustomer,
-    );
-    // در هر بار ورود به پروفایل تعدادها از API مشتری بازخوانی می‌شوند.
-    _profileViewModel.refreshCustomer();
+    profileViewModel = ProfileViewModel(token: widget.viewModel.token!)..load();
   }
 
   @override
   void dispose() {
-    _profileViewModel.dispose();
+    profileViewModel.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
-    animation: _profileViewModel,
-    builder: (context, child) => ProfileView(viewModel: _profileViewModel, logout: widget.viewModel.logout),
+    animation: profileViewModel,
+    builder: (context, child) => ProfileView(viewModel: profileViewModel, logout: widget.viewModel.logout),
   );
 }

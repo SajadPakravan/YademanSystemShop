@@ -3,6 +3,7 @@ import 'package:yad_sys/models/customer_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
 import 'package:yad_sys/view_models/account/profile_view_model.dart';
+import 'package:yad_sys/widgets/loading.dart';
 import 'package:yad_sys/widgets/net_image.dart';
 import 'package:yad_sys/widgets/profile/profile_menu_grid.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
@@ -18,6 +19,8 @@ class ProfileView extends StatelessWidget {
     final colors = context.appColors;
     final r = context.responsive;
     final customer = viewModel.customer;
+
+    if(customer == null) return Loading();
 
     return Scaffold(
       backgroundColor: colors.background,

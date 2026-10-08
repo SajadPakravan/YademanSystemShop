@@ -295,7 +295,9 @@ class ProductViewModel with ChangeNotifier {
         if (!sameProduct) continue;
         if (selectedVarId != null && item.variationId > 0 && item.variationId != selectedVarId) continue;
         if (item.variationId == 0 && item.variation.isNotEmpty && selectedVariationValues.isNotEmpty &&
-            !item.variation.values.every((option) => selectedVariationValues.values.contains(option))) continue;
+            !item.variation.values.every((option) => selectedVariationValues.values.contains(option))) {
+          continue;
+        }
         quantity += item.quantity;
       }
       existCart = quantity > 0;
@@ -305,7 +307,7 @@ class ProductViewModel with ChangeNotifier {
   }
 
   void _checkFavorites() {
-    final value = product;
+    // final value = product;
     isFavorite = false;
 
     // if (value == null || authError || _favoritesBox.isEmpty) return;
