@@ -19,7 +19,6 @@ class _AddressesScreenState extends State<AddressesScreen> {
   @override
   void initState() {
     super.initState();
-    // مدل با توکن ورودی ساخته می‌شود و سپس آدرس‌های تازه دریافت می‌شوند.
     _viewModel = AddressesViewModel(token: widget.token, initialAddresses: widget.initialAddresses)..load();
   }
 

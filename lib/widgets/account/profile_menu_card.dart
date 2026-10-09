@@ -56,7 +56,7 @@ class ProfileMenuCard extends StatelessWidget {
                     AppText.bodySmall(
                       title,
                       textAlign: TextAlign.center,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       fontWeight: FontWeight.w700,
                       color: colors.textPrimary,

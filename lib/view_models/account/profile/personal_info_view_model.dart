@@ -11,7 +11,6 @@ import 'package:yad_sys/tools/sessions/personal_info_session.dart';
 import 'package:yad_sys/widgets/crop_image_view.dart';
 
 class PersonalInfoViewModel extends ChangeNotifier {
-  /// ایجاد کنترلرهای قابل ویرایش بدون کنترلر نام نمایشی.
   PersonalInfoViewModel({required CustomerModel customer, required this.token, HttpRequest? httpRequest, ImagePicker? imagePicker})
     : _customer = PersonalInfoSession.get() ?? customer,
       httpRequest = httpRequest ?? HttpRequest(),
@@ -100,7 +99,6 @@ class PersonalInfoViewModel extends ChangeNotifier {
     return usernameError == null && firstNameError == null && lastNameError == null && phoneError == null && emailError == null;
   }
 
-  /// انتخاب و برش آواتار بدون تغییر اطلاعات اصلی تا قبل از ذخیره موفق.
   Future<void> pickAvatar(BuildContext context, ImageSource source) async {
     if (pickingAvatar || saving || isLoading) return;
     pickingAvatar = true;
@@ -120,15 +118,15 @@ class PersonalInfoViewModel extends ChangeNotifier {
     }
   }
 
-  /// ارسال فقط فیلدهای تغییرکرده؛ display_name هرگز به PUT ارسال نمی‌شود.
   Future<bool> submit() async {
     if (saving || isLoading || PersonalInfoSession.get() == null || !formChanged || !validate()) return false;
     saving = true;
     errorMessage = '';
     notifyListeners();
+
     try {
       final changes = <String, dynamic>{};
-      // افزودن فقط فیلدهایی که کاربر تغییر داده است.
+
       void addChanged(String key, String value, String original) {
         if (value != original) changes[key] = value;
       }
@@ -138,43 +136,32 @@ class PersonalInfoViewModel extends ChangeNotifier {
       addChanged('last_name', lastNameController.text.trim(), _customer.lastName);
       addChanged('email', emailController.text.trim(), _customer.email);
       addChanged('phone', phoneController.text.trim(), _customer.phone);
+
       if (hasAvatarChange) {
         final bytes = await File(avatarFilePath!).readAsBytes();
         changes['avatar'] = 'data:image/jpeg;base64,${base64Encode(bytes)}';
       }
+
       if (changes.isEmpty) return false;
+
       final response = await httpRequest.updateCustomer(token: token, changes: changes);
+
       if (response is! Map || response['success'] != true) {
         errorMessage = response is Map && response['message']?.toString().isNotEmpty == true ? response['message'].toString() : 'ویرایش مشخصات فردی انجام نشد.';
         return false;
       }
-      final responseMap = Map<String, dynamic>.from(response);
-      final raw = responseMap['user'] is Map
-          ? responseMap['user']
-          : responseMap['data'] is Map
-          ? responseMap['data']
-          : null;
-      final payload = raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
-      // اگر پاسخ ناقص باشد، مقدار فیلدهای تغییرکرده نیز با مدل ادغام می‌شود.
-      final fields = Map<String, dynamic>.from(changes)..remove('avatar');
-      var merged = _customer.mergeJson({...fields, ...payload});
-      // وقتی PUT نام نمایشی یا آواتار نهایی را برنگرداند، فقط یک GET تکمیلی انجام می‌شود.
-      if (!payload.containsKey('display_name') || (hasAvatarChange && !payload.containsKey('avatar'))) {
-        final fresh = await httpRequest.getCustomer(token: token);
-        if (fresh is Map && fresh['success'] == true) {
-          final parsed = CustomerResponseModel.fromJson(Map<String, dynamic>.from(fresh));
-          if (parsed.data.id == _customer.id) merged = parsed.data;
-        }
-      }
-      _customer = merged;
-      updatedCustomer = merged;
+
+      final json = CustomerResponseModel.fromJson(Map<String, dynamic>.from(response));
+
+      _customer = json.data;
+      updatedCustomer = json.data;
       avatarFilePath = null;
       _syncFields();
-      PersonalInfoSession.save(merged);
-      await AccountCache.save(customer: merged);
+      PersonalInfoSession.save(_customer);
+      await AccountCache.save(customer: _customer);
       return true;
     } catch (e) {
-      if (kDebugMode) print('CUSTOMER UPDATE ERROR >>> $e');
+      AppLog.error('CUSTOMER UPDATE ERROR >>> $e');
       errorMessage = 'ویرایش مشخصات فردی انجام نشد. اتصال اینترنت را بررسی کنید.';
       return false;
     } finally {
@@ -189,7 +176,6 @@ class PersonalInfoViewModel extends ChangeNotifier {
     if (!_disposed) super.notifyListeners();
   }
 
-  /// آزادسازی کنترلرهای فرم.
   @override
   void dispose() {
     _disposed = true;

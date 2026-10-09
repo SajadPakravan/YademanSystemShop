@@ -1,6 +1,4 @@
-/// پاسخ خواندن اطلاعات مشتری از سرور.
 class CustomerResponseModel {
-  /// نتیجه درخواست و مدل داده‌های مشتری.
   const CustomerResponseModel({required this.success, required this.data});
 
   final bool success;
@@ -31,7 +29,6 @@ class CustomerModel {
   final String username, firstName, lastName, displayName, email, phone, avatar;
   final int addressCount, ordersCount, cartCount, commentsCount;
 
-  /// تبدیل اعداد و رشته‌های پاسخ API با مقادیر پیش‌فرض امن.
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
     return CustomerModel(
       id: json['id'],

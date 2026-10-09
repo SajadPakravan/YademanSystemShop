@@ -66,6 +66,13 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> getCustomer() async {
+    final customer = await AccountCache.getCustomer();
+    this.customer = customer;
+    print(55555555555555555);
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     _disposed = true;
