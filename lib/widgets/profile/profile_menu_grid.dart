@@ -70,12 +70,7 @@ class ProfileMenuGrid extends StatelessWidget {
         icon: Icons.history_rounded,
         onTap: () => _openList(context, ViewedProductsScreen(token: viewModel.token)),
       ),
-      ProfileMenuCard(
-        title: 'اعلانات',
-        icon: Icons.notifications_none_rounded,
-        showAlertDot: customer.personalInfoIncomplete,
-        onTap: () {},
-      ),
+      ProfileMenuCard(title: 'اعلانات', icon: Icons.notifications_none_rounded, showAlertDot: customer.personalInfoIncomplete, onTap: () {}),
       ProfileMenuCard(
         title: 'تغییر گذرواژه',
         icon: Icons.lock_outline_rounded,
@@ -102,14 +97,13 @@ class ProfileMenuGrid extends StatelessWidget {
     return Column(spacing: r.space(10), children: rows);
   }
 
-  /// بازخوانی شمارنده‌های مشتری پس از بازگشت از فهرست‌ها یا آدرس.
   Future<void> _openList(BuildContext context, Widget screen) async {
-    await rightToPage(screen);
+    await rightToPage(() => screen);
     viewModel.getCustomer();
   }
 
   Future<void> _openPersonalInfo(BuildContext context, Widget screen) async {
-    final updated = await rightToPage(screen);
+    final updated = await rightToPage(() => screen);
     if (updated is CustomerModel) viewModel.applyCustomer(updated);
   }
 
@@ -126,9 +120,12 @@ class ProfileMenuGrid extends StatelessWidget {
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.onBrand),
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('خروج'),
+              child: AppText.bodyMedium('خروج', color: Colors.white),
             ),
-            TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('انصراف')),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: AppText.bodyMedium('انصراف', color: context.appColors.inquiryForeground),
+            ),
           ],
         ),
       ),

@@ -15,20 +15,23 @@ class ErrorConnectionWidget extends StatelessWidget {
     final colors = context.appColors;
     final r = context.responsive;
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(r.pageHorizontalPadding * 1.5),
-            child: Column(
-              spacing: r.space(20),
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.cloud_off_outlined, color: colors.textMuted, size: r.icon(68)),
-                AppText.bodyMedium(errorMessage, textAlign: TextAlign.center, color: colors.textSecondary, height: 1.7),
-                AppButton(label: 'تلاش دوباره', icon: Icons.refresh_rounded, expand: false, onPressed: () async => await onPressed()),
-              ],
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: colors.background,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.all(r.pageHorizontalPadding * 1.5),
+              child: Column(
+                spacing: r.space(20),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.cloud_off_outlined, color: colors.textMuted, size: r.icon(68)),
+                  AppText.bodyMedium(errorMessage, textAlign: TextAlign.center, color: colors.textSecondary, height: 1.7),
+                  AppButton(label: 'تلاش دوباره', icon: Icons.refresh_rounded, expand: false, onPressed: () async => await onPressed()),
+                ],
+              ),
             ),
           ),
         ),

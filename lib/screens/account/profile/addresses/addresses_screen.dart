@@ -7,7 +7,7 @@ class AddressesScreen extends StatefulWidget {
   const AddressesScreen({super.key, required this.token, this.initialAddresses});
 
   final String token;
-  final AddressBookModel? initialAddresses;
+  final AddressModel? initialAddresses;
 
   @override
   State<AddressesScreen> createState() => _AddressesScreenState();
@@ -19,7 +19,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = AddressesViewModel(token: widget.token, initialAddresses: widget.initialAddresses)..load();
+    _viewModel = AddressesViewModel(token: widget.token, initialAddresses: widget.initialAddresses)..load(refresh: true);
   }
 
   @override
