@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/auth/auth_model.dart';
+import 'package:yad_sys/models/customer_model.dart';
 import 'package:yad_sys/tools/account_cache.dart';
 import 'package:yad_sys/tools/app_cache.dart';
 import 'package:yad_sys/tools/sessions/address_session.dart';
@@ -23,6 +24,7 @@ class AccountViewModel extends ChangeNotifier {
   final confirmPasswordFocus = FocusNode();
   final loginFormKey = GlobalKey<FormState>();
   final registerFormKey = GlobalKey<FormState>();
+  CustomerModel? customer;
   bool hideLoginPassword = true;
   final PageController pageController = PageController(initialPage: 0);
   bool initializing = true;
@@ -78,6 +80,7 @@ class AccountViewModel extends ChangeNotifier {
       }
 
       final authenticated = AuthModel.fromJson(map);
+      customer = authenticated.user;
       await AccountCache.save(auth: authenticated);
       token = authenticated.token;
 

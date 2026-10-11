@@ -25,7 +25,6 @@ abstract class AddressFormViewModel extends ChangeNotifier {
   bool get isSaving => _submitting || addressesViewModel.anySaving || addressesViewModel.isRefreshing || addressesViewModel.isLoading;
   String get saveErrorMessage => addressesViewModel.saveErrorFor(kind);
   List<LocationOptions> get provinces => addressesViewModel.provinces;
-  List<LocationOptions> get cities => addressesViewModel.citiesFor(controllers['state']?.text.trim() ?? '');
 
   bool get fieldChanged => changes.isNotEmpty;
 
@@ -125,19 +124,18 @@ abstract class AddressFormViewModel extends ChangeNotifier {
       final regex = RegExp(r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$");
       if (!regex.hasMatch(email)) errors['email'] = 'ایمیل وارد شده معتبر نیست.';
     }
+
     final phone = (controllers['phone']?.text ?? '').replaceAll(RegExp(r'[\s-]'), '');
     if (phone.isNotEmpty) {
       final iranPhone = RegExp(r'^(?:0\d{10}|\+98\d{10}|98\d{10})$');
       if (!iranPhone.hasMatch(phone)) errors['phone'] = 'شماره تماس وارد شده معتبر نیست.';
     }
+
     final state = controllers['state']?.text.trim() ?? '';
     if (state.isNotEmpty && state != initialValues['state'] && provinces.isNotEmpty && !provinces.any((item) => item.code == state)) {
       errors['state'] = 'لطفاً استان را از فهرست انتخاب کنید.';
     }
-    final city = controllers['city']?.text.trim() ?? '';
-    if (city.isNotEmpty && city != initialValues['city'] && cities.isNotEmpty && !cities.any((item) => item.code == city)) {
-      errors['city'] = 'لطفاً شهر را از فهرست انتخاب کنید.';
-    }
+
     notifyListeners();
     return errors.isEmpty;
   }

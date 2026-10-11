@@ -4,7 +4,7 @@ import 'package:yad_sys/models/customer_model.dart';
 import 'package:yad_sys/tools/account_cache.dart';
 
 class ProfileViewModel extends ChangeNotifier {
-  ProfileViewModel({required this.token, HttpRequest? httpRequest}) : _httpRequest = httpRequest ?? HttpRequest();
+  ProfileViewModel({required this.token, HttpRequest? httpRequest, required this.customer}) : _httpRequest = httpRequest ?? HttpRequest();
 
   final HttpRequest _httpRequest;
   final String token;
@@ -15,14 +15,32 @@ class ProfileViewModel extends ChangeNotifier {
 
   bool get addressIncomplete => customer!.addressCount <= 0;
 
-  Future<void> load() async {
-    if (isRefreshing) return;
-    isRefreshing = true;
-    notifyListeners();
+  Future<void> initialize() async {
+    if (customer == null) {
+      errorMessage = '';
+      notifyListeners();
 
-    customer = await AccountCache.getCustomer();
-    isRefreshing = false;
-    notifyListeners();
+      try {
+        final response = await _httpRequest.getCustomer(token: token);
+        if (_disposed) return;
+        if (response is! Map) {
+          errorMessage = 'دریافت اطلاعات حساب کاربری انجام نشد.';
+          return;
+        }
+        final model = CustomerResponseModel.fromJson(Map<String, dynamic>.from(response));
+        if (!model.success) {
+          errorMessage = response['message']?.toString() ?? 'دریافت اطلاعات حساب کاربری انجام نشد.';
+          return;
+        }
+
+        applyCustomer(model.data);
+      } catch (e) {
+        if (kDebugMode) print('CUSTOMER REFRESH ERROR >>>> $e');
+        errorMessage = 'دریافت اطلاعات حساب کاربری انجام نشد. اتصال اینترنت را بررسی کنید.';
+      } finally {
+        notifyListeners();
+      }
+    }
   }
 
   Future<void> refreshCustomer() async {

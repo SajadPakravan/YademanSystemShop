@@ -18,7 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    profileViewModel = ProfileViewModel(token: widget.viewModel.token!)..load();
+    profileViewModel = ProfileViewModel(token: widget.viewModel.token!, customer: widget.viewModel.customer)..initialize();
   }
 
   @override

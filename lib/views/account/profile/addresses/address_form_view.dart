@@ -44,18 +44,6 @@ class AddressFormView extends StatelessWidget {
               errorText: viewModel.errors['state'],
               onChanged: (code) => viewModel.locationSelected('state', code),
             )
-          else if (fields[index].keyName == 'city' && viewModel.cities.isNotEmpty)
-            LocationCombo(
-              key: ValueKey('${viewModel.kind.apiKey}_city_combo'),
-              title: 'شهر',
-              hint: 'نام شهر را جستجو یا انتخاب کنید',
-              icon: Icons.location_city_outlined,
-              emptyMessage: 'شهری پیدا نشد.',
-              code: viewModel.controllers['city']!.text,
-              list: viewModel.cities,
-              errorText: viewModel.errors['city'],
-              onChanged: (code) => viewModel.locationSelected('city', code),
-            )
           else
             AppTextField(
               key: ValueKey('${viewModel.kind.apiKey}_${fields[index].keyName}_text'),

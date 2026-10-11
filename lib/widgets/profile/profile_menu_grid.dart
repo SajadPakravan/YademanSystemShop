@@ -16,10 +16,9 @@ import 'package:yad_sys/widgets/account/profile_menu_card.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class ProfileMenuGrid extends StatelessWidget {
-  const ProfileMenuGrid({super.key, required this.customer, required this.viewModel, required this.logout});
+  const ProfileMenuGrid({super.key, required this.viewModel, required this.logout});
 
   final ProfileViewModel viewModel;
-  final CustomerModel customer;
   final Future<void> Function() logout;
 
   @override
@@ -33,25 +32,25 @@ class ProfileMenuGrid extends StatelessWidget {
       ProfileMenuCard(
         title: 'مشخصات فردی',
         icon: Icons.person_outline_rounded,
-        showAlertDot: customer.personalInfoIncomplete,
-        onTap: () => _openPersonalInfo(context, PersonalInfoScreen(customer: customer, token: viewModel.token)),
+        showAlertDot: viewModel.customer!.personalInfoIncomplete,
+        onTap: () => _openPersonalInfo(context, PersonalInfoScreen(customer: viewModel.customer!, token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'آدرس‌ها',
         icon: Icons.location_on_outlined,
-        showAlertDot: customer.addressCount <= 0,
+        showAlertDot: viewModel.customer!.addressCount <= 0,
         onTap: () => _openList(context, AddressesScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'سفارشات',
         icon: Icons.receipt_long_outlined,
-        badgeCount: customer.ordersCount,
+        badgeCount: viewModel.customer!.ordersCount,
         onTap: () => _openList(context, OrdersScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'سبد خرید',
         icon: Icons.shopping_cart_outlined,
-        badgeCount: customer.cartCount,
+        badgeCount: viewModel.customer!.cartCount,
         onTap: () => _openList(context, CartScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
@@ -62,7 +61,7 @@ class ProfileMenuGrid extends StatelessWidget {
       ProfileMenuCard(
         title: 'نظرات من',
         icon: Icons.rate_review_outlined,
-        badgeCount: customer.commentsCount,
+        badgeCount: viewModel.customer!.commentsCount,
         onTap: () => _openList(context, ReviewsScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
@@ -70,7 +69,7 @@ class ProfileMenuGrid extends StatelessWidget {
         icon: Icons.history_rounded,
         onTap: () => _openList(context, ViewedProductsScreen(token: viewModel.token)),
       ),
-      ProfileMenuCard(title: 'اعلانات', icon: Icons.notifications_none_rounded, showAlertDot: customer.personalInfoIncomplete, onTap: () {}),
+      ProfileMenuCard(title: 'اعلانات', icon: Icons.notifications_none_rounded, showAlertDot: viewModel.customer!.personalInfoIncomplete, onTap: () {}),
       ProfileMenuCard(
         title: 'تغییر گذرواژه',
         icon: Icons.lock_outline_rounded,

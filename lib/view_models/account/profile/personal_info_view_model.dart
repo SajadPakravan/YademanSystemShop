@@ -12,7 +12,7 @@ import 'package:yad_sys/widgets/crop_image_view.dart';
 
 class PersonalInfoViewModel extends ChangeNotifier {
   PersonalInfoViewModel({required CustomerModel customer, required this.token, HttpRequest? httpRequest, ImagePicker? imagePicker})
-    : _customer = PersonalInfoSession.get() ?? customer,
+    : _customer = customer,
       httpRequest = httpRequest ?? HttpRequest(),
       imagePicker = imagePicker ?? ImagePicker(),
       usernameController = TextEditingController(text: (PersonalInfoSession.get() ?? customer).username),
@@ -35,27 +35,9 @@ class PersonalInfoViewModel extends ChangeNotifier {
   CustomerModel get customer => _customer;
 
   Future<void> initialize() async {
-    if (PersonalInfoSession.get() != null || isLoading) return;
-    isLoading = true;
-    errorMessage = '';
-    notifyListeners();
-
-    try {
-      final response = await httpRequest.getCustomer(token: token);
-
-      if (_disposed) return;
-      if (response is! Map || response['success'] != true) throw StateError('دریافت مشخصات فردی انجام نشد.');
-
-      final result = CustomerResponseModel.fromJson(Map<String, dynamic>.from(response));
-
-      _customer = result.data;
+    if(PersonalInfoSession.get() == null) {
       PersonalInfoSession.save(_customer);
       _syncFields();
-    } catch (e) {
-      errorMessage = 'دریافت مشخصات فردی انجام نشد. برای تلاش مجدد صفحه را باز کنید.';
-      if (kDebugMode) print('PERSONAL INFO LOAD ERROR >>> $e');
-    } finally {
-      isLoading = false;
       notifyListeners();
     }
   }
@@ -119,7 +101,7 @@ class PersonalInfoViewModel extends ChangeNotifier {
   }
 
   Future<bool> submit() async {
-    if (saving || isLoading || PersonalInfoSession.get() == null || !formChanged || !validate()) return false;
+    if (saving || isLoading || !formChanged || !validate()) return false;
     saving = true;
     errorMessage = '';
     notifyListeners();

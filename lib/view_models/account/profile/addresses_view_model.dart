@@ -9,14 +9,14 @@ enum AddressKind { billing, shipping }
 
 extension AddressKindX on AddressKind {
   String get apiKey => this == AddressKind.billing ? 'billing' : 'shipping';
+
   String get title => this == AddressKind.billing ? 'صورتحساب' : 'ارسال';
 }
 
-/// Owns API, shared data and location lists, not any TextEditingController.
 class AddressesViewModel extends ChangeNotifier {
   AddressesViewModel({required this.token, AddressModel? initialAddresses, HttpRequest? httpRequest})
-      : addresses = AddressSession.get() ?? initialAddresses,
-        httpRequest = httpRequest ?? HttpRequest();
+    : addresses = AddressSession.get() ?? initialAddresses,
+      httpRequest = httpRequest ?? HttpRequest();
 
   final HttpRequest httpRequest;
   final String token;
@@ -25,15 +25,19 @@ class AddressesViewModel extends ChangeNotifier {
   bool isRefreshing = false;
   String errorMessage = '';
   final Map<AddressKind, String> _saveErrors = <AddressKind, String>{};
-  String saveErrorFor(AddressKind kind) => _saveErrors[kind] ?? '';
-  void clearSaveError(AddressKind kind) => _saveErrors.remove(kind);
   final Set<AddressKind> _saving = <AddressKind>{};
   bool _disposed = false;
 
+  String saveErrorFor(AddressKind kind) => _saveErrors[kind] ?? '';
+
+  void clearSaveError(AddressKind kind) => _saveErrors.remove(kind);
+
   AddressFieldsModel? address(AddressKind kind) => kind == AddressKind.billing ? addresses?.billing : addresses?.shipping;
-  List<LocationOptions> get provinces => addresses?.locations.provinces ?? const <LocationOptions>[];
-  List<LocationOptions> citiesFor(String provinceCode) => addresses?.locations.citiesFor(provinceCode) ?? const <LocationOptions>[];
+
   bool saving(AddressKind kind) => _saving.contains(kind);
+
+  List<LocationOptions> get provinces => addresses?.locations.provinces ?? const <LocationOptions>[];
+
   bool get anySaving => _saving.isNotEmpty;
 
   static const List<FieldMeta> fieldDefinitions = <FieldMeta>[
@@ -50,8 +54,7 @@ class AddressesViewModel extends ChangeNotifier {
     FieldMeta(keyName: 'email', label: 'ایمیل', icon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
   ];
 
-  List<FieldMeta> visibleFields(AddressFieldsModel model) =>
-      fieldDefinitions.where((field) => model.hasField(field.keyName)).toList(growable: false);
+  List<FieldMeta> visibleFields(AddressFieldsModel model) => fieldDefinitions.where((field) => model.hasField(field.keyName)).toList(growable: false);
 
   static bool _validResponse(dynamic response) {
     if (response is! Map || response['success'] != true) return false;
@@ -88,32 +91,26 @@ class AddressesViewModel extends ChangeNotifier {
     }
   }
 
-  /// PUT acknowledges a write; a fresh GET is the authoritative editable snapshot.
-  /// Never merge stale local values into the API's enabled field set.
   Future<bool> updateAddress(AddressKind kind, Map<String, String> changes) async {
     if (_disposed || changes.isEmpty || anySaving || isLoading || isRefreshing || addresses == null) return false;
     _saveErrors.remove(kind);
     _saving.add(kind);
+
     notifyListeners();
+
     try {
       final response = await httpRequest.updateAddresses(token: token, changes: <String, dynamic>{kind.apiKey: changes});
+
       if (_disposed) return false;
       if (!_validResponse(response)) {
         _saveErrors[kind] = response is Map ? response['message']?.toString() ?? 'ذخیره آدرس انجام نشد.' : 'ذخیره آدرس انجام نشد.';
         return false;
       }
 
-      // Confirm what is *actually* stored, including currently enabled fields.
-      final freshResponse = await httpRequest.getAddresses(token: token);
-      if (_disposed) return false;
-      if (!_validResponse(freshResponse)) {
-        _saveErrors[kind] = 'درخواست ذخیره پذیرفته شد، اما بررسی اطلاعات جدید از سرور امکان‌پذیر نیست.';
-        return false;
-      }
-
-      final newAddresses = AddressesResponseModel.fromJson(Map<String, dynamic>.from(freshResponse as Map)).data;
+      final newAddresses = AddressesResponseModel.fromJson(response).data;
       addresses = newAddresses;
       AddressSession.save(newAddresses);
+
       try {
         final count = (newAddresses.billing.hasAddress ? 1 : 0) + (newAddresses.shipping.hasAddress ? 1 : 0);
         await AppCache.setInt('address_count', count);
@@ -149,6 +146,7 @@ class AddressesViewModel extends ChangeNotifier {
 
 class FieldMeta {
   const FieldMeta({required this.keyName, required this.label, required this.icon, this.keyboardType = TextInputType.text});
+
   final String keyName;
   final String label;
   final IconData icon;

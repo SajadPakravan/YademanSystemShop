@@ -20,7 +20,7 @@ class ProfileView extends StatelessWidget {
     final r = context.responsive;
     final customer = viewModel.customer;
 
-    if(customer == null) return Loading();
+    if(customer == null) return const Loading();
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -34,7 +34,7 @@ class ProfileView extends StatelessWidget {
               header(context, customer),
               SizedBox(height: r.space(20)),
               if (viewModel.isRefreshing) ...[const LinearProgressIndicator(minHeight: 2), SizedBox(height: r.space(20))],
-              ProfileMenuGrid(customer: customer, viewModel: viewModel, logout: logout),
+              ProfileMenuGrid(viewModel: viewModel, logout: logout),
             ],
           ),
         ),
