@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:yad_sys/models/address_model.dart';
-import 'package:yad_sys/view_models/account/profile/addresses_view_model.dart';
+import 'package:yad_sys/view_models/account/profile/address/addresses_view_model.dart';
 import 'package:yad_sys/views/account/profile/addresses/addresses_view.dart';
 
 class AddressesScreen extends StatefulWidget {
-  const AddressesScreen({super.key, required this.token, this.initialAddresses});
+  const AddressesScreen({super.key, required this.token});
 
   final String token;
-  final AddressModel? initialAddresses;
 
   @override
   State<AddressesScreen> createState() => _AddressesScreenState();
@@ -19,7 +17,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = AddressesViewModel(token: widget.token, initialAddresses: widget.initialAddresses)..load(refresh: true);
+    _viewModel = AddressesViewModel(token: widget.token)..load();
   }
 
   @override

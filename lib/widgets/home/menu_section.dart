@@ -1,9 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yad_sys/models/image_item_model.dart';
 import 'package:yad_sys/models/section_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/tools/app_dimension.dart';
+import 'package:yad_sys/widgets/net_image.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
 class MenuSection extends StatelessWidget {
@@ -22,10 +22,10 @@ class MenuSection extends StatelessWidget {
     final colors = context.appColors;
     final spacing = r.space(8, min: 6, max: 11);
     final horizontalMargin = r.pageHorizontalPadding;
-    final available = r.width - (horizontalMargin * 2) - ((columns - 1) * spacing);
+    final available = r.width - (horizontalMargin * 2) - ((columns - 5) * spacing);
     final itemWidth = (available / columns).clamp(68.0, r.isTablet ? 145.0 : 112.0).toDouble();
-    final iconSize = (itemWidth * 0.58).clamp(42.0, 66.0).toDouble();
-    final rowHeight = iconSize + r.space(48, min: 42, max: 56);
+    final iconSize = (itemWidth * 0.4).clamp(60, 66).toDouble();
+    final rowHeight = iconSize + r.space(65, min: 60, max: 75);
 
     return Container(
       height: (rows * rowHeight) + ((rows - 1) * spacing),
@@ -67,30 +67,24 @@ class _MenuCard extends StatelessWidget {
       color: AppColors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(r.cardRadius),
-        // onTap: () => SectionActionHandler.handle(context: context, action: item.action),
+        onTap: () {},
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: r.space(3)),
           child: Column(
+            spacing: r.space(5),
             children: [
-              SizedBox(
-                width: iconSize,
-                height: iconSize,
-                child: CachedNetworkImage(
-                  imageUrl: item.image,
-                  fit: BoxFit.contain,
-                  errorWidget: (context, url, error) => Icon(Icons.apps_rounded, color: AppColors.primary, size: r.icon(34)),
-                ),
-              ),
-              SizedBox(height: r.space(5)),
+              NetImage(imageUrl: item.image, width: iconSize, height: iconSize),
               Expanded(
-                child: AppText.bodySmall(
-                  item.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  fontWeight: FontWeight.w600,
-                  color: colors.textPrimary,
-                  height: 1.35,
+                child: Center(
+                  child: AppText.bodySmall(
+                    item.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    fontWeight: FontWeight.w600,
+                    color: colors.textPrimary,
+                    height: 1.5,
+                  ),
                 ),
               ),
             ],

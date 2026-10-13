@@ -204,6 +204,7 @@ class ShopViewModel with ChangeNotifier {
       errorMessage = _friendlyError(e);
     } finally {
       isInitialLoading = false;
+      isRefreshing = false;
       notifyListeners();
     }
   }
@@ -253,6 +254,7 @@ class ShopViewModel with ChangeNotifier {
     }
 
     productsLst.clear();
+    isRefreshing = true;
     appliedFilters.clearAll();
     notifyListeners();
     await applyFilters(draft);

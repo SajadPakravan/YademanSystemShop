@@ -11,6 +11,7 @@ import 'package:yad_sys/widgets/bottom_sheet/filter_sheet_widget.dart';
 import 'package:yad_sys/widgets/buttons/btn_filters.dart';
 import 'package:yad_sys/widgets/buttons/app_button.dart';
 import 'package:yad_sys/widgets/buttons/filter_chip_button_widget.dart';
+import 'package:yad_sys/widgets/loading.dart';
 import 'package:yad_sys/widgets/search.dart';
 import 'package:yad_sys/widgets/text_views/app_text.dart';
 
@@ -87,7 +88,7 @@ class _ShopViewState extends State<ShopView> {
               physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
               slivers: [
                 if (vm.isInitialLoading && vm.productsLst.isEmpty)
-                  const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
+                  const SliverFillRemaining(hasScrollBody: false, child: Loading())
                 else if (vm.errorMessage != null && vm.productsLst.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,

@@ -68,7 +68,7 @@ class AddressFieldsModel {
   bool hasField(String key) => addressValues.containsKey(key);
 
   bool get hasAddress =>
-      const <String>['first_name', 'last_name', 'state', 'city', 'address_1', 'postcode', 'phone'].any((field) => value(field).trim().isNotEmpty);
+      const <String>['first_name', 'last_name', 'state', 'city', 'address_1', 'address_2', 'postcode', 'phone'].any((field) => value(field).trim().isNotEmpty);
 
   bool get isEmpty => addressValues.values.every((value) => value.trim().isEmpty);
 
@@ -76,26 +76,23 @@ class AddressFieldsModel {
 }
 
 class AddressLocations {
-  const AddressLocations({required this.country, required this.provinces});
+  const AddressLocations({required this.provinces});
 
-  final LocationOptions country;
-  final List<LocationOptions> provinces;
+  final List<Province> provinces;
 
   factory AddressLocations.fromJson(Map<String, dynamic> json) {
-    return AddressLocations(
-      country: LocationOptions.fromJson(json['country']),
-      provinces: List.castFrom(json['provinces']).map((item) => LocationOptions.fromJson(item)).toList(),
-    );
+    return AddressLocations(provinces: List.castFrom(json['provinces']).map((item) => Province.fromJson(item)).toList());
   }
 }
 
-class LocationOptions {
-  const LocationOptions({required this.code, required this.name});
+class Province {
+  const Province({required this.code, required this.name, required this.cities});
 
   final String code;
   final String name;
+  final List<String> cities;
 
-  factory LocationOptions.fromJson(Map<String, dynamic> json) {
-    return LocationOptions(code: json['code'], name: json['name']);
+  factory Province.fromJson(Map<String, dynamic> json) {
+    return Province(code: json['code'], name: json['name'], cities: List<String>.from(json['cities']));
   }
 }

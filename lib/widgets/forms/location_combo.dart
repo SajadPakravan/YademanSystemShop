@@ -1,26 +1,37 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:yad_sys/models/address_model.dart';
-import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/widgets/forms/app_text_field.dart';
 
-class LocationCombo extends StatefulWidget {
+class LocationCombo<T> extends StatefulWidget {
   const LocationCombo({
     super.key,
-    required this.code,
-    required this.list,
-    required this.onChanged,
+    required this.controller,
+    required this.focusNode,
+    required this.options,
+    required this.labelOf,
+    required this.onSelected,
     required this.title,
     required this.hint,
     required this.icon,
-    this.emptyMessage = 'موردی پیدا نشد.',
+    this.emptyMessage = 'موردی پیدا نشد',
     this.errorText,
   });
 
-  final String code;
-  final List<LocationOptions> list;
-  final ValueChanged<String> onChanged;
+  /// کنترلر متن نمایشی فیلد اصلی؛ مالک آن ViewModel است.
+  final TextEditingController controller;
+
+  /// فوکوس فیلد اصلی؛ امکان بازکردن خودکار پنل شهر را فراهم می‌کند.
+  final FocusNode focusNode;
+
+  /// گزینه‌های مجاز برای انتخاب.
+  final List<T> options;
+
+  /// تبدیل هر گزینه به نام نمایشی.
+  final String Function(T) labelOf;
+
+  /// تحویل شیء انتخاب‌شده به ViewModel برای ذخیره نام و کد معتبر.
+  final ValueChanged<T> onSelected;
 
   final String title;
   final String hint;
@@ -29,395 +40,218 @@ class LocationCombo extends StatefulWidget {
   final String? errorText;
 
   @override
-  State<LocationCombo> createState() =>
-      _LocationComboState();
+  State<LocationCombo<T>> createState() => _LocationComboState<T>();
 }
 
-class _LocationComboState extends State<LocationCombo> {
+/// مدیریت پنل شناور و جستجوی موقت، بدون دخالت در مقدار اصلی فرم.
+class _LocationComboState<T> extends State<LocationCombo<T>> {
   final LayerLink _anchor = LayerLink();
-  final GlobalKey _targetKey = GlobalKey();
-  final FocusNode _focus = FocusNode();
-
-  late final TextEditingController _search;
+  final GlobalKey _fieldKey = GlobalKey();
+  final TextEditingController _searchCtrl = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
 
   OverlayEntry? _overlay;
+  bool _openingScheduled = false;
 
-  String _selectedCode = '';
-  String? _pendingCodeEcho;
-
-  bool _isEditing = false;
-  bool _overlayRefreshScheduled = false;
-
-  int _syncVersion = 0;
-
-  // تبدیل کد گزینه به نام قابل نمایش.
-  String _labelFor(String code) {
-    for (final item in widget.list) {
-      if (item.code == code) {
-        return item.name;
-      }
-    }
-
-    return code;
-  }
-
+  /// افزودن Listener فقط یک بار در طول عمر ویجت.
   @override
   void initState() {
     super.initState();
-
-    _selectedCode = widget.code;
-
-    _search = TextEditingController(
-      text: _labelFor(widget.code),
-    );
-
-    _focus.addListener(_onFocusChanged);
+    widget.focusNode.addListener(_onMainFocusChanged);
+    _searchCtrl.addListener(_refreshOverlay);
   }
 
-  // دریافت تغییرات واقعی مدل از ویجت والد.
+  /// هماهنگ‌سازی پنل باز در صورت عوض‌شدن فهرست شهرها یا FocusNode.
   @override
-  void didUpdateWidget(
-      covariant LocationCombo oldWidget,
-      ) {
+  void didUpdateWidget(covariant LocationCombo<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final codeChanged = oldWidget.code != widget.code;
-    final listChanged = !identical(
-      oldWidget.list,
-      widget.list,
-    );
-
-    if (!codeChanged && !listChanged) return;
-
-    if (codeChanged) {
-      // اگر تغییر، پاسخ والد به انتخاب یا پاک‌سازی
-      // خود همین کامبوباکس باشد، متن تایپ‌شده
-      // را دوباره بازنویسی نمی‌کنیم.
-      final isEcho = _pendingCodeEcho != null &&
-          widget.code == _pendingCodeEcho;
-
-      _pendingCodeEcho = null;
-
-      if (!isEcho) {
-        _selectedCode = widget.code;
-        _isEditing = false;
-        _scheduleSearchSync();
-      }
-    } else if (listChanged && !_isEditing) {
-      // اگر لیست گزینه‌ها تغییر کرده باشد،
-      // نام نمایشی کد موجود دوباره محاسبه می‌شود.
-      _scheduleSearchSync();
+    if (oldWidget.focusNode != widget.focusNode) {
+      oldWidget.focusNode.removeListener(_onMainFocusChanged);
+      widget.focusNode.addListener(_onMainFocusChanged);
     }
 
-    _refreshOverlayAfterFrame();
-  }
-
-  // هماهنگ‌سازی متن پس از پایان Build.
-  void _scheduleSearchSync() {
-    final version = ++_syncVersion;
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted ||
-          version != _syncVersion ||
-          _isEditing) {
-        return;
-      }
-
-      final label = _labelFor(widget.code);
-
-      if (_search.text != label) {
-        _search.value = TextEditingValue(
-          text: label,
-          selection: TextSelection.collapsed(
-            offset: label.length,
-          ),
-        );
-      }
+      if (!mounted) return;
+      if (!identical(oldWidget.options, widget.options)) _searchCtrl.clear();
+      _refreshOverlay();
     });
   }
 
-  // بازسازی امن Overlay بعد از پایان فریم.
-  void _refreshOverlayAfterFrame() {
-    if (_overlayRefreshScheduled) return;
+  /// فوکوس گرفتن فیلد اصلی، پنل را باز می‌کند؛ خروج فوکوس هنگام ورود به جستجو، آن را نمی‌بندد.
+  void _onMainFocusChanged() {
+    if (widget.focusNode.hasFocus) _scheduleOpen();
+  }
 
-    _overlayRefreshScheduled = true;
+  /// قرار دادن فیلد در محدوده دید پیش از بازشدن پنل زیر آن.
+  void _scheduleOpen() {
+    if (_overlay != null || _openingScheduled) return;
+    _openingScheduled = true;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _overlayRefreshScheduled = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) {
+        _openingScheduled = false;
+        return;
+      }
 
+      await Scrollable.ensureVisible(context, alignment: 0.08, duration: Duration.zero);
       if (!mounted) return;
 
-      final entry = _overlay;
-
-      if (entry == null || !entry.mounted) {
-        return;
-      }
-
-      entry.markNeedsBuild();
+      _openingScheduled = false;
+      _open();
     });
   }
 
-  // یکسان‌سازی حروف عربی و فارسی برای جستجو.
-  String _normalize(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll('ي', 'ی')
-        .replaceAll('ك', 'ک');
+  /// یکسان‌سازی حروف فارسی و عربی برای جستجوی دقیق‌تر.
+  String _normalize(String text) => text.trim().toLowerCase().replaceAll('ي', 'ی').replaceAll('ك', 'ک');
+
+  /// استخراج گزینه‌ها فقط با متن جستجوی داخل پنل، نه متن فیلد اصلی.
+  List<T> _filteredOptions() {
+    final query = _normalize(_searchCtrl.text);
+    if (query.isEmpty) return widget.options;
+
+    return widget.options.where((item) => _normalize(widget.labelOf(item)).contains(query)).toList(growable: false);
   }
 
-  // استخراج گزینه‌های مطابق متن جستجو.
-  List<LocationOptions> _filteredOptions(
-      String text,
-      ) {
-    final query = _normalize(text);
-
-    return widget.list.where((item) {
-      return _normalize(item.name).contains(query) ||
-          _normalize(item.code).contains(query);
-    }).toList(growable: false);
+  /// بازسازی پنل با تغییر متن جستجو یا فهرست گزینه‌ها.
+  void _refreshOverlay() {
+    if (_overlay?.mounted ?? false) _overlay?.markNeedsBuild();
   }
 
-  // مدیریت فوکوس فیلد.
-  void _onFocusChanged() {
-    if (_focus.hasFocus) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _focus.hasFocus) {
-          _open();
-        }
-      });
-    } else {
-      _close();
-      // Incomplete search text is not a selected API code.
-      if (_selectedCode.isEmpty && _search.text.isNotEmpty) {
-        _search.clear();
-        _isEditing = false;
-      }
-    }
-  }
-
-  // تغییر متن جستجو توسط کاربر.
-  void _onTyped(String value) {
-    _syncVersion++;
-    _isEditing = true;
-
-    // متن جستجو هرگز به‌عنوان کد ارسال نمی‌شود.
-    // اگر قبلاً گزینه‌ای انتخاب شده بود، آن انتخاب
-    // با تایپ جدید نامعتبر می‌شود.
-    if (_selectedCode.isNotEmpty) {
-      _selectedCode = '';
-      _pendingCodeEcho = '';
-
-      widget.onChanged('');
-    }
-
-    _open();
-
-    // نیازی به markNeedsBuild مستقیم نیست.
-    // ValueListenableBuilder تغییرات _search
-    // را دریافت کرده و لیست را به‌روز می‌کند.
-  }
-
-  // انتخاب یک گزینه معتبر از لیست.
-  void _choose(LocationOptions item) {
-    _syncVersion++;
-    _isEditing = false;
-    _selectedCode = item.code;
-
-    // ابتدا لیست را می‌بندیم.
-    _close();
-    _focus.unfocus();
-
-    // نمایش نام انتخاب‌شده در فیلد.
-    _search.value = TextEditingValue(
-      text: item.name,
-      selection: TextSelection.collapsed(
-        offset: item.name.length,
-      ),
-    );
-
-    // ارسال فقط کد انتخاب‌شده به والد.
-    _pendingCodeEcho = item.code;
-    widget.onChanged(item.code);
-  }
-
-  // ایجاد Overlay زیر فیلد.
+  /// نمایش پنل جستجو و گزینه‌ها در لایه‌ای شناور زیر فیلد اصلی.
   void _open() {
-    if (_overlay != null || !mounted) return;
-
+    if (!mounted || _overlay != null) return;
     final overlayState = Overlay.maybeOf(context);
-
     if (overlayState == null) return;
 
-    final entry = OverlayEntry(
+    // هر بار بازشدن، تمام گزینه‌های استان/شهر را نشان می‌دهیم.
+    _searchCtrl.clear();
+
+    _overlay = OverlayEntry(
       builder: (overlayContext) {
-        if (!mounted) {
+        final box = _fieldKey.currentContext?.findRenderObject();
+        if (box is! RenderBox || !box.attached || !box.hasSize) {
           return const SizedBox.shrink();
         }
 
-        // تغییر متن کنترلر، فقط بخش لیست را
-        // بازسازی می‌کند؛ نه کل فرم را.
-        return ValueListenableBuilder<TextEditingValue>(
-          valueListenable: _search,
-          builder: (context, searchValue, child) {
-            final target =
-            _targetKey.currentContext?.findRenderObject();
+        // محاسبه فضای آزاد زیر فیلد با درنظرگرفتن صفحه‌کلید.
+        final media = MediaQuery.of(overlayContext);
+        final fieldTop = box.localToGlobal(Offset.zero).dy;
+        final availableBelow = math.max(0.0, media.size.height - media.viewInsets.bottom - fieldTop - box.size.height - 8.0);
 
-            if (target is! RenderBox ||
-                !target.attached ||
-                !target.hasSize) {
-              return const SizedBox.shrink();
-            }
+        if (availableBelow < 96.0) return const SizedBox.shrink();
 
-            final width = target.size.width;
-            final fieldHeight = target.size.height;
+        final options = _filteredOptions();
+        final desiredHeight = 68.0 + math.max(1, options.length) * 48.0;
+        final panelHeight = math.min(math.min(400.0, availableBelow), desiredHeight);
 
-            final origin = target.localToGlobal(
-              Offset.zero,
-            );
-
-            final screenHeight =
-                MediaQuery.sizeOf(overlayContext).height;
-
-            final keyboardHeight =
-                MediaQuery.viewInsetsOf(overlayContext)
-                    .bottom;
-
-            // Use the side with room: the city field is often near the
-            // keyboard, so a below-only dropdown can become inaccessible.
-            final availableBelow = math.max(
-              0.0,
-              screenHeight - keyboardHeight - origin.dy - fieldHeight - 12,
-            );
-            final safeTop = MediaQuery.paddingOf(overlayContext).top;
-            final availableAbove = math.max(0.0, origin.dy - safeTop - 12);
-            final showAbove = availableBelow < 130 && availableAbove > availableBelow;
-            final availableSpace = showAbove ? availableAbove : availableBelow;
-
-            if (availableSpace < 52) {
-              return const SizedBox.shrink();
-            }
-
-            final options = _filteredOptions(searchValue.text);
-            final maxHeight = math.min(390.0, availableSpace);
-            final height = math.min(
-              maxHeight,
-              math.max(52.0, options.length * 52.0),
-            );
-
-            return Positioned(
+        return Stack(
+          children: [
+            // لمس بیرون از پنل، آن را بدون تغییر مقدار انتخاب‌شده می‌بندد.
+            Positioned.fill(
+              child: GestureDetector(behavior: HitTestBehavior.opaque, onTap: _close, child: const SizedBox.expand()),
+            ),
+            Positioned(
               top: 0,
               left: 0,
-              width: width,
               child: CompositedTransformFollower(
                 link: _anchor,
+                targetAnchor: Alignment.bottomLeft,
+                followerAnchor: Alignment.topLeft,
                 showWhenUnlinked: false,
-                offset: Offset(
-                  0,
-                  showAbove ? -height - 4 : fieldHeight + 4,
-                ),
+                offset: const Offset(0, 4),
                 child: Directionality(
                   textDirection: TextDirection.rtl,
-                  child: Material(
-                    elevation: 8,
-                    color: Theme.of(overlayContext)
-                        .colorScheme
-                        .surface,
-                    borderRadius:
-                    BorderRadius.circular(14),
-                    clipBehavior: Clip.antiAlias,
-                    child: SizedBox(
-                      height: height,
-                      child: options.isEmpty
-                          ? Center(
-                        child: Text(
-                          widget.emptyMessage,
-                        ),
-                      )
-                          : ListView.builder(
-                        key: ValueKey(
-                          _normalize(searchValue.text),
-                        ),
-                        padding: EdgeInsets.zero,
-                        itemCount: options.length,
-                        itemBuilder: (
-                            itemContext,
-                            index,
-                            ) {
-                          final item = options[index];
-
-                          return ListTile(
-                            key: ValueKey(item.code),
-                            dense: true,
-                            title: Text(item.name),
-                            trailing:
-                            _selectedCode == item.code
-                                ? const Icon(
-                              Icons.check_rounded,
-                              color: AppColors.primary,
-                            )
-                                : null,
-                            onTap: () => _choose(item),
-                          );
-                        },
+                  child: SizedBox(
+                    width: box.size.width,
+                    height: panelHeight,
+                    child: Material(
+                      elevation: 8,
+                      borderRadius: BorderRadius.circular(12),
+                      clipBehavior: Clip.antiAlias,
+                      color: Theme.of(overlayContext).colorScheme.surface,
+                      child: Column(
+                        children: [
+                          // تنها فیلد قابل‌تایپ این کامبوباکس؛ داخل خود فهرست.
+                          Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: TextField(
+                              controller: _searchCtrl,
+                              focusNode: _searchFocus,
+                              autofocus: true,
+                              decoration: const InputDecoration(hintText: 'جستجو در فهرست...', prefixIcon: Icon(Icons.search), isDense: true),
+                            ),
+                          ),
+                          // فهرست به متن جستجو واکنش لحظه‌ای می‌دهد.
+                          Expanded(
+                            child: options.isEmpty
+                                ? Center(child: Text(widget.emptyMessage))
+                                : ListView.builder(
+                                    padding: EdgeInsets.zero,
+                                    itemExtent: 48,
+                                    itemCount: options.length,
+                                    itemBuilder: (context, index) {
+                                      final item = options[index];
+                                      return ListTile(dense: true, title: Text(widget.labelOf(item)), onTap: () => _choose(item));
+                                    },
+                                  ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
               ),
-            );
-          },
+            ),
+          ],
         );
       },
     );
 
-    _overlay = entry;
-    overlayState.insert(entry);
+    overlayState.insert(_overlay!);
   }
 
-  // بستن و آزادسازی Overlay.
+  /// فقط انتخاب از فهرست را به مدل منتقل می‌کند و پنل را می‌بندد.
+  void _choose(T item) {
+    _close();
+    widget.onSelected(item);
+  }
+
+  /// حذف ایمن پنل و پایان فوکوس جستجوی موقت.
   void _close() {
+    if (_searchFocus.hasFocus) _searchFocus.unfocus();
     final entry = _overlay;
-
-    if (entry == null) return;
-
     _overlay = null;
-
-    entry.remove();
-    entry.dispose();
+    entry?.remove();
+    entry?.dispose();
   }
 
+  /// آزادسازی منابع داخلی؛ کنترلر و FocusNode اصلی فقط در ViewModel آزاد می‌شوند.
   @override
   void dispose() {
-    _syncVersion++;
-
+    widget.focusNode.removeListener(_onMainFocusChanged);
+    _searchCtrl.removeListener(_refreshOverlay);
     _close();
-
-    _focus.removeListener(_onFocusChanged);
-    _focus.dispose();
-
-    _search.dispose();
-
+    _searchCtrl.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
+  /// فیلد اصلی فقط خواندنی است و با لمس آن فهرست باز می‌شود.
   @override
   Widget build(BuildContext context) {
     return CompositedTransformTarget(
+      key: _fieldKey,
       link: _anchor,
-      child: KeyedSubtree(
-        key: _targetKey,
-        child: AppTextField(
-          controller: _search,
-          focusNode: _focus,
-          onTap: _open,
-          onChanged: _onTyped,
-          title: widget.title,
-          hint: widget.hint,
-          icon: widget.icon,
-          errorText: widget.errorText,
-          textInputAction: TextInputAction.next,
-        ),
+      child: AppTextField(
+        controller: widget.controller,
+        focusNode: widget.focusNode,
+        readOnly: true,
+        title: widget.title,
+        hint: widget.hint,
+        icon: widget.icon,
+        errorText: widget.errorText,
+        onTap: _scheduleOpen,
       ),
     );
   }
