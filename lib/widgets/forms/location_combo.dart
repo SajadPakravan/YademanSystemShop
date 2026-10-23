@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:yad_sys/tools/app_input_formatter.dart';
 import 'package:yad_sys/widgets/forms/app_text_field.dart';
 
 class LocationCombo<T> extends StatefulWidget {
@@ -11,6 +12,7 @@ class LocationCombo<T> extends StatefulWidget {
     required this.options,
     required this.labelOf,
     required this.onSelected,
+    required this.onChanged,
     required this.title,
     required this.hint,
     required this.icon,
@@ -18,21 +20,12 @@ class LocationCombo<T> extends StatefulWidget {
     this.errorText,
   });
 
-  /// کنترلر متن نمایشی فیلد اصلی؛ مالک آن ViewModel است.
   final TextEditingController controller;
-
-  /// فوکوس فیلد اصلی؛ امکان بازکردن خودکار پنل شهر را فراهم می‌کند.
   final FocusNode focusNode;
-
-  /// گزینه‌های مجاز برای انتخاب.
   final List<T> options;
-
-  /// تبدیل هر گزینه به نام نمایشی.
   final String Function(T) labelOf;
-
-  /// تحویل شیء انتخاب‌شده به ViewModel برای ذخیره نام و کد معتبر.
   final ValueChanged<T> onSelected;
-
+  final ValueChanged<String>? onChanged;
   final String title;
   final String hint;
   final IconData icon;
@@ -43,7 +36,6 @@ class LocationCombo<T> extends StatefulWidget {
   State<LocationCombo<T>> createState() => _LocationComboState<T>();
 }
 
-/// مدیریت پنل شناور و جستجوی موقت، بدون دخالت در مقدار اصلی فرم.
 class _LocationComboState<T> extends State<LocationCombo<T>> {
   final LayerLink _anchor = LayerLink();
   final GlobalKey _fieldKey = GlobalKey();
@@ -172,17 +164,16 @@ class _LocationComboState<T> extends State<LocationCombo<T>> {
                       color: Theme.of(overlayContext).colorScheme.surface,
                       child: Column(
                         children: [
-                          // تنها فیلد قابل‌تایپ این کامبوباکس؛ داخل خود فهرست.
                           Padding(
                             padding: const EdgeInsets.all(8),
                             child: TextField(
                               controller: _searchCtrl,
                               focusNode: _searchFocus,
                               autofocus: true,
+                              inputFormatters: AppInputFormatter.formatters(AppInputType.sPersianLetters),
                               decoration: const InputDecoration(hintText: 'جستجو در فهرست...', prefixIcon: Icon(Icons.search), isDense: true),
                             ),
                           ),
-                          // فهرست به متن جستجو واکنش لحظه‌ای می‌دهد.
                           Expanded(
                             child: options.isEmpty
                                 ? Center(child: Text(widget.emptyMessage))
@@ -207,11 +198,9 @@ class _LocationComboState<T> extends State<LocationCombo<T>> {
         );
       },
     );
-
     overlayState.insert(_overlay!);
   }
 
-  /// فقط انتخاب از فهرست را به مدل منتقل می‌کند و پنل را می‌بندد.
   void _choose(T item) {
     _close();
     widget.onSelected(item);
@@ -252,6 +241,7 @@ class _LocationComboState<T> extends State<LocationCombo<T>> {
         icon: widget.icon,
         errorText: widget.errorText,
         onTap: _scheduleOpen,
+        onChanged: widget.onChanged,
       ),
     );
   }

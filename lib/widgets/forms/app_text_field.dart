@@ -43,9 +43,7 @@ class AppTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final bool autofocus;
-  /// مدیریت فوکوس فیلد، برای نمایش لیست combobox هنگام تایپ.
   final FocusNode? focusNode;
-  /// فراخوانی هنگام لمس فیلد، حتی اگر قبلاً فوکوس گرفته باشد.
   final VoidCallback? onTap;
 
   @override

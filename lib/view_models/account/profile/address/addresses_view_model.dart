@@ -53,6 +53,13 @@ class AddressesViewModel extends ChangeNotifier {
     }
   }
 
+  /// همگام‌سازی آدرس‌های ثبت‌شده در پیش‌نمایش و Session.
+  void applyAddresses(AddressModel updated) {
+    addresses = updated;
+    AddressSession.save(updated);
+    notifyListeners();
+  }
+
   static const List<FieldMeta> fieldDefinitions = [
     FieldMeta(keyName: 'first_name', label: 'نام', icon: Icons.person_outline_rounded),
     FieldMeta(keyName: 'last_name', label: 'نام خانوادگی', icon: Icons.badge_outlined),
@@ -67,7 +74,6 @@ class AddressesViewModel extends ChangeNotifier {
   ];
 
   List<FieldMeta> visibleFields(AddressFieldsModel model) => fieldDefinitions.where((field) => model.hasField(field.keyName)).toList();
-
 
 }
 

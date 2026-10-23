@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yad_sys/tools/app_input_formatter.dart';
 import 'package:yad_sys/models/address_model.dart';
 import 'package:yad_sys/tools/app_colors.dart';
 import 'package:yad_sys/view_models/account/profile/address/addresses_view_model.dart';
@@ -16,19 +17,47 @@ class BillingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fields = viewModel.fields;
+    final colors = context.appColors;
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: context.appColors.surface,
-        appBar: AppBar(centerTitle: true, title: const AppText.titleMedium('آدرس‌ صورتحساب', fontWeight: FontWeight.w700)),
+        backgroundColor: colors.surface,
+        appBar: AppBar(centerTitle: true, title: const AppText.titleMedium('آدرس صورتحساب', fontWeight: FontWeight.w700)),
         body: ListView(
-          padding: EdgeInsets.all(15),
+          padding: const EdgeInsets.all(15),
           children: [
-            for (int index = 0; index < fields.length; index++) ...[buildField(context, fields[index], index == fields.length - 1), SizedBox(height: 15)],
-            SizedBox(height: 10),
-            AppButton(label: 'ثبت آدرس', onPressed: () {}),
-            SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: colors.info.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colors.info.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 10,
+                children: [
+                  Icon(Icons.info_outline_rounded, color: colors.info, size: 22),
+                  Expanded(
+                    child: AppText.bodyMedium(
+                      'این آدرس برای ثبت مشخصات خریدار و صدور صورتحساب سفارش استفاده می‌شود. اگر کالا را در محل دیگری دریافت می‌کنید، آدرس ارسال را جداگانه ثبت کنید.',
+                      color: colors.textPrimary,
+                      height: 1.7,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            for (int index = 0; index < fields.length; index++) ...[buildField(context, fields[index], index == fields.length - 1), const SizedBox(height: 15)],
+            const SizedBox(height: 10),
+            if (viewModel.saveMessage.isNotEmpty) ...[
+              AppText.bodySmall(viewModel.saveMessage, color: viewModel.saved ? colors.success : AppColors.error, textAlign: TextAlign.center),
+              const SizedBox(height: 12),
+            ],
+            AppButton(label: 'ثبت آدرس', icon: Icons.save_outlined, loading: viewModel.isSaving, onPressed: () => viewModel.confirm()),
+            const SizedBox(height: 10),
           ],
         ),
       ),
@@ -52,6 +81,7 @@ class BillingView extends StatelessWidget {
         options: viewModel.provinces,
         errorText: error,
         onSelected: viewModel.selectProvince,
+        onChanged: (_) => viewModel.fieldEdited(key),
         labelOf: (province) => province.name,
       );
     }
@@ -64,10 +94,11 @@ class BillingView extends StatelessWidget {
         title: field.label,
         hint: 'نام شهر را جستجو یا انتخاب کنید',
         icon: field.icon,
-        emptyMessage: 'شهری پیدا نشد',
+        emptyMessage: 'شهری پیدا نشد. اول استان را انتخاب کنید',
         options: viewModel.cities,
         errorText: error,
         onSelected: viewModel.selectCity,
+        onChanged: (_) => viewModel.fieldEdited(key),
         labelOf: (city) => city,
       );
     }
@@ -79,6 +110,15 @@ class BillingView extends StatelessWidget {
       hint: field.label,
       icon: field.icon,
       keyboardType: field.keyboardType,
+      inputFormatters: key == 'first_name' || key == 'last_name'
+          ? AppInputFormatter.formatters(AppInputType.sPersianLetters)
+          : key == 'address_1' || key == 'address_2'
+          ? AppInputFormatter.formatters(AppInputType.snvPersianLetters)
+          : key == 'phone'
+          ? AppInputFormatter.formatters(AppInputType.numbers, maxLength: 11)
+          : key == 'postcode'
+          ? AppInputFormatter.formatters(AppInputType.numbers, maxLength: 10)
+          : null,
       textInputAction: isLast ? TextInputAction.done : TextInputAction.next,
       errorText: error,
       onChanged: (_) => viewModel.fieldEdited(key),

@@ -18,7 +18,12 @@ class _BillingScreenState extends State<BillingScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = BillingViewModel(token: widget.addressVM.token, billing: widget.addressVM.billing!, provinces: widget.addressVM.provinces);
+    _viewModel = BillingViewModel(
+      token: widget.addressVM.token,
+      billing: widget.addressVM.billing!,
+      provinces: widget.addressVM.provinces,
+      addressesViewModel: widget.addressVM,
+    );
   }
 
   @override

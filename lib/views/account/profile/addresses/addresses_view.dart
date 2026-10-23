@@ -92,22 +92,21 @@ class AddressesView extends StatelessWidget {
       spacing: 10,
       children: [
         AppText.titleSmall('مشخصات گیرنده:'),
-        AppText.bodyMedium('نام: ${values['first_name']!} ${values['last_name']!}'),
+        AppText.bodyMedium('نام: ${values['first_name'] ?? ''} ${values['last_name'] ?? ''}'),
         AppText.bodyMedium('شماره تماس: ${values['phone']}'),
         if (values.containsKey('email') && values['email']!.isNotEmpty) AppText.bodyMedium('ایمیل: ${values['email']}'),
         AppText.bodyMedium('آدرس:'),
         Row(
           spacing: 5,
           children: [
-            AppText.bodyMedium('استان ${viewModel.state(values['state']!)}'),
+            AppText.bodyMedium('استان ${viewModel.state(values['state'] ?? '')}'),
             AppText.bodyMedium('،'),
             AppText.bodyMedium('شهرستان ${values['city']}'),
           ],
         ),
         AppText.bodyMedium('منطقه و خیابان:'),
-        AppText.bodyMedium(values['address_1']!),
-        AppText.bodyMedium('کوچه و پلاک:'),
-        AppText.bodyMedium(values['address_2']!),
+        AppText.bodyMedium(values['address_1'] ?? ''),
+        if (values['address_2']?.isNotEmpty ?? false) ...[AppText.bodyMedium('کوچه و پلاک:'), AppText.bodyMedium(values['address_2']!)],
         AppText.bodyMedium('کد پستی: ${values['postcode']}'),
         SizedBox(height: 10),
         AppButton(

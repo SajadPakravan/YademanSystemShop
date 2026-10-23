@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 
-enum AppInputType { englishLetters, persianLetters, numbers, englishLettersAndNumbers }
+enum AppInputType { englishLetters, sPersianLetters, snPersianLetters, snvPersianLetters, numbers, englishLettersAndNumbers }
 
 class AppInputFormatter {
   AppInputFormatter._();
@@ -10,8 +10,14 @@ class AppInputFormatter {
       case AppInputType.englishLetters:
         return FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z]'));
 
-      case AppInputType.persianLetters:
-        return FilteringTextInputFormatter.allow(RegExp(r'[اآبپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]'));
+      case AppInputType.sPersianLetters:
+        return FilteringTextInputFormatter.allow(RegExp(r'[اآأإءؤئبپتثجچحخدذرزژسشصضطظعغفقکگلمنوهیيك \u200C]'));
+
+      case AppInputType.snPersianLetters:
+        return FilteringTextInputFormatter.allow(RegExp(r'[اآأإءؤئبپتثجچحخدذرزژسشصضطظعغفقکگلمنوهیيك 0-9۰-۹\u200C]'));
+
+      case AppInputType.snvPersianLetters:
+        return FilteringTextInputFormatter.allow(RegExp(r'[اآأإءؤئبپتثجچحخدذرزژسشصضطظعغفقکگلمنوهیيك ،:.؛ 0-9۰-۹\u200C]'));
 
       case AppInputType.numbers:
         return FilteringTextInputFormatter.allow(RegExp(r'[0-9]'));
