@@ -160,14 +160,14 @@ class BillingViewModel extends ChangeNotifier {
 
       final current = addressesViewModel.addresses!;
 
-      // ساخت مدل جدید صورتحساب.
       final newBilling = AddressFieldsModel(addressValues: Map<String, String>.from(address['billing']));
 
       final savedAddresses = AddressModel(billing: newBilling, shipping: current.shipping, locations: current.locations);
 
       addressesViewModel.applyAddresses(savedAddresses);
       saved = true;
-      saveMessage = 'آدرس صورتحساب با موفقیت ثبت شد.';
+      saveMessage = 'آدرس صورتحساب با موفقیت ثبت شد';
+
     } catch (e, stack) {
       AppLog.error('BILLING ADDRESS UPDATE ERROR >>> $e\n$stack');
       if (!_disposed) saveMessage = 'ثبت آدرس انجام نشد. ارتباط اینترنت را بررسی کنید.';

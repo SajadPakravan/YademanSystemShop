@@ -64,20 +64,10 @@ class AddressesView extends StatelessWidget {
         children: [
           AppText.titleMedium(kind == viewModel.billing ? 'آدرس صورتحساب' : 'آدرس ارسال'),
           kind == null || kind.isEmpty
-              ? AppButton(
-                  onPressed: () async {
-                    final address = await rightToPage(page);
-                  },
-                  label: kind == viewModel.billing ? 'آدرس صورتحساب را ثبت کنید' : 'آدرس ارسال را ثبت کنید',
-                )
+              ? AppButton(onPressed: () => rightToPage(page), label: kind == viewModel.billing ? 'آدرس صورتحساب را ثبت کنید' : 'آدرس ارسال را ثبت کنید')
               : kind.hasAddress
               ? addressKindPreview(context, kind, page)
-              : AppButton(
-                  onPressed: () async {
-                    final address = await rightToPage(page);
-                  },
-                  label: kind == viewModel.billing ? 'آدرس صورتحساب را تکمیل کنید' : 'آدرس ارسال را تکمیل کنید',
-                ),
+              : AppButton(onPressed: () => rightToPage(page), label: kind == viewModel.billing ? 'آدرس صورتحساب را تکمیل کنید' : 'آدرس ارسال را تکمیل کنید'),
         ],
       ),
     );
@@ -96,25 +86,10 @@ class AddressesView extends StatelessWidget {
         AppText.bodyMedium('شماره تماس: ${values['phone']}'),
         if (values.containsKey('email') && values['email']!.isNotEmpty) AppText.bodyMedium('ایمیل: ${values['email']}'),
         AppText.bodyMedium('آدرس:'),
-        Row(
-          spacing: 5,
-          children: [
-            AppText.bodyMedium('استان ${viewModel.state(values['state'] ?? '')}'),
-            AppText.bodyMedium('،'),
-            AppText.bodyMedium('شهرستان ${values['city']}'),
-          ],
-        ),
-        AppText.bodyMedium('منطقه و خیابان:'),
-        AppText.bodyMedium(values['address_1'] ?? ''),
-        if (values['address_2']?.isNotEmpty ?? false) ...[AppText.bodyMedium('کوچه و پلاک:'), AppText.bodyMedium(values['address_2']!)],
+        AppText.bodyMedium('${viewModel.state(values['state']!)}، ${values['city']!}، ${values['address_1']!}، ${values['address_2']!}'),
         AppText.bodyMedium('کد پستی: ${values['postcode']}'),
         SizedBox(height: 10),
-        AppButton(
-          label: 'ویرایش',
-          onPressed: () async {
-            final address = await rightToPage(page);
-          },
-        ),
+        AppButton(label: 'ویرایش', onPressed: () => rightToPage(page)),
       ],
     );
   }
