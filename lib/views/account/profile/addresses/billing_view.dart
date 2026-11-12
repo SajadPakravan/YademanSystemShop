@@ -109,6 +109,7 @@ class BillingView extends StatelessWidget {
       title: field.label,
       hint: field.label,
       icon: field.icon,
+      focusNode: viewModel.fieldFocus[key],
       keyboardType: field.keyboardType,
       inputFormatters: key == 'first_name' || key == 'last_name'
           ? AppInputFormatter.formatters(AppInputType.sPersianLetters)
@@ -122,13 +123,21 @@ class BillingView extends StatelessWidget {
       textInputAction: isLast ? TextInputAction.done : TextInputAction.next,
       errorText: error,
       onChanged: (_) => viewModel.fieldEdited(key),
-      onSubmitted: (_) {
-        if (isLast) {
-          FocusScope.of(context).unfocus();
-        } else {
-          FocusScope.of(context).nextFocus();
-        }
-      },
+      onSubmitted: (_) => focusNextField(context, key),
     );
+  }
+
+  /// انتقال فوکوس به فیلد بعدی بر اساس ترتیب fields.
+  void focusNextField(BuildContext context, String key) {
+    final index = viewModel.fields.indexWhere((field) => field.keyName == key);
+
+    if (index != -1 && index < viewModel.fields.length - 1) {
+      final nextKey = viewModel.fields[index + 1].keyName;
+
+      viewModel.fieldFocus[nextKey]?.requestFocus();
+    } else {
+      FocusScope.of(context).unfocus();
+      viewModel.confirm();
+    }
   }
 }

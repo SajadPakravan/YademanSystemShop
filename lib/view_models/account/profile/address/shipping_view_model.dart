@@ -181,7 +181,7 @@ class ShippingViewModel extends ChangeNotifier {
       final updated = current.copyWith(
         shipping: AddressFieldsModel(addressValues: Map<String, String>.unmodifiable(values)),
       );
-      final response = await httpRequest.updateAddresses(token: token, changes: updated.toJson());
+      final response = await httpRequest.updateAddresses(token: token, address: updated.toJson());
       if (_disposed) return;
 
       if (response is! Map || response['success'] != true ||

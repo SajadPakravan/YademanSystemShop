@@ -189,11 +189,8 @@ class HttpRequest {
 
   Future<dynamic> getAddresses({required String token}) => _authorizedJsonRequest(method: 'GET', url: _urlAddress, token: token);
 
-  Future<dynamic> updateAddresses({required String token, required Map<String, dynamic> changes}) =>
-      _authorizedJsonRequest(method: 'PUT', url: _urlAddress, token: token, body: changes, timeout: const Duration(seconds: 45));
-
-  Future<dynamic> replaceAddresses({required String token, required Map<String, dynamic> addresses}) =>
-      _authorizedJsonRequest(method: 'PUT', url: _urlAddress, token: token, body: addresses, timeout: const Duration(seconds: 45));
+  Future<dynamic> updateAddresses({required String token, required Map<String, dynamic> address}) =>
+      _authorizedJsonRequest(method: 'PUT', url: _urlAddress, token: token, body: address, timeout: const Duration(seconds: 45));
 
   Future<dynamic> getOrders({required String token, int page = 1, int perPage = 20}) =>
       _authorizedJsonRequest(method: 'GET', url: '$_urlOrders?page=$page&per_page=$perPage', token: token);

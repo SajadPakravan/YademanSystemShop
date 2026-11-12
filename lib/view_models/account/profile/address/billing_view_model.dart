@@ -26,7 +26,6 @@ class BillingViewModel extends ChangeNotifier {
   String saveMessage = '';
   bool _disposed = false;
 
-  /// ایجاد کنترلر فقط برای فیلدهای فعال فرم صورتحساب.
   void initializeControllers() {
     final model = billing;
     fields = AddressesViewModel.fieldDefinitions.where((field) => model.hasField(field.keyName)).toList();
@@ -40,12 +39,12 @@ class BillingViewModel extends ChangeNotifier {
     }
 
     selectedCity = model.addressValues['city'];
+
     for (final field in fields) {
       final key = field.keyName;
       final value = model.addressValues[key] ?? '';
       String text = value;
 
-      // استان در API با کد و در فیلد با نام نمایش داده می‌شود.
       if (key == 'state' && selectedProvinceCode != null) {
         for (final province in provinces) {
           if (province.code == selectedProvinceCode) {
@@ -58,9 +57,16 @@ class BillingViewModel extends ChangeNotifier {
       fieldCtrl[key] = TextEditingController(text: text);
       if (key == 'state' || key == 'city') fieldFocus[key] = FocusNode();
     }
+
+    for (final field in fields) {
+      final key = field.keyName;
+
+      fieldCtrl[key] = TextEditingController(text: billing.value(key));
+
+      fieldFocus[key] = FocusNode();
+    }
   }
 
-  /// انتخاب استان، پاک‌کردن شهر قبلی و بازکردن فهرست شهرهای استان جدید.
   void selectProvince(Province province) {
     final changed = selectedProvinceCode != province.code;
     selectedProvinceCode = province.code;
@@ -80,7 +86,6 @@ class BillingViewModel extends ChangeNotifier {
     });
   }
 
-  /// شهرهای مربوط به استان انتخاب‌شده.
   List<String> get cities {
     for (final province in provinces) {
       if (province.code == selectedProvinceCode) return province.cities;
@@ -88,7 +93,6 @@ class BillingViewModel extends ChangeNotifier {
     return [];
   }
 
-  /// ثبت نام شهر فقط در صورت وجود در استان انتخاب‌شده.
   void selectCity(String city) {
     if (!cities.contains(city)) return;
     selectedCity = city;
@@ -98,14 +102,12 @@ class BillingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// پاک‌کردن خطای همان فیلد هنگام ویرایش.
   void fieldEdited(String key) {
     final changed = fieldErrors.remove(key) != null || saveMessage.isNotEmpty;
     saveMessage = '';
     if (changed) notifyListeners();
   }
 
-  /// بررسی مقدارهای فرم صورتحساب پیش از ارسال درخواست PUT.
   bool fieldValidate() {
     fieldErrors.clear();
     final postcode = RegExp(r'^[0-9]{10}$');
@@ -118,18 +120,14 @@ class BillingViewModel extends ChangeNotifier {
 
       if ((key == 'first_name' || key == 'last_name' || key == 'address_1' || key == 'address_2' || key == 'postcode' || key == 'phone') && value.isEmpty) {
         fieldErrors[key] = '${field.label} را وارد کنید';
-
       } else if ((key == 'state' || key == 'city') && value.isEmpty) {
         fieldErrors[key] = '${field.label} را انتخاب کنید';
-
       } else if (key == 'postcode' && !postcode.hasMatch(value)) {
         fieldErrors[key] = 'کدپستی معتبر نیست';
-
       } else if (key == 'phone' && !phone.hasMatch(value)) {
         fieldErrors[key] = 'شماره همراه معتبر نیست';
-
       } else if (key == 'email' && value.isNotEmpty && !email.hasMatch(value)) {
-          fieldErrors[key] = 'ایمیل معتبر نیست';
+        fieldErrors[key] = 'ایمیل معتبر نیست';
       }
     }
 
@@ -137,7 +135,6 @@ class BillingViewModel extends ChangeNotifier {
     return fieldErrors.isEmpty;
   }
 
-  /// ارسال تمام فیلدهای صورتحساب و ارسال با AddressModel.toJson در یک درخواست.
   Future<void> confirm() async {
     if (isSaving || !fieldValidate()) return;
     isSaving = true;
@@ -145,43 +142,29 @@ class BillingViewModel extends ChangeNotifier {
     saveMessage = '';
     notifyListeners();
 
+    final values = <String, String>{for (final entry in fieldCtrl.entries) entry.key: entry.value.text.trim()};
+
+    values['state'] = selectedProvinceCode!;
+
+    final billing = AddressFieldsModel(addressValues: Map<String, String>.unmodifiable(values));
+
+    final Map<String, dynamic> address = {'billing': billing.toJson()};
+
     try {
-      // آخرین اطلاعات مشترک را نگه می‌داریم تا فرم دیگر بازنویسی نشود.
-      final current = addressesViewModel.addresses;
-      if (current == null) {
-        saveMessage = 'اطلاعات آدرس موجود نیست. دوباره تلاش کنید.';
+      final response = await httpRequest.updateAddresses(token: token, address: address);
+
+      if (response['success'] != true) {
+        saveMessage = response['message'].toString();
         return;
       }
 
-      // تمام پارامترهای مدل قبلی حفظ و مقادیر فرم جایگزین می‌شوند.
-      final values = Map<String, String>.from(current.billing.addressValues);
-      for (final field in fields) {
-        values[field.keyName] = fieldCtrl[field.keyName]!.text.trim();
-      }
-      values['state'] = selectedProvinceCode!;
-      values['city'] = selectedCity!;
+      final current = addressesViewModel.addresses!;
 
-      final updated = current.copyWith(billing: AddressFieldsModel(addressValues: Map<String, String>.unmodifiable(values)));
-      final response = await httpRequest.updateAddresses(token: token, changes: updated.toJson());
-      if (_disposed) return;
+      // ساخت مدل جدید صورتحساب.
+      final newBilling = AddressFieldsModel(addressValues: Map<String, String>.from(address['billing']));
 
-      if (response is! Map ||
-          response['success'] != true ||
-          (response['status_code'] is int && (response['status_code'] < 200 || response['status_code'] >= 300))) {
-        saveMessage = response is Map && response['message'] != null ? response['message'].toString() : 'ثبت آدرس صورتحساب انجام نشد.';
-        return;
-      }
+      final savedAddresses = AddressModel(billing: newBilling, shipping: current.shipping, locations: current.locations);
 
-      // اگر پاسخ شامل اطلاعات کامل باشد، نسخه تأییدشده سرور استفاده می‌شود.
-      final responseData = response['data'];
-      final savedAddresses = responseData is Map && responseData['billing'] is Map && responseData['shipping'] is Map
-          ? current.copyWith(
-              billing: AddressFieldsModel.fromJson(Map<String, dynamic>.from(responseData['billing'])),
-              shipping: AddressFieldsModel.fromJson(Map<String, dynamic>.from(responseData['shipping'])),
-            )
-          : updated;
-
-      // همگام‌سازی پیش‌نمایش آدرس‌ها و Session در حافظه.
       addressesViewModel.applyAddresses(savedAddresses);
       saved = true;
       saveMessage = 'آدرس صورتحساب با موفقیت ثبت شد.';
@@ -194,7 +177,6 @@ class BillingViewModel extends ChangeNotifier {
     }
   }
 
-  /// آزادسازی منابع مستقل فرم صورتحساب.
   @override
   void dispose() {
     _disposed = true;
