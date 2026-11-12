@@ -108,7 +108,6 @@ class BillingViewModel extends ChangeNotifier {
   /// بررسی مقدارهای فرم صورتحساب پیش از ارسال درخواست PUT.
   bool fieldValidate() {
     fieldErrors.clear();
-    final persian = RegExp(r'^[اآأإءؤئبپتثجچحخدذرزژسشصضطظعغفقکگلمنوهیيك \u200C]+$');
     final postcode = RegExp(r'^[0-9]{10}$');
     final phone = RegExp(r'^(?:\+98|0098|98|0)?9\d{9}$');
     final email = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
@@ -117,36 +116,20 @@ class BillingViewModel extends ChangeNotifier {
       final key = field.keyName;
       final value = fieldCtrl[key]?.text.trim() ?? '';
 
-      if (key == 'first_name' || key == 'last_name') {
-        if (value.isEmpty) {
-          fieldErrors[key] = '${field.label} را وارد کنید.';
-        } else if (!persian.hasMatch(value)) {
-          fieldErrors[key] = '${field.label} باید فقط شامل حروف فارسی باشد.';
-        }
-      } else if (key == 'state') {
-        if (!provinces.any((p) => p.code == selectedProvinceCode && p.name == value)) {
-          fieldErrors[key] = 'استان را از فهرست انتخاب کنید.';
-        }
-      } else if (key == 'city') {
-        if (value.isEmpty || selectedCity != value || !cities.contains(value)) {
-          fieldErrors[key] = 'شهر معتبر را از فهرست استان انتخاب کنید.';
-        }
-      } else if (key == 'address_1') {
-        if (value.isEmpty) fieldErrors[key] = 'منطقه و خیابان را وارد کنید.';
-      } else if (key == 'postcode') {
-        if (value.isEmpty) {
-          fieldErrors[key] = 'کدپستی را وارد کنید.';
-        } else if (!postcode.hasMatch(value)) {
-          fieldErrors[key] = 'کدپستی باید ۱۰ رقم باشد.';
-        }
-      } else if (key == 'phone') {
-        if (value.isEmpty) {
-          fieldErrors[key] = 'شماره همراه را وارد کنید.';
-        } else if (!phone.hasMatch(value)) {
-          fieldErrors[key] = 'شماره همراه معتبر نیست.';
-        }
+      if ((key == 'first_name' || key == 'last_name' || key == 'address_1' || key == 'address_2' || key == 'postcode' || key == 'phone') && value.isEmpty) {
+        fieldErrors[key] = '${field.label} را وارد کنید';
+
+      } else if ((key == 'state' || key == 'city') && value.isEmpty) {
+        fieldErrors[key] = '${field.label} را انتخاب کنید';
+
+      } else if (key == 'postcode' && !postcode.hasMatch(value)) {
+        fieldErrors[key] = 'کدپستی معتبر نیست';
+
+      } else if (key == 'phone' && !phone.hasMatch(value)) {
+        fieldErrors[key] = 'شماره همراه معتبر نیست';
+
       } else if (key == 'email' && value.isNotEmpty && !email.hasMatch(value)) {
-        fieldErrors[key] = 'ایمیل معتبر نیست.';
+          fieldErrors[key] = 'ایمیل معتبر نیست';
       }
     }
 

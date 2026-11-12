@@ -56,7 +56,7 @@ class BillingView extends StatelessWidget {
               AppText.bodySmall(viewModel.saveMessage, color: viewModel.saved ? colors.success : AppColors.error, textAlign: TextAlign.center),
               const SizedBox(height: 12),
             ],
-            AppButton(label: 'ثبت آدرس', icon: Icons.save_outlined, loading: viewModel.isSaving, onPressed: () => viewModel.confirm()),
+            AppButton(label: 'ثبت آدرس', loading: viewModel.isSaving, onPressed: () => viewModel.confirm()),
             const SizedBox(height: 10),
           ],
         ),
