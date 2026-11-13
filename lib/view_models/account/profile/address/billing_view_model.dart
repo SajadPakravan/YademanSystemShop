@@ -24,13 +24,16 @@ class BillingViewModel extends ChangeNotifier {
   bool isSaving = false;
   bool saved = false;
   String saveMessage = '';
+  bool enabledBtn = false;
   bool _disposed = false;
 
   void initializeControllers() {
     final model = billing;
+
     fields = AddressesViewModel.fieldDefinitions.where((field) => model.hasField(field.keyName)).toList();
 
     final savedState = model.addressValues['state'] ?? '';
+
     for (final province in provinces) {
       if (province.code == savedState) {
         selectedProvinceCode = province.code;
@@ -43,6 +46,7 @@ class BillingViewModel extends ChangeNotifier {
     for (final field in fields) {
       final key = field.keyName;
       final value = model.addressValues[key] ?? '';
+
       String text = value;
 
       if (key == 'state' && selectedProvinceCode != null) {
@@ -55,14 +59,6 @@ class BillingViewModel extends ChangeNotifier {
       }
 
       fieldCtrl[key] = TextEditingController(text: text);
-      if (key == 'state' || key == 'city') fieldFocus[key] = FocusNode();
-    }
-
-    for (final field in fields) {
-      final key = field.keyName;
-
-      fieldCtrl[key] = TextEditingController(text: billing.value(key));
-
       fieldFocus[key] = FocusNode();
     }
   }
@@ -79,6 +75,7 @@ class BillingViewModel extends ChangeNotifier {
     }
     fieldErrors.remove('state');
     saveMessage = '';
+    activeConfirm();
     notifyListeners();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -99,12 +96,14 @@ class BillingViewModel extends ChangeNotifier {
     fieldCtrl['city']?.text = city;
     fieldErrors.remove('city');
     saveMessage = '';
+    activeConfirm();
     notifyListeners();
   }
 
   void fieldEdited(String key) {
     final changed = fieldErrors.remove(key) != null || saveMessage.isNotEmpty;
     saveMessage = '';
+    activeConfirm();
     if (changed) notifyListeners();
   }
 
@@ -135,6 +134,23 @@ class BillingViewModel extends ChangeNotifier {
     return fieldErrors.isEmpty;
   }
 
+  void activeConfirm() {
+    final values = <String, String>{for (final entry in fieldCtrl.entries) entry.key: entry.value.text.trim()};
+
+    values['state'] = selectedProvinceCode ?? '';
+
+    final isEmpty = values.values.every((value) => value.isEmpty);
+
+    final isChanged = fields.any((field) => values[field.keyName] != (billing.addressValues[field.keyName] ?? '').trim());
+
+    final enabled = !isEmpty && isChanged && !isSaving;
+
+    if (enabledBtn != enabled) {
+      enabledBtn = enabled;
+      notifyListeners();
+    }
+  }
+
   Future<void> confirm() async {
     if (isSaving || !fieldValidate()) return;
     isSaving = true;
@@ -146,7 +162,7 @@ class BillingViewModel extends ChangeNotifier {
 
     values['state'] = selectedProvinceCode!;
 
-    final billing = AddressFieldsModel(addressValues: Map<String, String>.unmodifiable(values));
+    final billing = AddressFieldsModel(addressValues: values);
 
     final Map<String, dynamic> address = {'billing': billing.toJson()};
 
@@ -158,21 +174,17 @@ class BillingViewModel extends ChangeNotifier {
         return;
       }
 
-      final current = addressesViewModel.addresses!;
-
-      final newBilling = AddressFieldsModel(addressValues: Map<String, String>.from(address['billing']));
-
-      final savedAddresses = AddressModel(billing: newBilling, shipping: current.shipping, locations: current.locations);
+      final savedAddresses = AddressesResponseModel.fromJson(Map<String, dynamic>.from(response)).data;
 
       addressesViewModel.applyAddresses(savedAddresses);
       saved = true;
       saveMessage = 'آدرس صورتحساب با موفقیت ثبت شد';
-
     } catch (e, stack) {
       AppLog.error('BILLING ADDRESS UPDATE ERROR >>> $e\n$stack');
       if (!_disposed) saveMessage = 'ثبت آدرس انجام نشد. ارتباط اینترنت را بررسی کنید.';
     } finally {
       isSaving = false;
+      enabledBtn = false;
       if (!_disposed) notifyListeners();
     }
   }

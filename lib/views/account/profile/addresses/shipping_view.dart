@@ -14,7 +14,6 @@ class ShippingView extends StatelessWidget {
 
   final ShippingViewModel viewModel;
 
-  /// ساخت صفحه ارسال و راهنمای متناسب با رنگ‌بندی برنامه.
   @override
   Widget build(BuildContext context) {
     final fields = viewModel.fields;
@@ -28,7 +27,6 @@ class ShippingView extends StatelessWidget {
         body: ListView(
           padding: const EdgeInsets.all(15),
           children: [
-            // توضیح کوتاه کارکرد این آدرس برای مشتری.
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -41,15 +39,18 @@ class ShippingView extends StatelessWidget {
                 children: [
                   Icon(Icons.info_outline_rounded, color: colors.info, size: 22),
                   const SizedBox(width: 10),
-                  Expanded(child: AppText.bodyMedium('کالاهای سفارش شما به این نشانی فرستاده می‌شوند. نام گیرنده، شماره همراه و جزئیات محل تحویل را دقیق وارد کنید تا ارسال بدون مشکل انجام شود.', color: colors.textPrimary, height: 1.7)),
+                  Expanded(
+                    child: AppText.bodyMedium(
+                      'کالاهای سفارش شما به این نشانی فرستاده می‌شوند. نام گیرنده، شماره همراه و جزئیات محل تحویل را دقیق وارد کنید تا ارسال بدون مشکل انجام شود.',
+                      color: colors.textPrimary,
+                      height: 1.7,
+                    ),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-            for (int index = 0; index < fields.length; index++) ...[
-              buildField(context, fields[index], index == fields.length - 1),
-              const SizedBox(height: 15),
-            ],
+            for (int index = 0; index < fields.length; index++) ...[buildField(context, fields[index], index == fields.length - 1), const SizedBox(height: 15)],
             const SizedBox(height: 10),
             // نمایش نتیجه درخواست ثبت، در همان فرم.
             if (viewModel.saveMessage.isNotEmpty) ...[
@@ -60,7 +61,7 @@ class ShippingView extends StatelessWidget {
               label: 'ثبت آدرس',
               icon: Icons.save_outlined,
               loading: viewModel.isSaving,
-              onPressed: () => viewModel.confirm(),
+              onPressed: viewModel.enabledBtn ? () => viewModel.confirm() : null,
             ),
             const SizedBox(height: 10),
           ],
@@ -115,6 +116,7 @@ class ShippingView extends StatelessWidget {
       title: field.label,
       hint: field.label,
       icon: field.icon,
+      focusNode: viewModel.fieldFocus[key],
       keyboardType: field.keyboardType,
       inputFormatters: key == 'first_name' || key == 'last_name'
           ? AppInputFormatter.formatters(AppInputType.sPersianLetters)
@@ -128,13 +130,20 @@ class ShippingView extends StatelessWidget {
       textInputAction: isLast ? TextInputAction.done : TextInputAction.next,
       errorText: error,
       onChanged: (_) => viewModel.fieldEdited(key),
-      onSubmitted: (_) {
-        if (isLast) {
-          FocusScope.of(context).unfocus();
-        } else {
-          FocusScope.of(context).nextFocus();
-        }
-      },
+      onSubmitted: (_) => focusNextField(context, key)
     );
+  }
+
+  void focusNextField(BuildContext context, String key) {
+    final index = viewModel.fields.indexWhere((field) => field.keyName == key);
+
+    if (index != -1 && index < viewModel.fields.length - 1) {
+      final nextKey = viewModel.fields[index + 1].keyName;
+
+      viewModel.fieldFocus[nextKey]?.requestFocus();
+    } else {
+      FocusScope.of(context).unfocus();
+      viewModel.confirm();
+    }
   }
 }

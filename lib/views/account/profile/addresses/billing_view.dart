@@ -56,7 +56,7 @@ class BillingView extends StatelessWidget {
               AppText.bodySmall(viewModel.saveMessage, color: viewModel.saved ? colors.success : AppColors.error, textAlign: TextAlign.center),
               const SizedBox(height: 12),
             ],
-            AppButton(label: 'ثبت آدرس', loading: viewModel.isSaving, onPressed: () => viewModel.confirm()),
+            AppButton(label: 'ثبت آدرس', loading: viewModel.isSaving, onPressed: viewModel.enabledBtn ? () => viewModel.confirm() : null),
             const SizedBox(height: 10),
           ],
         ),
@@ -127,7 +127,6 @@ class BillingView extends StatelessWidget {
     );
   }
 
-  /// انتقال فوکوس به فیلد بعدی بر اساس ترتیب fields.
   void focusNextField(BuildContext context, String key) {
     final index = viewModel.fields.indexWhere((field) => field.keyName == key);
 

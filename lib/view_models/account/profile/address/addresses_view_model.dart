@@ -53,7 +53,6 @@ class AddressesViewModel extends ChangeNotifier {
     }
   }
 
-  /// همگام‌سازی آدرس‌های ثبت‌شده در پیش‌نمایش و Session.
   void applyAddresses(AddressModel updated) {
     addresses = updated;
     AddressSession.save(updated);

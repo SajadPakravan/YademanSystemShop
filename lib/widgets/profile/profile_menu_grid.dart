@@ -38,7 +38,7 @@ class ProfileMenuGrid extends StatelessWidget {
       ProfileMenuCard(
         title: 'آدرس‌ها',
         icon: Icons.location_on_outlined,
-        showAlertDot: viewModel.customer!.addressCount <= 0,
+        showAlertDot: viewModel.customer!.addressCount == 0,
         onTap: () => _openList(context, AddressesScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
