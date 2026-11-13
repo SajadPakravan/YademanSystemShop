@@ -38,7 +38,7 @@ class AddressesView extends StatelessWidget {
             child: Column(
               children: [
                 addressPreviewCard(context, viewModel.billing, BillingScreen(addressVM: viewModel)),
-                addressPreviewCard(context, viewModel.shipping, ShippingScreen(addressesViewModel: viewModel)),
+                addressPreviewCard(context, viewModel.shipping, ShippingScreen(addressVM: viewModel)),
               ],
             ),
           ),

@@ -4,17 +4,31 @@ import 'package:yad_sys/models/address_model.dart';
 import 'package:yad_sys/tools/app_log.dart';
 import 'package:yad_sys/view_models/account/profile/address/addresses_view_model.dart';
 
-class ShippingViewModel extends ChangeNotifier {
-  ShippingViewModel({HttpRequest? httpRequest, required this.token, required this.shipping, required this.provinces, required this.addressesViewModel})
-    : httpRequest = httpRequest ?? HttpRequest() {
+class AddressFormViewModel extends ChangeNotifier {
+  AddressFormViewModel({
+    HttpRequest? httpRequest,
+    required this.token,
+    required this.address,
+    required this.addressKey,
+    required this.provinces,
+    required this.addressesViewModel,
+  }) : assert(addressKey == 'billing' || addressKey == 'shipping'),
+       httpRequest = httpRequest ?? HttpRequest(),
+       _savedAddress = address {
     initializeControllers();
   }
 
   final HttpRequest httpRequest;
   final AddressesViewModel addressesViewModel;
   final String token;
-  final AddressFieldsModel shipping;
+  final String addressKey;
+  final AddressFieldsModel address;
   final List<Province> provinces;
+
+  /// مقادیر مرجع برای تشخیص تغییر فرم؛ پس از ذخیره موفق به‌روزرسانی می‌شود.
+  AddressFieldsModel _savedAddress;
+
+  /// کنترلر، فوکوس و خطاهای این نمونه از فرم، مستقل از فرم دیگر هستند.
   final Map<String, TextEditingController> fieldCtrl = {};
   final Map<String, FocusNode> fieldFocus = {};
   final Map<String, String> fieldErrors = {};
@@ -27,13 +41,20 @@ class ShippingViewModel extends ChangeNotifier {
   bool enabledBtn = false;
   bool _disposed = false;
 
-  void initializeControllers() {
-    final model = shipping;
+  bool get isBilling => addressKey == 'billing';
 
-    fields = AddressesViewModel.fieldDefinitions.where((field) => model.hasField(field.keyName)).toList();
+  String get title => isBilling ? 'آدرس صورتحساب' : 'آدرس ارسال';
+
+  String get description => isBilling
+      ? 'این آدرس برای ثبت مشخصات خریدار و صدور صورتحساب سفارش استفاده می‌شود. اگر کالا را در محل دیگری دریافت می‌کنید، آدرس ارسال را جداگانه ثبت کنید.'
+      : 'کالاهای سفارش شما به این نشانی فرستاده می‌شوند. نام گیرنده، شماره همراه و جزئیات محل تحویل را دقیق وارد کنید تا ارسال بدون مشکل انجام شود.';
+
+  /// ساخت کنترلرها فقط برای فیلدهای فعال API، و تبدیل کد استان به نام نمایشی.
+  void initializeControllers() {
+    final model = address;
+    fields = AddressesViewModel.fieldDefinitions.where((field) => model.hasField(field.keyName) && (isBilling || field.keyName != 'email')).toList();
 
     final savedState = model.addressValues['state'] ?? '';
-
     for (final province in provinces) {
       if (province.code == savedState) {
         selectedProvinceCode = province.code;
@@ -46,7 +67,6 @@ class ShippingViewModel extends ChangeNotifier {
     for (final field in fields) {
       final key = field.keyName;
       final value = model.addressValues[key] ?? '';
-
       String text = value;
 
       if (key == 'state' && selectedProvinceCode != null) {
@@ -63,6 +83,7 @@ class ShippingViewModel extends ChangeNotifier {
     }
   }
 
+  /// ثبت استان و پاک‌کردن شهر قبلی در صورت تغییر استان.
   void selectProvince(Province province) {
     final changed = selectedProvinceCode != province.code;
     selectedProvinceCode = province.code;
@@ -83,6 +104,7 @@ class ShippingViewModel extends ChangeNotifier {
     });
   }
 
+  /// دریافت شهرهای استان انتخاب‌شده از فهرست API.
   List<String> get cities {
     for (final province in provinces) {
       if (province.code == selectedProvinceCode) return province.cities;
@@ -90,6 +112,7 @@ class ShippingViewModel extends ChangeNotifier {
     return [];
   }
 
+  /// انتخاب شهر فقط از میان شهرهای استان فعلی.
   void selectCity(String city) {
     if (!cities.contains(city)) return;
     selectedCity = city;
@@ -100,6 +123,7 @@ class ShippingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// حذف خطای فیلد پس از ویرایش و بررسی فعال‌شدن دکمه ثبت.
   void fieldEdited(String key) {
     final changed = fieldErrors.remove(key) != null || saveMessage.isNotEmpty;
     saveMessage = '';
@@ -107,10 +131,12 @@ class ShippingViewModel extends ChangeNotifier {
     if (changed) notifyListeners();
   }
 
+  /// اعتبارسنجی همان فیلدهای فرم‌های قبلی؛ ایمیل تنها در صورت ورود بررسی می‌شود.
   bool fieldValidate() {
     fieldErrors.clear();
     final postcode = RegExp(r'^[0-9]{10}$');
     final phone = RegExp(r'^(?:\+98|0098|98|0)?9\d{9}$');
+    final email = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
 
     for (final field in fields) {
       final key = field.keyName;
@@ -124,6 +150,8 @@ class ShippingViewModel extends ChangeNotifier {
         fieldErrors[key] = 'کدپستی معتبر نیست';
       } else if (key == 'phone' && !phone.hasMatch(value)) {
         fieldErrors[key] = 'شماره همراه معتبر نیست';
+      } else if (key == 'email' && value.isNotEmpty && !email.hasMatch(value)) {
+        fieldErrors[key] = 'ایمیل معتبر نیست';
       }
     }
 
@@ -131,15 +159,13 @@ class ShippingViewModel extends ChangeNotifier {
     return fieldErrors.isEmpty;
   }
 
+  /// فعال‌کردن دکمه فقط زمانی که فرم با اطلاعات آخرین ثبت تفاوت دارد.
   void activeConfirm() {
     final values = <String, String>{for (final entry in fieldCtrl.entries) entry.key: entry.value.text.trim()};
-
     values['state'] = selectedProvinceCode ?? '';
 
     final isEmpty = values.values.every((value) => value.isEmpty);
-
-    final isChanged = fields.any((field) => values[field.keyName] != (shipping.addressValues[field.keyName] ?? '').trim());
-
+    final isChanged = fields.any((field) => values[field.keyName] != (_savedAddress.addressValues[field.keyName] ?? '').trim());
     final enabled = !isEmpty && isChanged && !isSaving;
 
     if (enabledBtn != enabled) {
@@ -148,44 +174,48 @@ class ShippingViewModel extends ChangeNotifier {
     }
   }
 
+  /// ارسال تمامی فیلدهای همین فرم با toJson و همگام‌سازی پاسخ API با Session.
   Future<void> confirm() async {
-    if (isSaving || !fieldValidate()) return;
+    if (isSaving || !enabledBtn || !fieldValidate()) return;
     isSaving = true;
+    enabledBtn = false;
     saved = false;
     saveMessage = '';
     notifyListeners();
 
     final values = <String, String>{for (final entry in fieldCtrl.entries) entry.key: entry.value.text.trim()};
+    values['state'] = selectedProvinceCode ?? '';
 
-    values['state'] = selectedProvinceCode!;
-
-    final shipping = AddressFieldsModel(addressValues: values);
-
-    final Map<String, dynamic> address = {'shipping': shipping.toJson()};
+    final updatedAddress = AddressFieldsModel(addressValues: values);
+    final Map<String, dynamic> addressData = {addressKey: updatedAddress.toJson()};
 
     try {
-      final response = await httpRequest.updateAddresses(token: token, address: address);
+      final response = await httpRequest.updateAddresses(token: token, address: addressData);
+      if (_disposed) return;
 
       if (response['success'] != true) {
-        saveMessage = response['message'].toString();
+        saveMessage = response['message']?.toString() ?? 'ثبت آدرس انجام نشد';
         return;
       }
 
-      final savedAddresses = AddressesResponseModel.fromJson(Map<String, dynamic>.from(response)).data;
-
+      final savedAddresses = AddressesResponseModel.fromJson(Map<String, dynamic>.from(response as Map)).data;
       addressesViewModel.applyAddresses(savedAddresses);
+      _savedAddress = isBilling ? savedAddresses.billing : savedAddresses.shipping;
       saved = true;
-      saveMessage = 'آدرس ارسال با موفقیت ثبت شد';
+      saveMessage = '$title با موفقیت ثبت شد';
     } catch (e, stack) {
-      AppLog.error('Shipping ADDRESS UPDATE ERROR >>> $e\n$stack');
+      AppLog.error('${addressKey.toUpperCase()} ADDRESS UPDATE ERROR >>> $e\n$stack');
       if (!_disposed) saveMessage = 'ثبت آدرس انجام نشد. ارتباط اینترنت را بررسی کنید.';
     } finally {
       isSaving = false;
-      enabledBtn = false;
-      if (!_disposed) notifyListeners();
+      if (!_disposed) {
+        activeConfirm();
+        notifyListeners();
+      }
     }
   }
 
+  /// آزادسازی منابع همان صفحه پس از بسته‌شدن آن.
   @override
   void dispose() {
     _disposed = true;
