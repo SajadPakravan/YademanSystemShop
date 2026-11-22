@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yad_sys/connections/http_request.dart';
 import 'package:yad_sys/models/address_model.dart';
+import 'package:yad_sys/tools/app_cache.dart';
 import 'package:yad_sys/tools/app_log.dart';
 import 'package:yad_sys/view_models/account/profile/address/addresses_view_model.dart';
 
@@ -159,7 +160,6 @@ class AddressFormViewModel extends ChangeNotifier {
     return fieldErrors.isEmpty;
   }
 
-  /// فعال‌کردن دکمه فقط زمانی که فرم با اطلاعات آخرین ثبت تفاوت دارد.
   void activeConfirm() {
     final values = <String, String>{for (final entry in fieldCtrl.entries) entry.key: entry.value.text.trim()};
     values['state'] = selectedProvinceCode ?? '';
@@ -174,7 +174,6 @@ class AddressFormViewModel extends ChangeNotifier {
     }
   }
 
-  /// ارسال تمامی فیلدهای همین فرم با toJson و همگام‌سازی پاسخ API با Session.
   Future<void> confirm() async {
     if (isSaving || !enabledBtn || !fieldValidate()) return;
     isSaving = true;
@@ -203,6 +202,8 @@ class AddressFormViewModel extends ChangeNotifier {
       _savedAddress = isBilling ? savedAddresses.billing : savedAddresses.shipping;
       saved = true;
       saveMessage = '$title با موفقیت ثبت شد';
+      await AppCache.setInt('address_count', savedAddresses.billing.isEmpty || savedAddresses.shipping.isEmpty ? 1 : 2);
+
     } catch (e, stack) {
       AppLog.error('${addressKey.toUpperCase()} ADDRESS UPDATE ERROR >>> $e\n$stack');
       if (!_disposed) saveMessage = 'ثبت آدرس انجام نشد. ارتباط اینترنت را بررسی کنید.';
@@ -215,7 +216,6 @@ class AddressFormViewModel extends ChangeNotifier {
     }
   }
 
-  /// آزادسازی منابع همان صفحه پس از بسته‌شدن آن.
   @override
   void dispose() {
     _disposed = true;

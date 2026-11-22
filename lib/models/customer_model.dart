@@ -10,7 +10,7 @@ class CustomerResponseModel {
 }
 
 class CustomerModel {
-  const CustomerModel({
+  CustomerModel({
     required this.id,
     required this.username,
     required this.displayName,
@@ -27,7 +27,8 @@ class CustomerModel {
 
   final int id;
   final String username, firstName, lastName, displayName, email, phone, avatar;
-  final int addressCount, ordersCount, cartCount, commentsCount;
+
+  int addressCount, ordersCount, cartCount, commentsCount;
 
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
     return CustomerModel(
@@ -45,6 +46,6 @@ class CustomerModel {
       commentsCount: json['comments_count'],
     );
   }
-
+  
   bool get personalInfoIncomplete => firstName.isEmpty || lastName.isEmpty || phone.isEmpty;
 }

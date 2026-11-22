@@ -28,29 +28,31 @@ class ProfileMenuGrid extends StatelessWidget {
     final available = r.width - (r.pageHorizontalPadding * 2) - (spacing * 2);
     final cardSize = (available / 3).clamp(94.0, r.isTablet ? 170.0 : 132.0).toDouble();
 
+    final customer = viewModel.customer!;
+
     final items = [
       ProfileMenuCard(
         title: 'مشخصات فردی',
         icon: Icons.person_outline_rounded,
-        showAlertDot: viewModel.customer!.personalInfoIncomplete,
-        onTap: () => _openPersonalInfo(context, PersonalInfoScreen(customer: viewModel.customer!, token: viewModel.token)),
+        showAlertDot: customer.personalInfoIncomplete,
+        onTap: () => _openPersonalInfo(context, PersonalInfoScreen(customer: customer, token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'آدرس‌ها',
         icon: Icons.location_on_outlined,
-        showAlertDot: viewModel.customer!.addressCount == 0,
+        showAlertDot: customer.addressCount == 0,
         onTap: () => _openList(context, AddressesScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'سفارشات',
         icon: Icons.receipt_long_outlined,
-        badgeCount: viewModel.customer!.ordersCount,
+        badgeCount: customer.ordersCount,
         onTap: () => _openList(context, OrdersScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
         title: 'سبد خرید',
         icon: Icons.shopping_cart_outlined,
-        badgeCount: viewModel.customer!.cartCount,
+        badgeCount: customer.cartCount,
         onTap: () => _openList(context, CartScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
@@ -61,7 +63,7 @@ class ProfileMenuGrid extends StatelessWidget {
       ProfileMenuCard(
         title: 'نظرات من',
         icon: Icons.rate_review_outlined,
-        badgeCount: viewModel.customer!.commentsCount,
+        badgeCount: customer.commentsCount,
         onTap: () => _openList(context, ReviewsScreen(token: viewModel.token)),
       ),
       ProfileMenuCard(
@@ -69,7 +71,7 @@ class ProfileMenuGrid extends StatelessWidget {
         icon: Icons.history_rounded,
         onTap: () => _openList(context, ViewedProductsScreen(token: viewModel.token)),
       ),
-      ProfileMenuCard(title: 'اعلانات', icon: Icons.notifications_none_rounded, showAlertDot: viewModel.customer!.personalInfoIncomplete, onTap: () {}),
+      ProfileMenuCard(title: 'اعلانات', icon: Icons.notifications_none_rounded, showAlertDot: customer.personalInfoIncomplete, onTap: () {}),
       ProfileMenuCard(
         title: 'تغییر گذرواژه',
         icon: Icons.lock_outline_rounded,
@@ -82,13 +84,12 @@ class ProfileMenuGrid extends StatelessWidget {
     for (var start = 0; start < items.length; start += 3) {
       final end = (start + 3).clamp(0, items.length).toInt();
       final rowItems = items.sublist(start, end);
+
       rows.add(
         Row(
           spacing: r.space(10),
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (var index = 0; index < rowItems.length; index++) ...[SizedBox(width: cardSize, height: cardSize, child: rowItems[index])],
-          ],
+          children: [for (var index = 0; index < rowItems.length; index++) SizedBox(width: cardSize, height: cardSize, child: rowItems[index])],
         ),
       );
     }
@@ -98,12 +99,14 @@ class ProfileMenuGrid extends StatelessWidget {
 
   Future<void> _openList(BuildContext context, Widget screen) async {
     await rightToPage(() => screen);
-    viewModel.getCustomer();
+    await viewModel.getCustomer();
   }
 
   Future<void> _openPersonalInfo(BuildContext context, Widget screen) async {
     final updated = await rightToPage(() => screen);
-    if (updated is CustomerModel) viewModel.applyCustomer(updated);
+    if (updated is CustomerModel) {
+      await viewModel.applyCustomer(updated);
+    }
   }
 
   Future<void> _confirmLogout(BuildContext context) async {
@@ -129,6 +132,7 @@ class ProfileMenuGrid extends StatelessWidget {
         ),
       ),
     );
+
     if (confirmed == true) await logout();
   }
 }

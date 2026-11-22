@@ -16,24 +16,31 @@ class ProfileViewModel extends ChangeNotifier {
   bool get addressIncomplete => customer!.addressCount <= 0;
 
   Future<void> initialize() async {
-    if (customer == null) {
+    final currentCustomer = customer;
+    final personalInfoMissingFromOldCache =
+        currentCustomer != null && currentCustomer.firstName.isEmpty && currentCustomer.lastName.isEmpty && currentCustomer.phone.isEmpty;
+
+    if (currentCustomer == null || personalInfoMissingFromOldCache) {
       errorMessage = '';
       notifyListeners();
 
       try {
         final response = await _httpRequest.getCustomer(token: token);
         if (_disposed) return;
+
         if (response is! Map) {
           errorMessage = 'دریافت اطلاعات حساب کاربری انجام نشد.';
           return;
         }
+
         final model = CustomerResponseModel.fromJson(Map<String, dynamic>.from(response));
+
         if (!model.success) {
           errorMessage = response['message']?.toString() ?? 'دریافت اطلاعات حساب کاربری انجام نشد.';
           return;
         }
 
-        applyCustomer(model.data);
+        await applyCustomer(model.data);
       } catch (e) {
         if (kDebugMode) print('CUSTOMER REFRESH ERROR >>>> $e');
         errorMessage = 'دریافت اطلاعات حساب کاربری انجام نشد. اتصال اینترنت را بررسی کنید.';
@@ -45,6 +52,7 @@ class ProfileViewModel extends ChangeNotifier {
 
   Future<void> refreshCustomer() async {
     if (isRefreshing) return;
+
     isRefreshing = true;
     errorMessage = '';
     notifyListeners();
@@ -52,17 +60,20 @@ class ProfileViewModel extends ChangeNotifier {
     try {
       final response = await _httpRequest.getCustomer(token: token);
       if (_disposed) return;
+
       if (response is! Map) {
         errorMessage = 'دریافت اطلاعات حساب کاربری انجام نشد.';
         return;
       }
+
       final model = CustomerResponseModel.fromJson(Map<String, dynamic>.from(response));
+
       if (!model.success) {
         errorMessage = response['message']?.toString() ?? 'دریافت اطلاعات حساب کاربری انجام نشد.';
         return;
       }
 
-      applyCustomer(model.data);
+      await applyCustomer(model.data);
     } catch (e) {
       if (kDebugMode) print('CUSTOMER REFRESH ERROR >>>> $e');
       errorMessage = 'دریافت اطلاعات حساب کاربری انجام نشد. اتصال اینترنت را بررسی کنید.';
@@ -72,22 +83,29 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  /// جلوگیری از اعلان تغییرات پس از خروج از پروفایل.
-  @override
-  void notifyListeners() {
-    if (!_disposed) super.notifyListeners();
-  }
-
   Future<void> applyCustomer(CustomerModel customer) async {
     await AccountCache.save(customer: customer);
+    if (_disposed) return;
+
     this.customer = customer;
     notifyListeners();
   }
 
   Future<void> getCustomer() async {
-    final customer = await AccountCache.getCustomer();
-    this.customer = customer;
-    notifyListeners();
+    final currentCustomer = customer;
+
+    if (currentCustomer == null) {
+      customer = await AccountCache.getCustomer();
+    } else {
+      await AccountCache.refreshCounts(customer: currentCustomer);
+    }
+
+    if (!_disposed) notifyListeners();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
   }
 
   @override
